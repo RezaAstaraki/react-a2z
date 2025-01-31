@@ -1,0 +1,40 @@
+# Source files
+src
+
+# Config files
+.storybook
+rollup.config.js
+tsconfig.json
+.eslintrc.js
+.prettierrc
+tailwind.config.js
+
+# Git files
+.gitignore
+
+# Test files
+__tests__
+*.test.ts
+*.test.tsx
+
+# Storybook files
+*.stories.ts
+*.stories.tsx
+
+# Editor directories and files
+.idea
+.vscode
+
+# Logs
+*.log
+
+# Build files
+storybook-static
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Node modules
+node_modules
+
