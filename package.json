@@ -4,14 +4,13 @@
   "description": "this is react component library compatible with nextjs and includes some hooks and other useful utility functions helps to make react base app much easier support type script ",
   "type": "module",
   "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
     "test": "jest",
-    "rollup": "rollup -c"
+    "rollup": "rollup -c --bundleConfigAsCjs"
   },
   "repository": {
     "type": "git",
@@ -33,23 +32,19 @@
   },
   "homepage": "https://github.com/RezaAstaraki/react-a2z#readme",
   "peerDependencies": {
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "react": ">=18.0.0"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^28.0.2",
-    "@rollup/plugin-node-resolve": "^16.0.0",
-    "@rollup/plugin-typescript": "^12.1.2",
-    "@types/jest": "^29.5.14",
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
-    "jest": "^29.7.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "rollup": "^4.34.1",
-    "rollup-plugin-dts": "^6.1.1",
-    "ts-jest": "^29.2.5",
-    "tslib": "^2.8.1",
-    "typescript": "^5.0.0"
+    "@rollup/plugin-commonjs": "^25.0.3",
+    "@rollup/plugin-node-resolve": "^15.1.0",
+    "@rollup/plugin-terser": "^0.4.3",
+    "@rollup/plugin-typescript": "^11.1.2",
+    "@types/react": "^18.2.15",
+    "react": "^18.2.0",
+    "rollup": "^3.26.3",
+    "rollup-plugin-dts": "^5.3.0",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "tslib": "^2.6.0",
+    "typescript": "^5.1.6"
   }
 }
