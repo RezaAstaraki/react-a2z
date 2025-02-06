@@ -1,7 +1,9 @@
-import React from "react";
+import React, { ReactNode } from "react";
 
-type Props = {};
+type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  children?: ReactNode;
+};
 
-export default function Button({}: Props) {
-  return <div>Button</div>;
+export default function Button({ children, ...props }: Props) {
+  return <button {...props}>{children}</button>;
 }
