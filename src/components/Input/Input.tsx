@@ -1,10 +1,10 @@
 import React, { ReactNode } from "react";
 
-type Props = React.HtmlHTMLAttributes<HTMLInputElement> & {
+type Props = React.InputHTMLAttributes<HTMLInputElement> & {
   label?: string;
 };
-export function Input({ ...props }: Props) {
-  return <input {...props} />;
+export function Input({ ...inputProps }: Props) {
+  return <input {...inputProps} />;
 }
 
 export default Input;
