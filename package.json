@@ -37,7 +37,8 @@
   },
   "homepage": "https://github.com/RezaAstaraki/react-a2z#readme",
   "peerDependencies": {
-    "react": ">=18.0.0"
+    "react": ">=18.0.0",
+    "tailwindcss": ">=3.4.17"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.3",
@@ -45,10 +46,12 @@
     "@rollup/plugin-terser": "^0.4.3",
     "@rollup/plugin-typescript": "^11.1.2",
     "@types/react": "^18.2.15",
+    "postcss": "^8.5.1",
     "react": "^18.2.0",
     "rollup": "^3.26.3",
     "rollup-plugin-dts": "^5.3.0",
     "rollup-plugin-peer-deps-external": "^2.2.4",
+    "tailwindcss": "^3.4.17",
     "tslib": "^2.6.0",
     "typescript": "^5.1.6"
   }

@@ -2,8 +2,17 @@ import React, { ReactNode } from "react";
 
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   children?: ReactNode;
+  label?: string
 };
 
-export default function Button({ children, ...props }: Props) {
-  return <button {...props}>{children}</button>;
+export default function Button({ children, label, ...props }: Props) {
+  return <button {...props}>
+    {label &&
+      <span className="font-bold tex">
+        {label}
+      </span>
+    }
+    " "
+    {children}
+  </button>;
 }
