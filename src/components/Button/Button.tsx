@@ -10,7 +10,7 @@ type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 
 export default function Button({ children, resetStyles, label, className, ...props }: Props) {
   return <button
-    className={cn(!resetStyles && "hover:", className)}
+    className={cn(!resetStyles && "px-4 py-2 bg-gray-500 flex items-center justify-center font-bold hover:bg-red-500", className)}
     {...props}>
     {label && <span
       className="font-bold tex"
