@@ -6,6 +6,7 @@ import dts from "rollup-plugin-dts";
 //NEW
 import terser from "@rollup/plugin-terser";
 import peerDepsExternal from "rollup-plugin-peer-deps-external";
+import preserveDirectives from 'rollup-preserve-directives'
 
 const packageJson = require("./package.json");
 
@@ -28,6 +29,7 @@ export default [
       // NEW
       typescript(),
       peerDepsExternal(),
+      preserveDirectives(),
 
       resolve(),
       commonjs(),
