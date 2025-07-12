@@ -1,27 +1,26 @@
-import resolve from "@rollup/plugin-node-resolve";
-import commonjs from "@rollup/plugin-commonjs";
-import typescript from "@rollup/plugin-typescript";
-import dts from "rollup-plugin-dts";
+import resolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import typescript from '@rollup/plugin-typescript';
+import dts from 'rollup-plugin-dts';
 
 //NEW
-import terser from "@rollup/plugin-terser";
-import peerDepsExternal from "rollup-plugin-peer-deps-external";
-import preserveDirectives from 'rollup-preserve-directives'
+import terser from '@rollup/plugin-terser';
+import peerDepsExternal from 'rollup-plugin-peer-deps-external';
 
-const packageJson = require("./package.json");
+const packageJson = require('./package.json');
 
 export default [
   {
-    input: "src/index.ts",
+    input: 'src/index.ts',
     output: [
       {
-        file: "./dist/cjs/index.js",
-        format: "cjs",
+        file: './dist/cjs/index.js',
+        format: 'cjs',
         sourcemap: true,
       },
       {
-        file: "./dist/esm/index.js",
-        format: "esm",
+        file: './dist/esm/index.js',
+        format: 'esm',
         sourcemap: true,
       },
     ],
@@ -29,7 +28,6 @@ export default [
       // NEW
       typescript(),
       peerDepsExternal(),
-      preserveDirectives(),
 
       resolve(),
       commonjs(),
@@ -39,8 +37,8 @@ export default [
     ],
   },
   {
-    input: "dist/cjs/types/src/index.d.ts",
-    output: [{ file: "dist/index.d.ts", format: "esm" }],
+    input: 'dist/cjs/types/src/index.d.ts',
+    output: [{ file: 'dist/index.d.ts', format: 'esm' }],
     plugins: [dts.default()],
     external: [/\.css$/],
   },

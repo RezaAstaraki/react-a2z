@@ -1,5 +1,4 @@
-'use client'
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
 export default function ClientLogger({
   data,
@@ -17,7 +16,7 @@ export default function ClientLogger({
   const [showData, setShowData] = useState(showDataInUi);
   const [showDataC, setShowDataC] = useState(showDataConsole);
   const [show, setShow] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
 
   const copyAllToClipboard = () => {
     navigator.clipboard.writeText(JSON.stringify(data, null, indent));
@@ -29,10 +28,8 @@ export default function ClientLogger({
   // const [remove, setRemove] = useState(false)
 
   return (
-
     <>
-
-      {show &&
+      {show && (
         <div className="client-logger bg-white text-sm p-4 border rounded" dir="ltr">
           {show && (
             <div className="flex justify-between items-center mb-3">
@@ -42,7 +39,9 @@ export default function ClientLogger({
                   <input
                     type="checkbox"
                     checked={showData}
-                    onChange={(e) => { setShowData(e.target.checked); }}
+                    onChange={(e) => {
+                      setShowData(e.target.checked);
+                    }}
                   />
                   Show Data in UI
                 </label>
@@ -50,7 +49,10 @@ export default function ClientLogger({
                   <input
                     type="checkbox"
                     checked={showDataC}
-                    onChange={(e) => { setShowDataC(e.target.checked); console.log(data); }}
+                    onChange={(e) => {
+                      setShowDataC(e.target.checked);
+                      console.log(data);
+                    }}
                   />
                   Show Data in Console
                 </label>
@@ -59,10 +61,10 @@ export default function ClientLogger({
                 className="close-button"
                 onClick={() => setShow(false)}
                 style={{
-                  cursor: "pointer",
-                  background: "none",
-                  border: "none",
-                  fontSize: "16px",
+                  cursor: 'pointer',
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '16px',
                 }}
               >
                 &times;
@@ -77,15 +79,15 @@ export default function ClientLogger({
                   onClick={copyAllToClipboard}
                   className="copy-all-button bg-gray-300 px-3 py-1 rounded-md text-sm text-black"
                   style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "5px",
-                    cursor: "pointer",
-                    padding: "5px 10px",
-                    borderRadius: "5px",
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    cursor: 'pointer',
+                    padding: '5px 10px',
+                    borderRadius: '5px',
                   }}
                 >
-                  {copiedAll ? "✔ Copied All" : "Copy All"}
+                  {copiedAll ? '✔ Copied All' : 'Copy All'}
                 </button>
               </div>
               <JsonViewer
@@ -97,7 +99,7 @@ export default function ClientLogger({
             </pre>
           )}
         </div>
-      }
+      )}
     </>
   );
 }
@@ -113,8 +115,16 @@ function JsonViewer({
   searchTerm: string;
   showInConsole: boolean;
 }) {
-  if (typeof data === "object" && data !== null) {
-    return <JsonNode data={data} level={0} indent={indent} searchTerm={searchTerm} showInConsole={showInConsole} />;
+  if (typeof data === 'object' && data !== null) {
+    return (
+      <JsonNode
+        data={data}
+        level={0}
+        indent={indent}
+        searchTerm={searchTerm}
+        showInConsole={showInConsole}
+      />
+    );
   }
   return <span className="text-blue-500">{JSON.stringify(data, null, indent)}</span>;
 }
@@ -142,13 +152,13 @@ function JsonNode({
     setTimeout(() => setCopied((prev) => ({ ...prev, [key]: false })), 1000);
   };
 
-  if (typeof data !== "object" || data === null) {
+  if (typeof data !== 'object' || data === null) {
     return <span className="text-blue-500">{JSON.stringify(data)}</span>;
   }
 
   const isArray = Array.isArray(data);
-  const openingBracket = isArray ? "[" : "{";
-  const closingBracket = isArray ? "]" : "}";
+  const openingBracket = isArray ? '[' : '{';
+  const closingBracket = isArray ? ']' : '}';
 
   const handleCollapseList = () => {
     setListCollapsed((prev) => !prev);
@@ -163,11 +173,11 @@ function JsonNode({
             onClick={handleCollapseList}
             className="collapse-list-button bg-gray-200 py-1 px-2 rounded-md text-sm text-black ml-2"
             style={{
-              fontWeight: "bold",
-              cursor: "pointer",
+              fontWeight: 'bold',
+              cursor: 'pointer',
             }}
           >
-            {listCollapsed ? "Expand All" : "Collapse All"}
+            {listCollapsed ? 'Expand All' : 'Collapse All'}
           </button>
         )}
       </span>
@@ -175,25 +185,25 @@ function JsonNode({
       {Object.entries(data)
         .filter(([key]) => showInConsole || key.toLowerCase().includes(searchTerm.toLowerCase())) // Exclude search in console view
         .map(([key, value], index, array) => {
-          const isObject = typeof value === "object" && value !== null;
+          const isObject = typeof value === 'object' && value !== null;
           return (
             <div key={key} className="ml-4 flex items-start">
               {isObject && (
                 <button
                   onClick={() => setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }))}
                   style={{
-                    width: "20px",
-                    height: "20px",
-                    marginRight: "10px",
-                    backgroundColor: "#e0e0e0",
-                    color: "black",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    borderRadius: "4px",
-                    cursor: "pointer",
+                    width: '20px',
+                    height: '20px',
+                    marginRight: '10px',
+                    backgroundColor: '#e0e0e0',
+                    color: 'black',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
                   }}
                 >
-                  {collapsed[key] ? "+" : "-"}
+                  {collapsed[key] ? '+' : '-'}
                 </button>
               )}
               <div className="flex items-center">
@@ -207,9 +217,9 @@ function JsonNode({
                 onClick={() => copyToClipboard(isObject ? value : JSON.stringify(value), key)}
                 className="ml-2"
                 style={{
-                  fontSize: "14px",
-                  color: "#666",
-                  cursor: "pointer",
+                  fontSize: '14px',
+                  color: '#666',
+                  cursor: 'pointer',
                 }}
               >
                 {copied[key] ? (
@@ -220,10 +230,16 @@ function JsonNode({
               </button>
 
               {isObject && !collapsed[key] && (
-                <JsonNode data={value} level={level + 1} indent={indent} searchTerm={searchTerm} showInConsole={showInConsole} />
+                <JsonNode
+                  data={value}
+                  level={level + 1}
+                  indent={indent}
+                  searchTerm={searchTerm}
+                  showInConsole={showInConsole}
+                />
               )}
 
-              {index < array.length - 1 && ","}
+              {index < array.length - 1 && ','}
             </div>
           );
         })}
