@@ -38,7 +38,7 @@
   "homepage": "https://github.com/RezaAstaraki/react-a2z#readme",
   "peerDependencies": {
     "react": ">=18.0.0",
-    "tailwindcss": ">=3.4.17"
+    "tailwindcss": ">=3.4.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.3",
