@@ -1,1 +1,1 @@
-export { default } from "./ClientLogger";
+export { default } from './Wrapper';
