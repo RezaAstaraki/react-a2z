@@ -63,7 +63,7 @@ const LoadingSpinner = ({ className }: { className?: string }) => (
   </svg>
 );
 
-interface CustomButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   buttonType?: ButtonType;
@@ -73,7 +73,7 @@ interface CustomButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement
   loading?: boolean;
 }
 
-const CustomButton = React.forwardRef<HTMLButtonElement, CustomButtonProps>(
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       className,
@@ -160,7 +160,8 @@ const CustomButton = React.forwardRef<HTMLButtonElement, CustomButtonProps>(
   },
 );
 
-CustomButton.displayName = 'CustomButton';
+Button.displayName = 'Button';
 
-export { CustomButton, getButtonVariants };
-export type { CustomButtonProps, ButtonVariant, ButtonSize, ButtonType, IconPosition };
+export default Button;
+export { getButtonVariants };
+export type { ButtonProps, ButtonVariant, ButtonSize, ButtonType, IconPosition };
