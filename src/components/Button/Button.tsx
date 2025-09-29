@@ -10,43 +10,9 @@ type ButtonVariant =
   | 'text-white';
 
 type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
-
 type ButtonType = 'text' | 'icon-only';
-
 type IconPosition = 'left' | 'right' | 'center';
 
-const getButtonVariants = (variant: ButtonVariant, size: ButtonSize, buttonType: ButtonType) => {
-  const baseClasses =
-    'inline-flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer rounded-md font-medium transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
-
-  const variantClasses = {
-    'filled-blue': 'bg-blue-600 text-white shadow-sm hover:bg-blue-700 focus-visible:ring-blue-500',
-    'outlined-blue':
-      'border border-blue-600 text-blue-600 bg-transparent hover:bg-blue-50 focus-visible:ring-blue-500',
-    'text-blue': 'text-blue-600 bg-transparent hover:bg-blue-50 focus-visible:ring-blue-500',
-    'filled-gray':
-      'bg-gray-200 text-gray-900 shadow-sm hover:bg-gray-300 focus-visible:ring-gray-500',
-    'outlined-white':
-      'border border-white text-white bg-transparent hover:bg-white/10 focus-visible:ring-white',
-    'text-white': 'text-white bg-transparent hover:bg-white/10 focus-visible:ring-white',
-  };
-
-  const sizeClasses = {
-    xs: 'text-xs px-2 py-1 h-6',
-    sm: 'text-sm px-3 py-1.5 h-8',
-    md: 'text-base px-4 py-2 h-10',
-    lg: 'text-lg px-6 py-3 h-12',
-  };
-
-  const typeClasses = {
-    text: 'rounded-md',
-    'icon-only': 'rounded-md aspect-square',
-  };
-
-  return cn(baseClasses, variantClasses[variant], sizeClasses[size], typeClasses[buttonType]);
-};
-
-// Loading spinner component
 const LoadingSpinner = ({ className }: { className?: string }) => (
   <svg
     className={cn('animate-spin', className)}
@@ -91,8 +57,36 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const isDisabled = disabled || loading;
-
     const displayText = buttonType === 'icon-only' ? '' : text;
+
+    // all classes inline instead of getButtonVariants()
+    const baseClasses =
+      'inline-flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer rounded-md font-medium transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
+
+    const variantClasses: Record<ButtonVariant, string> = {
+      'filled-blue':
+        'bg-blue-600 text-white shadow-sm hover:bg-blue-700 focus-visible:ring-blue-500',
+      'outlined-blue':
+        'border border-blue-600 text-blue-600 bg-transparent hover:bg-blue-50 focus-visible:ring-blue-500',
+      'text-blue': 'text-blue-600 bg-transparent hover:bg-blue-50 focus-visible:ring-blue-500',
+      'filled-gray':
+        'bg-gray-200 text-gray-900 shadow-sm hover:bg-gray-300 focus-visible:ring-gray-500',
+      'outlined-white':
+        'border border-white text-white bg-transparent hover:bg-white/10 focus-visible:ring-white',
+      'text-white': 'text-white bg-transparent hover:bg-white/10 focus-visible:ring-white',
+    };
+
+    const sizeClasses: Record<ButtonSize, string> = {
+      xs: 'text-xs px-2 py-1 h-6',
+      sm: 'text-sm px-3 py-1.5 h-8',
+      md: 'text-base px-4 py-2 h-10',
+      lg: 'text-lg px-6 py-3 h-12',
+    };
+
+    const typeClasses: Record<ButtonType, string> = {
+      text: 'rounded-md',
+      'icon-only': 'rounded-md aspect-square',
+    };
 
     const iconSize = {
       xs: 'w-3 h-3',
@@ -101,23 +95,20 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       lg: 'w-6 h-6',
     }[size];
 
-    const renderIcon = (Icon: React.ReactNode, position: IconPosition) => {
-      if (loading) {
-        return <LoadingSpinner className={iconSize} />;
-      }
-      return Icon;
+    const renderIcon = (Icon: React.ReactNode) => {
+      return loading ? <LoadingSpinner className={iconSize} /> : Icon;
     };
 
     const renderContent = () => {
       if (buttonType === 'icon-only') {
-        return icon ? renderIcon(icon, 'center') : null;
+        return icon ? renderIcon(icon) : null;
       }
 
       if (!icon) {
         return displayText;
       }
 
-      const iconElement = renderIcon(icon, iconPosition);
+      const iconElement = renderIcon(icon);
 
       switch (iconPosition) {
         case 'left':
@@ -148,7 +139,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <button
-        className={cn(getButtonVariants(variant, size, buttonType), className)}
+        className={cn(
+          baseClasses,
+          variantClasses[variant],
+          sizeClasses[size],
+          typeClasses[buttonType],
+          className,
+        )}
         ref={ref}
         disabled={isDisabled}
         aria-label={buttonType === 'icon-only' && icon ? `${icon} button` : undefined}
@@ -163,5 +160,4 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = 'Button';
 
 export default Button;
-export { getButtonVariants };
 export type { ButtonProps, ButtonVariant, ButtonSize, ButtonType, IconPosition };
