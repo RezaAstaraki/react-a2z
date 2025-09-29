@@ -1,6 +1,6 @@
 {
   "name": "react-a2z",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "this is react component library compatible with nextjs and includes some hooks and other useful utility functions helps to make react base app much easier support type script ",
   "type": "module",
   "main": "dist/cjs/index.js",
