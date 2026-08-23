@@ -1,3 +1,5 @@
-export { default as Button } from "./Button";
-export { default as Input } from "./Input";
-export { default as ClientLogger } from "./ClientLogger";
+import Button from "./Button/Button";
+import Input from "./Input/Input";
+import ClientLogger from "./ClientLogger/Wrapper";
+
+export { Button, Input, ClientLogger };

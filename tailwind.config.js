@@ -1,9 +1,8 @@
+import preset, { contentPaths } from './tailwind.preset.js';
+
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-}
+  presets: [preset],
+  content: ['./src/**/*.{js,ts,jsx,tsx}', ...contentPaths],
+};
 

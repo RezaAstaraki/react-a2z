@@ -7,15 +7,13 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
-    "rootDir": ".",
+    "rootDir": "src",
     "jsx": "react",
     "declaration": true,
-    "declarationDir": "types",
     "sourceMap": true,
-    "outDir": "dist",
     "moduleResolution": "Node",
     "allowSyntheticDefaultImports": true,
-    "emitDeclarationOnly": true
+    "noEmit": true
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

@@ -1,4 +1,7 @@
-import React, { forwardRef } from 'react';
+'use client';
+
+import * as React from 'react';
+import { forwardRef } from 'react';
 import { cn } from '../../utils';
 
 type InputProps = {
