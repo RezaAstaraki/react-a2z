@@ -23,11 +23,13 @@
       "import": "./dist/esm/components/Input/Input.js",
       "require": "./dist/cjs/components/Input/Input.js"
     },
-    "./tailwind": "./tailwind.preset.js"
+    "./tailwind": "./tailwind.preset.js",
+    "./tailwind.css": "./tailwind.css"
   },
   "files": [
     "dist",
-    "tailwind.preset.js"
+    "tailwind.preset.js",
+    "tailwind.css"
   ],
   "scripts": {
     "test": "jest",
@@ -54,7 +56,7 @@
   "homepage": "https://github.com/RezaAstaraki/react-a2z#readme",
   "peerDependencies": {
     "react": ">=18.0.0",
-    "tailwindcss": ">=3.4.1"
+    "tailwindcss": ">=3.4.1 || ^4"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.3",

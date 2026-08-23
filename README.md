@@ -8,28 +8,53 @@ React component library with Tailwind CSS styling, TypeScript support, and Next.
 npm install react-a2z
 ```
 
-Peer dependencies: `react` (>=18) and `tailwindcss` (>=3.4).
+Peer dependencies: `react` (>=18) and `tailwindcss` (>=3.4 or v4).
 
-## Tailwind setup
+## Tailwind v4 setup (recommended)
 
-Components use Tailwind utility classes. Add the library preset and content paths to your app's `tailwind.config.js`:
+Components use Tailwind utility classes. In your app `globals.css`:
+
+```css
+@import "tailwindcss";
+@source "./src/**/*.{js,ts,jsx,tsx}";
+@import "react-a2z/tailwind.css";
+```
+
+`react-a2z/tailwind.css` scans `./dist` for library class names. Paths resolve from `node_modules/react-a2z/`, so this works with npm install and `npm link`.
+
+PostCSS (Next.js example):
 
 ```js
-import reactA2zPreset, { contentPaths } from 'react-a2z/tailwind';
+// postcss.config.mjs
+export default {
+  plugins: { "@tailwindcss/postcss": {} },
+};
+```
+
+## Tailwind v3 setup (legacy)
+
+```js
+import reactA2zPreset, { contentPaths } from "react-a2z/tailwind";
 
 /** @type {import('tailwindcss').Config} */
 export default {
   presets: [reactA2zPreset],
-  content: ['./src/**/*.{js,ts,jsx,tsx}', ...contentPaths],
+  content: ["./src/**/*.{js,ts,jsx,tsx}", ...contentPaths],
 };
 ```
 
-For Next.js, make sure your global CSS imports Tailwind as usual (`@tailwind base;` etc.).
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
 
 ## Usage
 
 ```tsx
-import { Button, Input } from 'react-a2z';
+"use client";
+
+import { Button, Input } from "react-a2z";
 
 export default function Page() {
   return (
