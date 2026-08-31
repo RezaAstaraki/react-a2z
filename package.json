@@ -33,7 +33,8 @@
   ],
   "scripts": {
     "test": "jest",
-    "rollup": "rollup -c --bundleConfigAsCjs"
+    "rollup": "rollup -c --bundleConfigAsCjs",
+    "dev": "rollup -c --bundleConfigAsCjs --watch"
   },
   "repository": {
     "type": "git",
