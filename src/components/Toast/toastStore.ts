@@ -1,9 +1,7 @@
-import { ReactNode } from 'react';
-import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { ReactNode } from 'react'
+import { create } from 'zustand'
 
-export type ToastType = 'default' | 'success' | 'error' | 'info' | 'warning';
-
+export type ToastType = 'default' | 'success' | 'error' | 'info' | 'warning'
 export type ToastPosition =
   | 'top-left'
   | 'top-center'
@@ -38,36 +36,36 @@ export type ToastEntry = {
 };
 
 export type ToastOptions = {
-  id?: string;
-  type?: ToastType;
-  title?: string;
+  id?: string
+  type?: ToastType
+  title?: string
   /** Auto-dismiss ms. `0` or `Infinity` = stay until dismissed. Default `4000`. */
-  duration?: number;
-  position?: ToastPosition;
+  duration?: number
+  position?: ToastPosition
   /** Enter / exit animation. Default `slide`. */
-  animation?: ToastAnimation;
-  closable?: boolean;
+  animation?: ToastAnimation
+  closable?: boolean
   /** Show countdown progress bar when duration is finite. Default `true`. */
-  progress?: boolean;
+  progress?: boolean
   /** Pause auto-dismiss + progress on hover. Default `true`. */
-  pauseOnHover?: boolean;
+  pauseOnHover?: boolean
   /**
    * Toast icon. Omit for type default icon.
    * Pass a React node for a custom icon, or `false` to hide.
    */
-  icon?: ReactNode | false;
-  className?: string;
-  progressClassName?: string;
-};
+  icon?: ReactNode | false
+  className?: string
+  progressClassName?: string
+}
 
-type ToastStoreState = {
-  toasts: ToastEntry[];
-  /** Bumps when content map changes so subscribers re-render. */
-  contentKey: number;
-};
+/**
+ * App-wide defaults (e.g. via `<GlobalToast />` props or {@link setToastDefaults}).
+ * Per-call `toast(..., options)` always wins over these.
+ */
+export type ToastDefaults = Omit<ToastOptions, 'id' | 'type' | 'title'>
 
-const BASE_Z_INDEX = 100;
-const DEFAULT_DURATION = 4000;
+const BASE_Z_INDEX = 100
+const DEFAULT_DURATION = 4000
 
 /** Exit animation duration per variant (must match CSS). */
 export const TOAST_ANIMATION_MS: Record<ToastAnimation, number> = {
@@ -76,11 +74,11 @@ export const TOAST_ANIMATION_MS: Record<ToastAnimation, number> = {
   zoom: 220,
   bounce: 450,
   flip: 300,
-};
+}
 
-const EXIT_MS = TOAST_ANIMATION_MS.slide;
+const EXIT_MS = TOAST_ANIMATION_MS.slide
 
-const defaultOptions = {
+const libraryDefaults = {
   type: 'default' as ToastType,
   duration: DEFAULT_DURATION,
   position: 'top-right' as ToastPosition,
@@ -88,13 +86,43 @@ const defaultOptions = {
   closable: true,
   progress: true,
   pauseOnHover: true,
-};
+}
+
+/** Mutable app defaults; set by GlobalToast / setToastDefaults. */
+let toastDefaults: ToastDefaults = {}
+
+/** Set app-wide toast defaults. Call-site options override these. */
+export const setToastDefaults = (defaults: ToastDefaults) => {
+  const next: ToastDefaults = {}
+  ;(Object.keys(defaults) as (keyof ToastDefaults)[]).forEach((key) => {
+    const value = defaults[key]
+    if (value !== undefined) {
+      ;(next as Record<string, unknown>)[key] = value
+    }
+  })
+  toastDefaults = next
+}
+
+/** Current app-wide defaults (read-only snapshot). */
+export const getToastDefaults = (): Readonly<ToastDefaults> => toastDefaults
+
+const pick = <T>(
+  option: T | undefined,
+  configured: T | undefined,
+  fallback: T,
+): T => (option !== undefined ? option : configured !== undefined ? configured : fallback)
+
+type ToastStoreState = {
+  toasts: ToastEntry[]
+  /** Bumps when content map changes so subscribers re-render. */
+  contentKey: number
+}
 
 type DismissTimerState = {
-  timer?: ReturnType<typeof setTimeout>;
-  remaining: number;
-  startedAt: number;
-};
+  timer?: ReturnType<typeof setTimeout>
+  remaining: number
+  startedAt: number
+}
 
 /** Kept outside Zustand so Redux DevTools never serializes React nodes. */
 const toastContentById = new Map<string, ReactNode>();
@@ -184,55 +212,66 @@ export const resumeToastTimer = (id: string) => {
 };
 
 const pushToast = (content: ReactNode, options: ToastOptions = {}): string => {
-  const id = options.id ?? createToastId();
-  const existing = useToastStore.getState().toasts.find((t) => t.id === id);
+  const id = options.id ?? createToastId()
+  const existing = useToastStore.getState().toasts.find((t) => t.id === id)
+  const defaults = toastDefaults
 
-  const duration = options.duration === undefined ? defaultOptions.duration : options.duration;
+  const duration = pick(options.duration, defaults.duration, libraryDefaults.duration)
+  const resolvedIcon =
+    options.icon !== undefined ? options.icon : defaults.icon
 
-  const hideIcon = options.icon === false;
-  const hasCustomIcon = options.icon != null && options.icon !== false;
+  const hideIcon = resolvedIcon === false
+  const hasCustomIcon = resolvedIcon != null && resolvedIcon !== false
 
   const entry: ToastEntry = {
     id,
-    type: options.type ?? defaultOptions.type,
+    type: options.type ?? libraryDefaults.type,
     title: options.title,
     duration,
-    position: options.position ?? defaultOptions.position,
-    animation: options.animation ?? defaultOptions.animation,
-    closable: options.closable ?? defaultOptions.closable,
-    progress: options.progress ?? defaultOptions.progress,
-    pauseOnHover: options.pauseOnHover ?? defaultOptions.pauseOnHover,
+    position: pick(options.position, defaults.position, libraryDefaults.position),
+    animation: pick(
+      options.animation,
+      defaults.animation,
+      libraryDefaults.animation,
+    ),
+    closable: pick(options.closable, defaults.closable, libraryDefaults.closable),
+    progress: pick(options.progress, defaults.progress, libraryDefaults.progress),
+    pauseOnHover: pick(
+      options.pauseOnHover,
+      defaults.pauseOnHover,
+      libraryDefaults.pauseOnHover,
+    ),
     hideIcon,
     hasCustomIcon,
-    className: options.className,
-    progressClassName: options.progressClassName,
+    className: options.className ?? defaults.className,
+    progressClassName: options.progressClassName ?? defaults.progressClassName,
     exiting: false,
-  };
+  }
 
-  toastContentById.set(id, content);
+  toastContentById.set(id, content)
 
   if (hasCustomIcon) {
-    toastIconById.set(id, options.icon as ReactNode);
+    toastIconById.set(id, resolvedIcon as ReactNode)
   } else {
-    toastIconById.delete(id);
+    toastIconById.delete(id)
   }
 
   if (existing) {
-    clearTimers(id);
+    clearTimers(id)
     useToastStore.setState((state) => ({
       toasts: state.toasts.map((item) => (item.id === id ? entry : item)),
       contentKey: state.contentKey + 1,
-    }));
+    }))
   } else {
     useToastStore.setState((state) => ({
       toasts: [...state.toasts, entry],
       contentKey: state.contentKey + 1,
-    }));
+    }))
   }
 
-  scheduleAutoDismiss(id, entry.duration);
-  return id;
-};
+  scheduleAutoDismiss(id, entry.duration)
+  return id
+}
 
 export const dismissToast = (id?: string) => {
   const { toasts } = useToastStore.getState();

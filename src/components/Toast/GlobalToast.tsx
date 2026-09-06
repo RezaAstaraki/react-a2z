@@ -5,8 +5,10 @@ import { createPortal } from 'react-dom'
 import { cn } from '../../utils'
 import { ToastItem } from './ToastItem'
 import {
+  setToastDefaults,
   TOAST_BASE_Z_INDEX,
   useToastStore,
+  type ToastDefaults,
   type ToastPosition,
 } from './toastStore'
 
@@ -106,7 +108,19 @@ const TOAST_KEYFRAMES = `
 }
 `
 
-export default function GlobalToast() {
+export type GlobalToastProps = ToastDefaults
+
+export default function GlobalToast({
+  position,
+  duration,
+  animation,
+  closable,
+  progress,
+  pauseOnHover,
+  icon,
+  className,
+  progressClassName,
+}: GlobalToastProps) {
   const toasts = useToastStore((state) => state.toasts)
   const contentKey = useToastStore((state) => state.contentKey)
   void contentKey
@@ -117,30 +131,58 @@ export default function GlobalToast() {
     setMounted(true)
   }, [])
 
+  React.useEffect(() => {
+    setToastDefaults({
+      position,
+      duration,
+      animation,
+      closable,
+      progress,
+      pauseOnHover,
+      icon,
+      className,
+      progressClassName,
+    })
+
+    return () => {
+      setToastDefaults({})
+    }
+  }, [
+    position,
+    duration,
+    animation,
+    closable,
+    progress,
+    pauseOnHover,
+    icon,
+    className,
+    progressClassName,
+  ])
+
   if (!mounted || typeof document === 'undefined') return null
 
   return createPortal(
     <>
       <style>{TOAST_KEYFRAMES}</style>
-      {POSITIONS.map((position) => {
-        const group = toasts.filter((t) => t.position === position)
+      {POSITIONS.map((pos) => {
+        const group = toasts.filter((t) => t.position === pos)
         if (group.length === 0) return null
 
-        const fromTop = position.startsWith('top')
+        const fromTop = pos.startsWith('top')
 
         return (
           <div
-            key={position}
+            key={pos}
             className={cn(
               'pointer-events-none fixed flex gap-2',
               fromTop ? 'flex-col' : 'flex-col-reverse',
-              POSITION_CLASS[position],
+              POSITION_CLASS[pos],
             )}
             style={{ zIndex: TOAST_BASE_Z_INDEX }}
             aria-label="Notifications"
           >
             {group.map((entry) => (
-              <ToastItem key={entry.id} toast={entry} position={position} />
+              <ToastItem key={entry.id} toast={entry} position={pos} />
             ))}
           </div>
         )

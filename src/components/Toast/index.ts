@@ -1,4 +1,5 @@
 export { default as GlobalToast } from './GlobalToast'
+export type { GlobalToastProps } from './GlobalToast'
 export { ToastItem } from './ToastItem'
 export type { ToastItemProps } from './ToastItem'
 export {
@@ -9,6 +10,8 @@ export {
   useToastStore,
   getToastContent,
   getToastIcon,
+  setToastDefaults,
+  getToastDefaults,
   TOAST_BASE_Z_INDEX,
   TOAST_EXIT_MS,
   TOAST_ANIMATION_MS,
@@ -19,4 +22,5 @@ export type {
   ToastAnimation,
   ToastEntry,
   ToastOptions,
+  ToastDefaults,
 } from './toastStore'
