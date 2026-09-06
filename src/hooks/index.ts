@@ -10,3 +10,14 @@ export type {
 
 export { useThrottle, useThrottledCallback } from './useThrottle';
 export type { ThrottleOptions, UseThrottleOptions } from './useThrottle';
+
+export { useWindowSize } from './useWindowSize';
+export type { UseWindowSizeOptions, WindowSize } from './useWindowSize';
+
+export { useElementSize } from './useElementSize';
+export type {
+  ElementSize,
+  ElementSizeBox,
+  UseElementSizeOptions,
+  UseElementSizeResult,
+} from './useElementSize';
