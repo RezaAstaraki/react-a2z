@@ -28,6 +28,11 @@
       "import": "./dist/esm/components/Modal/index.js",
       "require": "./dist/cjs/components/Modal/index.js"
     },
+    "./Toast": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/components/Toast/index.js",
+      "require": "./dist/cjs/components/Toast/index.js"
+    },
     "./tailwind": "./tailwind.preset.js",
     "./tailwind.css": "./tailwind.css"
   },

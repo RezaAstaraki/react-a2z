@@ -4,3 +4,4 @@ import ClientLogger from "./ClientLogger/Wrapper";
 
 export { Button, Input, ClientLogger };
 export * from "./Modal";
+export * from "./Toast";
