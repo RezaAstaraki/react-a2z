@@ -33,6 +33,11 @@
       "import": "./dist/esm/components/Toast/index.js",
       "require": "./dist/cjs/components/Toast/index.js"
     },
+    "./hooks": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/hooks/index.js",
+      "require": "./dist/cjs/hooks/index.js"
+    },
     "./tailwind": "./tailwind.preset.js",
     "./tailwind.css": "./tailwind.css"
   },
