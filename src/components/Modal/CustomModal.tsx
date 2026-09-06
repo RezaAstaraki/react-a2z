@@ -16,6 +16,7 @@ import {
   ModalPlacement,
   ModalScrollBehavior,
   ModalSize,
+  ModalVariant,
 } from './modalStore';
 
 export type CustomModalProps = {
@@ -27,6 +28,13 @@ export type CustomModalProps = {
   size?: ModalSize;
   placement?: ModalPlacement;
   backdrop?: ModalBackdrop;
+  /** Extra Tailwind classes merged onto the backdrop layer. */
+  backdropClassName?: string;
+  /**
+   * `default` — bordered card chrome, padding, close button.
+   * `unstyled` — blank shell (portal / backdrop / escape); style everything yourself.
+   */
+  variant?: ModalVariant;
   scrollBehavior?: ModalScrollBehavior;
   isDismissible?: boolean;
   showCloseButton?: boolean;
@@ -97,9 +105,11 @@ export function CustomModal({
   size = 'md',
   placement = 'center',
   backdrop = 'blur',
+  backdropClassName,
+  variant = 'default',
   scrollBehavior = 'inside',
   isDismissible = true,
-  showCloseButton = true,
+  showCloseButton,
   headerDraggable = false,
   isDraggable = false,
   zIndex = 50,
@@ -118,10 +128,12 @@ export function CustomModal({
   } | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
+  const isUnstyled = variant === 'unstyled';
   const canDrag = Boolean(headerDraggable || isDraggable);
   const hasHeader = Boolean(header || title);
-  const showHeaderClose = showCloseButton && hasHeader;
-  const showFloatingClose = showCloseButton && !hasHeader;
+  const closeButtonVisible = showCloseButton ?? !isUnstyled;
+  const showHeaderClose = closeButtonVisible && hasHeader;
+  const showFloatingClose = closeButtonVisible && !hasHeader;
   const bodyScrollClass =
     scrollBehavior === 'inside'
       ? 'overflow-y-auto'
@@ -201,8 +213,9 @@ export function CustomModal({
     <div
       data-a2z-modal=""
       className={cn(
-        'fixed inset-0 flex overflow-hidden p-3 sm:p-4',
-        'pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))]',
+        'fixed inset-0 flex overflow-hidden',
+        !isUnstyled &&
+          'p-3 sm:p-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))]',
         PLACEMENT_CLASS[placement ?? 'center']
       )}
       style={{ zIndex }}
@@ -212,13 +225,21 @@ export function CustomModal({
           type="button"
           aria-label="Close"
           tabIndex={-1}
-          className={cn('absolute inset-0', BACKDROP_CLASS[backdrop])}
+          className={cn(
+            'absolute inset-0',
+            BACKDROP_CLASS[backdrop],
+            backdropClassName
+          )}
           onClick={requestClose}
         />
       ) : (
         <div
           aria-hidden
-          className={cn('absolute inset-0', BACKDROP_CLASS[backdrop])}
+          className={cn(
+            'absolute inset-0',
+            BACKDROP_CLASS[backdrop],
+            backdropClassName
+          )}
         />
       )}
 
@@ -233,7 +254,10 @@ export function CustomModal({
           transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)`,
         }}
         className={cn(
-          'relative z-[1] flex max-h-[min(calc(100dvh-2rem),920px)] w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg outline-none',
+          'relative z-[1] flex max-h-[min(calc(100dvh-2rem),920px)] w-full flex-col outline-none',
+          isUnstyled
+            ? 'overflow-visible'
+            : 'overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg',
           SIZE_CLASS[size],
           className,
           contentClassName
@@ -253,7 +277,8 @@ export function CustomModal({
         {hasHeader ? (
           <div
             className={cn(
-              'relative shrink-0 select-none border-b border-gray-200 px-6 py-5',
+              'relative shrink-0 select-none',
+              !isUnstyled && 'border-b border-gray-200 px-6 py-5',
               canDrag && 'cursor-grab touch-none active:cursor-grabbing'
             )}
             onPointerDown={onHeaderPointerDown}
@@ -289,7 +314,14 @@ export function CustomModal({
           </div>
         ) : null}
 
-        <div className={cn('min-h-0 p-6', bodyScrollClass, bodyClassName)}>
+        <div
+          className={cn(
+            'min-h-0',
+            !isUnstyled && 'p-6',
+            bodyScrollClass,
+            bodyClassName
+          )}
+        >
           {children}
         </div>
       </div>

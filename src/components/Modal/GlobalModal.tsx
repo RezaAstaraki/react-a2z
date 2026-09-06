@@ -34,6 +34,8 @@ export default function GlobalModal() {
           size={modal.size}
           placement={modal.placement}
           backdrop={modal.backdrop}
+          backdropClassName={modal.backdropClassName}
+          variant={modal.variant}
           scrollBehavior={modal.scrollBehavior}
           isDismissible={modal.isDismissible}
           showCloseButton={modal.showCloseButton}

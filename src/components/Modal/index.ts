@@ -14,6 +14,7 @@ export type {
   ModalPlacement,
   ModalBackdrop,
   ModalScrollBehavior,
+  ModalVariant,
   ModalEntry,
   SetModalOpenPayload,
 } from './modalStore';

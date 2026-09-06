@@ -26,9 +26,12 @@ export type ModalBackdrop = "opaque" | "blur" | "transparent"
 
 export type ModalScrollBehavior = "inside" | "normal" | "outside"
 
+/** `default` ships chrome; `unstyled` is a blank shell for full custom UI. */
+export type ModalVariant = "default" | "unstyled"
+
 export type ModalEntry = {
   id: string
-  type: string
+  type?: string
   size?: ModalSize
   payloadData?: unknown | null
   isCloseAllowed?: boolean
@@ -36,6 +39,8 @@ export type ModalEntry = {
   isDismissible?: boolean
   placement?: ModalPlacement
   backdrop?: ModalBackdrop
+  backdropClassName?: string
+  variant?: ModalVariant
   isDraggable?: boolean
   showCloseButton?: boolean
   zIndex: number
@@ -69,7 +74,7 @@ const BASE_Z_INDEX = 50
 const Z_INDEX_STEP = 10
 
 const defaultEntryFields = {
-  type: "",
+  type: undefined as string | undefined,
   payloadData: null as unknown | null,
   isDismissible: true,
   placement: "center" as ModalPlacement,
@@ -78,6 +83,7 @@ const defaultEntryFields = {
   className: undefined as string | undefined,
   bodyClassName: undefined as string | undefined,
   contentClassName: undefined as string | undefined,
+  backdropClassName: undefined as string | undefined,
   modalTitle: undefined as string | undefined,
   modalIconName: undefined as string | undefined,
   modalIconColor: undefined as string | undefined,
@@ -88,6 +94,7 @@ const defaultEntryFields = {
   isCloseAllowed: true,
   scrollBehavior: "inside" as ModalScrollBehavior,
   backdrop: "blur" as ModalBackdrop,
+  variant: "default" as ModalVariant,
   stackable: false,
   size: undefined as ModalSize | undefined,
 }
@@ -124,9 +131,11 @@ export const setModalOpen = (payload: SetModalOpenPayload = {}) => {
   const currentStack = useModalStore.getState().stack
   const top = currentStack[currentStack.length - 1]
   const shouldStack = Boolean(top?.stackable)
+  const variant = rest.variant ?? defaultEntryFields.variant
 
   const entry: ModalEntry = {
     ...defaultEntryFields,
+    ...(variant === "unstyled" ? { showCloseButton: false } : {}),
     ...rest,
     id,
     zIndex: shouldStack
@@ -135,7 +144,7 @@ export const setModalOpen = (payload: SetModalOpenPayload = {}) => {
         ? top.zIndex
         : BASE_Z_INDEX,
     stackable,
-    type: rest.type ?? defaultEntryFields.type,
+    variant,
     scrollBehavior: rest.scrollBehavior ?? defaultEntryFields.scrollBehavior,
   }
 
