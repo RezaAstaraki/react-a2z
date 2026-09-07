@@ -1,0 +1,125 @@
+/* Pearl button — gloss hover + press (prefix: a2z-) */
+.a2z-pearl-btn {
+  position: relative;
+  cursor: pointer;
+  border: 0;
+  outline: none;
+  border-radius: 9999px;
+  background-color: #080808;
+  transition: all 0.2s ease;
+  box-shadow:
+    inset 0 0.3rem 0.9rem rgba(255, 255, 255, 0.3),
+    inset 0 -0.1rem 0.3rem rgba(0, 0, 0, 0.7),
+    inset 0 -0.4rem 0.9rem rgba(255, 255, 255, 0.5),
+    0 1.25rem 1.25rem rgba(0, 0, 0, 0.22),
+    0 0.55rem 0.55rem -0.3rem rgba(0, 0, 0, 0.55);
+}
+
+.a2z-pearl-btn:hover {
+  box-shadow:
+    inset 0 0.3rem 0.5rem rgba(255, 255, 255, 0.4),
+    inset 0 -0.1rem 0.3rem rgba(0, 0, 0, 0.7),
+    inset 0 -0.4rem 0.9rem rgba(255, 255, 255, 0.7),
+    0 1.25rem 1.25rem rgba(0, 0, 0, 0.22),
+    0 0.55rem 0.55rem -0.3rem rgba(0, 0, 0, 0.55);
+}
+
+.a2z-pearl-btn:active {
+  transform: translateY(4px);
+  box-shadow:
+    inset 0 0.3rem 0.5rem rgba(255, 255, 255, 0.5),
+    inset 0 -0.1rem 0.3rem rgba(0, 0, 0, 0.8),
+    inset 0 -0.4rem 0.9rem rgba(255, 255, 255, 0.4),
+    0 1.25rem 1.25rem rgba(0, 0, 0, 0.22),
+    0 0.55rem 0.55rem -0.3rem rgba(0, 0, 0, 0.55);
+}
+
+.a2z-pearl-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.35);
+  outline-offset: 3px;
+}
+
+.a2z-pearl-btn__wrap {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: inherit;
+  padding: 0.85rem 1.75rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.a2z-pearl-btn__glow {
+  pointer-events: none;
+  position: absolute;
+  left: -15%;
+  right: -15%;
+  top: -100%;
+  bottom: 25%;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.12);
+  transition: transform 0.3s ease;
+}
+
+.a2z-pearl-btn:hover .a2z-pearl-btn__glow {
+  transform: translateY(-5%);
+}
+
+.a2z-pearl-btn__shine {
+  pointer-events: none;
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 12%;
+  bottom: 40%;
+  border-radius: 22px 22px 0 0;
+  box-shadow: inset 0 10px 8px -10px rgba(255, 255, 255, 0.8);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(0, 0, 0, 0) 50%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  transition: all 0.3s ease;
+}
+
+.a2z-pearl-btn:hover .a2z-pearl-btn__shine {
+  opacity: 0.4;
+  transform: translateY(5%);
+}
+
+.a2z-pearl-btn__label {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  margin: 0;
+  transition: transform 0.2s ease;
+  transform: translateY(2%);
+  mask-image: linear-gradient(to bottom, white 40%, transparent);
+}
+
+.a2z-pearl-btn:hover .a2z-pearl-btn__label {
+  transform: translateY(-10%);
+}
+
+.a2z-pearl-btn__icon {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.a2z-pearl-btn__icon--hover {
+  display: none;
+}
+
+.a2z-pearl-btn:hover .a2z-pearl-btn__icon--idle {
+  display: none;
+}
+
+.a2z-pearl-btn:hover .a2z-pearl-btn__icon--hover {
+  display: inline-block;
+}
