@@ -1,17 +1,12 @@
 import * as React from 'react';
 import { cn } from '../../utils';
 
-export type PearlButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  icon?: React.ReactNode;
-  hoverIcon?: React.ReactNode;
-};
+export type PearlButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 const PearlButton = React.forwardRef<HTMLButtonElement, PearlButtonProps>(
   (
     {
       children = 'Pearl Button',
-      icon,
-      hoverIcon,
       className,
       type = 'button',
       ...props
@@ -29,15 +24,7 @@ const PearlButton = React.forwardRef<HTMLButtonElement, PearlButtonProps>(
           <span aria-hidden className="a2z-pearl-btn__glow" />
           <span aria-hidden className="a2z-pearl-btn__shine" />
 
-          <span className="a2z-pearl-btn__label">
-            <span className="a2z-pearl-btn__icon">
-              <span className="a2z-pearl-btn__icon--idle">{icon ?? '✧'}</span>
-              <span className="a2z-pearl-btn__icon--hover">
-                {hoverIcon ?? '✦'}
-              </span>
-            </span>
-            {children}
-          </span>
+          <span className="a2z-pearl-btn__label">{children}</span>
         </span>
       </button>
     );

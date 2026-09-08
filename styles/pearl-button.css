@@ -105,21 +105,3 @@
 .a2z-pearl-btn:hover .a2z-pearl-btn__label {
   transform: translateY(-10%);
 }
-
-.a2z-pearl-btn__icon {
-  display: inline-flex;
-  align-items: center;
-  line-height: 1;
-}
-
-.a2z-pearl-btn__icon--hover {
-  display: none;
-}
-
-.a2z-pearl-btn:hover .a2z-pearl-btn__icon--idle {
-  display: none;
-}
-
-.a2z-pearl-btn:hover .a2z-pearl-btn__icon--hover {
-  display: inline-block;
-}
