@@ -1,7 +1,39 @@
 import * as React from 'react';
 import { cn } from '../../utils';
 import { HtmlAst } from './htmlAst';
-import { MdBlock, MdInline, parseMarkdown, ParseMarkdownOptions } from './parseMarkdown';
+import { MdBlock, MdInline, parseInline, parseMarkdown, ParseMarkdownOptions } from './parseMarkdown';
+
+const ALIGN_CLASS: Record<string, string> = {
+  left: 'text-left',
+  center: 'text-center',
+  right: 'text-right',
+  justify: 'text-justify',
+};
+
+const RICH_TEXT_TAGS = new Set([
+  'p',
+  'div',
+  'span',
+  'li',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'blockquote',
+  'td',
+  'th',
+  'u',
+  'strong',
+  'em',
+  'b',
+  'i',
+  's',
+  'del',
+  'mark',
+  'a',
+]);
 
 const SVG_TAG_MAP: Record<string, string> = {
   clippath: 'clipPath',
@@ -60,20 +92,37 @@ const SVG_ATTR_MAP: Record<string, string> = {
 
 function toReactProps(attrs: Record<string, string>): Record<string, string> {
   const props: Record<string, string> = {};
+  const extraClass: string[] = [];
   for (const [name, value] of Object.entries(attrs)) {
+    if (name === 'align') {
+      const alignClass = ALIGN_CLASS[value.toLowerCase()];
+      if (alignClass) extraClass.push(alignClass);
+      continue;
+    }
+    if (name.startsWith('aria-') || name.startsWith('data-')) {
+      props[name] = value;
+      continue;
+    }
     const mapped = SVG_ATTR_MAP[name] ?? (name.includes('-')
       ? name.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase())
       : name);
     props[mapped] = value;
+  }
+  if (extraClass.length) {
+    props.className = cn(props.className, extraClass);
   }
   return props;
 }
 
 function renderHtml(ast: HtmlAst | string, key: string): React.ReactNode {
   if (typeof ast === 'string') return ast ? <React.Fragment key={key}>{ast}</React.Fragment> : null;
-  const children = ast.children.map((child, index) =>
-    typeof child === 'string' ? child : renderHtml(child, `${key}-${index}`),
-  );
+  const children = ast.children.flatMap((child, index) => {
+    if (typeof child !== 'string') return [renderHtml(child, `${key}-${index}`)];
+    if (RICH_TEXT_TAGS.has(ast.tag) && child) {
+      return renderInline(parseInline(child), `${key}-${index}`);
+    }
+    return child ? [child] : [];
+  });
   return React.createElement(
     SVG_TAG_MAP[ast.tag] ?? ast.tag,
     { key, ...toReactProps(ast.attrs) },
@@ -88,11 +137,23 @@ function renderInline(nodes: MdInline[], keyPrefix: string): React.ReactNode[] {
       case 'text':
         return <React.Fragment key={key}>{node.value}</React.Fragment>;
       case 'strong':
-        return <strong key={key}>{renderInline(node.children, key)}</strong>;
+        return (
+          <strong key={key} className="font-bold">
+            {renderInline(node.children, key)}
+          </strong>
+        );
       case 'em':
-        return <em key={key}>{renderInline(node.children, key)}</em>;
+        return (
+          <em key={key} className="italic">
+            {renderInline(node.children, key)}
+          </em>
+        );
       case 'del':
-        return <del key={key}>{renderInline(node.children, key)}</del>;
+        return (
+          <del key={key} className="line-through">
+            {renderInline(node.children, key)}
+          </del>
+        );
       case 'code':
         return (
           <code key={key} className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[0.9em] text-pink-700">
@@ -261,6 +322,8 @@ export function Md({ value, children, className, breaks = true }: MdProps) {
     <div
       className={cn(
         'a2z-md max-w-none text-[15px] leading-7 text-gray-800',
+        '[&_strong]:font-bold [&_b]:font-bold [&_em]:italic [&_i]:italic',
+        '[&_u]:underline [&_del]:line-through [&_s]:line-through [&_mark]:bg-yellow-200 [&_mark]:px-0.5',
         '[&_svg]:inline-block [&_svg]:max-w-full [&_img]:h-auto [&_img]:max-w-full',
         className,
       )}

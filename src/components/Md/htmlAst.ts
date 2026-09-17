@@ -210,6 +210,12 @@ function sanitizeAttrs(tag: string, attrs: Record<string, string>): Record<strin
       if (isSafeUrl(rawValue, 'src')) clean[name] = rawValue;
       continue;
     }
+    if (name === 'align') {
+      if (/^(left|center|right|justify)$/i.test(rawValue.trim())) {
+        clean[name] = rawValue.trim().toLowerCase();
+      }
+      continue;
+    }
     clean[name] = rawValue;
   }
 
