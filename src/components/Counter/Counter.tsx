@@ -2,10 +2,25 @@
 
 import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useInView } from '../../hooks';
 import { cn } from '../../utils';
 
 export type CounterVariant = 'number' | 'digits';
 export type CounterPlace = number | '.';
+
+/** Options for starting the counter when visible (`useInView` + optional delay). */
+export type CounterInView = {
+  /** CSS margin around the root (`rootMargin`). e.g. `"0px 0px -20% 0px"`. */
+  margin?: string;
+  /** Visibility ratio(s) required to trigger. Default `0.2`. */
+  threshold?: number | number[];
+  /** Only animate the first time it enters view. Default `true`. */
+  once?: boolean;
+  /** Extra delay in ms after entering view before starting. Default `0`. */
+  delay?: number;
+  /** Explicit root for the observer. Default viewport. */
+  root?: Element | Document | null;
+};
 
 export type CounterProps = {
   /** Target value (count-up end / digit display value). */
@@ -28,9 +43,17 @@ export type CounterProps = {
   useGrouping?: boolean;
   useEasing?: boolean;
   formattingFn?: (value: number) => string;
-  /** Start when scrolled into view. Default `true`. */
+  /**
+   * Start animation when scrolled into view.
+   * Pass `true`/`false`, or options like `{ margin, threshold, once, delay }`.
+   * Default `true`. Overrides {@link enableScrollSpy} when set.
+   */
+  inView?: boolean | CounterInView;
+  /** @deprecated Prefer {@link inView}. Start when scrolled into view. Default `true`. */
   enableScrollSpy?: boolean;
+  /** @deprecated Prefer `inView.delay`. Delay in ms after entering view. */
   scrollSpyDelay?: number;
+  /** @deprecated Prefer `inView.once`. Only animate once. Default `true`. */
   scrollSpyOnce?: boolean;
   startOnMount?: boolean;
   preserveValue?: boolean;
@@ -49,6 +72,26 @@ export type CounterProps = {
   onStart?: () => void;
   onEnd?: () => void;
 };
+
+function resolveInView(
+  inView: boolean | CounterInView | undefined,
+  enableScrollSpy: boolean,
+  scrollSpyDelay: number,
+  scrollSpyOnce: boolean,
+): false | Required<Pick<CounterInView, 'threshold' | 'once' | 'delay'>> &
+  Pick<CounterInView, 'margin' | 'root'> {
+  const enabled = inView === undefined ? enableScrollSpy : Boolean(inView);
+  if (!enabled) return false;
+
+  const options = typeof inView === 'object' && inView !== null ? inView : {};
+  return {
+    margin: options.margin,
+    threshold: options.threshold ?? 0.2,
+    once: options.once ?? scrollSpyOnce,
+    delay: options.delay ?? scrollSpyDelay,
+    root: options.root,
+  };
+}
 
 export type CounterHandle = {
   start: () => void;
@@ -226,6 +269,7 @@ export const Counter = React.forwardRef<CounterHandle, CounterProps>(function Co
     useGrouping = true,
     useEasing = true,
     formattingFn,
+    inView,
     enableScrollSpy = true,
     scrollSpyDelay = 0,
     scrollSpyOnce = true,
@@ -248,12 +292,26 @@ export const Counter = React.forwardRef<CounterHandle, CounterProps>(function Co
   ref,
 ) {
   const target = end ?? value ?? 0;
-  const rootRef = useRef<HTMLSpanElement>(null);
   const frameRef = useRef<number | null>(null);
   const startedRef = useRef(false);
   const displayRef = useRef(start);
   const [display, setDisplay] = useState(start);
   const [activeTarget, setActiveTarget] = useState(target);
+
+  const inViewOptions = useMemo(
+    () => resolveInView(inView, enableScrollSpy, scrollSpyDelay, scrollSpyOnce),
+    [inView, enableScrollSpy, scrollSpyDelay, scrollSpyOnce],
+  );
+  const watchInView = inViewOptions !== false;
+
+  const { ref: rootRef, inView: isVisible } = useInView<HTMLSpanElement>({
+    skip: !watchInView,
+    margin: inViewOptions ? inViewOptions.margin : undefined,
+    threshold: inViewOptions ? inViewOptions.threshold : 0.2,
+    once: inViewOptions ? inViewOptions.once : true,
+    root: inViewOptions ? inViewOptions.root : undefined,
+    fallbackInView: true,
+  });
 
   const setDisplayValue = useCallback((next: number) => {
     displayRef.current = next;
@@ -317,6 +375,8 @@ export const Counter = React.forwardRef<CounterHandle, CounterProps>(function Co
     startedRef.current = true;
     run(target);
   }, [run, target]);
+  const startAnimationRef = useRef(startAnimation);
+  startAnimationRef.current = startAnimation;
 
   const reset = useCallback(() => {
     stop();
@@ -344,39 +404,28 @@ export const Counter = React.forwardRef<CounterHandle, CounterProps>(function Co
   }, [run, target]);
 
   useEffect(() => {
-    if (!startOnMount || enableScrollSpy) return;
-    startAnimation();
+    if (!startOnMount || watchInView) return;
+    startAnimationRef.current();
     return stop;
     // intentionally mount / target driven
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enableScrollSpy, startOnMount, target]);
+  }, [watchInView, startOnMount, target]);
 
   useEffect(() => {
-    if (!enableScrollSpy) return;
-    const node = rootRef.current;
-    if (!node || typeof IntersectionObserver === 'undefined') {
-      startAnimation();
-      return;
-    }
+    if (!inViewOptions || !isVisible) return;
+    if (inViewOptions.once && startedRef.current) return;
 
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry?.isIntersecting) return;
-        if (scrollSpyOnce && startedRef.current) return;
-        timeoutId = setTimeout(() => startAnimation(), scrollSpyDelay);
-        if (scrollSpyOnce) observer.disconnect();
-      },
-      { threshold: 0.2 },
-    );
-    observer.observe(node);
+    if (inViewOptions.delay > 0) {
+      timeoutId = setTimeout(() => startAnimationRef.current(), inViewOptions.delay);
+    } else {
+      startAnimationRef.current();
+    }
+
     return () => {
-      observer.disconnect();
       if (timeoutId) clearTimeout(timeoutId);
-      stop();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enableScrollSpy, scrollSpyDelay, scrollSpyOnce, target]);
+  }, [inViewOptions, isVisible]);
 
   useEffect(() => () => stop(), [stop]);
 

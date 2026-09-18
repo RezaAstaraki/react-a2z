@@ -12,4 +12,4 @@ export type { MdProps } from "./Md";
 export { MdEditor } from "./MdEditor";
 export type { MdEditorProps, MdEditorMode, MdEditorHandle, MdEditorToolId } from "./MdEditor";
 export { Counter } from "./Counter";
-export type { CounterProps, CounterHandle, CounterVariant, CounterPlace } from "./Counter";
+export type { CounterProps, CounterHandle, CounterVariant, CounterPlace, CounterInView } from "./Counter";
