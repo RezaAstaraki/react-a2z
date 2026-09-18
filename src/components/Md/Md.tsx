@@ -259,7 +259,7 @@ function renderBlocks(
               return (
                 <li
                   key={`${key}-item-${itemIndex}`}
-                  className={cn('my-1', hasTasks && 'flex items-start gap-2')}
+                  className={cn('my-1', hasTasks && 'flex items-center gap-2')}
                 >
                   {item.checked !== null && (
                     <input
@@ -271,10 +271,10 @@ function renderBlocks(
                           ? (event) => options.onTaskToggle?.(taskIndex, event.target.checked)
                           : undefined
                       }
-                      className="mt-1.5 shrink-0"
+                      className="size-4 shrink-0"
                     />
                   )}
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 leading-7 [&_p]:my-0">
                     {renderBlocks(item.children, `${key}-item-${itemIndex}`, options, taskCounter)}
                   </div>
                 </li>
