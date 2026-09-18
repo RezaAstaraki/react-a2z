@@ -5,3 +5,4 @@ export * from './truncateText';
 export * from './persianToEnglishDigits';
 export * from './englishDigitsToPersian';
 export * from './sanitizeNumericInput';
+export * from './readFileAsDataUrl';

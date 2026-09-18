@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { cn } from '../../utils';
+import { cn, readFileAsDataUrl } from '../../utils';
 import { isSafeUrl } from '../Md/htmlAst';
 import Button from '../Button/Button';
 import { CustomModal } from '../Modal/CustomModal';
@@ -25,7 +25,14 @@ export type MdEditorProps = {
   disabled?: boolean;
   readOnly?: boolean;
   breaks?: boolean;
+  /**
+   * Resolve an image file to a URL inserted into markdown.
+   * Omit to use the built-in {@link readFileAsDataUrl} (local data URL).
+   * Pass your own for remote uploads (S3, API, etc.).
+   */
   onImageUpload?: (file: File) => Promise<string> | string;
+  /** Fires after an image URL is resolved and inserted (default or custom upload). */
+  onImageInserted?: (info: { file: File; url: string; alt: string }) => void;
 };
 
 type Tool = {
@@ -162,14 +169,8 @@ const ALIGN_TOOLS: Array<{ label: string; title: string; align: 'left' | 'center
   { label: 'J', title: 'Justify', align: 'justify' },
 ];
 
-function readFileUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result ?? ''));
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
+const MAX_HISTORY = 100;
+const HISTORY_DEBOUNCE_MS = 400;
 
 function IconButton({
   label,
@@ -216,6 +217,7 @@ export function MdEditor({
   readOnly = false,
   breaks = true,
   onImageUpload,
+  onImageInserted,
 }: MdEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -233,20 +235,134 @@ export function MdEditor({
   const [linkHref, setLinkHref] = useState('');
   const [linkError, setLinkError] = useState('');
   const linkRangeRef = useRef({ start: 0, end: 0 });
+  const historyPastRef = useRef<string[]>([]);
+  const historyFutureRef = useRef<string[]>([]);
+  const applyingHistoryRef = useRef(false);
+  const typingOriginRef = useRef<string | null>(null);
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const valueRef = useRef('');
+  const [historyTick, setHistoryTick] = useState(0);
 
   const isControlled = value !== undefined;
   const markdown = isControlled ? value : inner;
+  valueRef.current = markdown;
   const currentMode = mode ?? innerMode;
   const heightStyle = typeof height === 'number' ? `${height}px` : height;
   const toolsDisabled = disabled || readOnly;
+  // historyTick forces a re-render so canUndo/canRedo stay in sync with refs.
+  const canUndo =
+    historyTick >= 0 &&
+    (typingOriginRef.current !== null || historyPastRef.current.length > 0);
+  const canRedo = historyTick >= 0 && historyFutureRef.current.length > 0;
 
-  const setMarkdown = useCallback(
+  const applyValue = useCallback(
     (next: string) => {
       if (!isControlled) setInner(next);
       onChange?.(next);
     },
     [isControlled, onChange],
   );
+
+  const pushHistory = useCallback((snapshot: string) => {
+    if (applyingHistoryRef.current) return;
+    const past = historyPastRef.current;
+    if (past[past.length - 1] === snapshot) return;
+    historyPastRef.current = [...past.slice(-(MAX_HISTORY - 1)), snapshot];
+    historyFutureRef.current = [];
+    setHistoryTick((tick) => tick + 1);
+  }, []);
+
+  const flushTypingHistory = useCallback(() => {
+    if (typingTimerRef.current) {
+      clearTimeout(typingTimerRef.current);
+      typingTimerRef.current = null;
+    }
+    const origin = typingOriginRef.current;
+    if (origin === null) return;
+    typingOriginRef.current = null;
+    if (origin !== valueRef.current) pushHistory(origin);
+  }, [pushHistory]);
+
+  const setMarkdown = useCallback(
+    (next: string) => {
+      flushTypingHistory();
+      pushHistory(valueRef.current);
+      applyValue(next);
+    },
+    [applyValue, flushTypingHistory, pushHistory],
+  );
+
+  const setMarkdownFromInput = useCallback(
+    (next: string) => {
+      if (typingOriginRef.current === null) {
+        typingOriginRef.current = valueRef.current;
+        setHistoryTick((tick) => tick + 1);
+      }
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+      typingTimerRef.current = setTimeout(() => {
+        typingTimerRef.current = null;
+        const origin = typingOriginRef.current;
+        typingOriginRef.current = null;
+        if (origin !== null && origin !== valueRef.current) pushHistory(origin);
+        setHistoryTick((tick) => tick + 1);
+      }, HISTORY_DEBOUNCE_MS);
+      applyValue(next);
+    },
+    [applyValue, pushHistory],
+  );
+
+  const undo = useCallback(() => {
+    if (disabled || readOnly) return;
+    if (typingTimerRef.current) {
+      clearTimeout(typingTimerRef.current);
+      typingTimerRef.current = null;
+    }
+    if (typingOriginRef.current !== null) {
+      const restore = typingOriginRef.current;
+      typingOriginRef.current = null;
+      applyingHistoryRef.current = true;
+      applyValue(restore);
+      applyingHistoryRef.current = false;
+      setHistoryTick((tick) => tick + 1);
+      requestAnimationFrame(() => textareaRef.current?.focus());
+      return;
+    }
+    const past = historyPastRef.current;
+    if (!past.length) return;
+    const prev = past[past.length - 1]!;
+    historyPastRef.current = past.slice(0, -1);
+    historyFutureRef.current = [...historyFutureRef.current, valueRef.current];
+    applyingHistoryRef.current = true;
+    applyValue(prev);
+    applyingHistoryRef.current = false;
+    setHistoryTick((tick) => tick + 1);
+    requestAnimationFrame(() => textareaRef.current?.focus());
+  }, [applyValue, disabled, readOnly]);
+
+  const redo = useCallback(() => {
+    if (disabled || readOnly) return;
+    if (typingTimerRef.current) {
+      clearTimeout(typingTimerRef.current);
+      typingTimerRef.current = null;
+    }
+    typingOriginRef.current = null;
+    const future = historyFutureRef.current;
+    if (!future.length) return;
+    const next = future[future.length - 1]!;
+    historyFutureRef.current = future.slice(0, -1);
+    historyPastRef.current = [...historyPastRef.current, valueRef.current];
+    applyingHistoryRef.current = true;
+    applyValue(next);
+    applyingHistoryRef.current = false;
+    setHistoryTick((tick) => tick + 1);
+    requestAnimationFrame(() => textareaRef.current?.focus());
+  }, [applyValue, disabled, readOnly]);
+
+  useEffect(() => {
+    return () => {
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+    };
+  }, []);
 
   const setCurrentMode = (next: MdEditorMode) => {
     if (mode === undefined) setInnerMode(next);
@@ -281,12 +397,13 @@ export function MdEditor({
     async (files: FileList | File[], altOverride?: string) => {
       const list = Array.from(files).filter((file) => file.type.startsWith('image/') || file.name.endsWith('.svg'));
       for (const file of list) {
-        const url = onImageUpload ? await onImageUpload(file) : await readFileUrl(file);
+        const url = onImageUpload ? await onImageUpload(file) : await readFileAsDataUrl(file);
         const alt = altOverride || file.name.replace(/\.[^.]+$/, '') || 'image';
         insertImageUrl(url, alt);
+        onImageInserted?.({ file, url, alt });
       }
     },
-    [insertImageUrl, onImageUpload],
+    [insertImageUrl, onImageInserted, onImageUpload],
   );
 
   const resetImageDialog = () => {
@@ -398,6 +515,19 @@ export function MdEditor({
   return (
     <div className={cn('a2z-md-editor overflow-hidden rounded-lg border border-gray-200 bg-white', className)}>
       <div className="flex flex-wrap items-center gap-1 border-b border-gray-200 bg-gray-50 px-2 py-1">
+        <IconButton
+          label="Undo"
+          title="Undo (Ctrl+Z)"
+          disabled={toolsDisabled || !canUndo}
+          onClick={undo}
+        />
+        <IconButton
+          label="Redo"
+          title="Redo (Ctrl+Y)"
+          disabled={toolsDisabled || !canRedo}
+          onClick={redo}
+        />
+        <span className="mx-1 h-4 w-px bg-gray-200" />
         {HEADING_LEVELS.map((level) => (
           <IconButton
             key={`h${level}`}
@@ -477,20 +607,31 @@ export function MdEditor({
           disabled={disabled}
           readOnly={readOnly}
           placeholder={placeholder}
-          onChange={(event) => setMarkdown(event.target.value)}
+          onChange={(event) => setMarkdownFromInput(event.target.value)}
           onKeyDown={(event) => {
             if (!(event.ctrlKey || event.metaKey) || !textareaRef.current) return;
+            const key = event.key.toLowerCase();
+            if (key === 'z' && !event.shiftKey) {
+              event.preventDefault();
+              undo();
+              return;
+            }
+            if (key === 'y' || (key === 'z' && event.shiftKey)) {
+              event.preventDefault();
+              redo();
+              return;
+            }
             const editorCtx = { textarea: textareaRef.current, value: markdown, setValue: setMarkdown };
-            if (event.key === 'b') {
+            if (key === 'b') {
               event.preventDefault();
               applyWrap(editorCtx, '**');
-            } else if (event.key === 'i') {
+            } else if (key === 'i') {
               event.preventDefault();
               applyWrap(editorCtx, '*');
-            } else if (event.key === 'u') {
+            } else if (key === 'u') {
               event.preventDefault();
               applyWrap(editorCtx, '<u>', '</u>');
-            } else if (event.key === 'k') {
+            } else if (key === 'k') {
               event.preventDefault();
               openLinkDialog();
             }
