@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { cn } from '../../utils';
+import { highlightCode } from './highlightCode';
 import { HtmlAst } from './htmlAst';
 import { MdBlock, MdInline, parseInline, parseMarkdown, ParseMarkdownOptions } from './parseMarkdown';
 
@@ -193,7 +194,12 @@ function renderInline(nodes: MdInline[], keyPrefix: string): React.ReactNode[] {
   });
 }
 
-function renderBlocks(blocks: MdBlock[], keyPrefix: string): React.ReactNode[] {
+function renderBlocks(
+  blocks: MdBlock[],
+  keyPrefix: string,
+  options: { highlightCodeBlocks?: boolean; onTaskToggle?: (index: number, checked: boolean) => void },
+  taskCounter: { value: number },
+): React.ReactNode[] {
   return blocks.map((block, index) => {
     const key = `${keyPrefix}-${index}`;
     switch (block.type) {
@@ -225,36 +231,55 @@ function renderBlocks(blocks: MdBlock[], keyPrefix: string): React.ReactNode[] {
             key={key}
             className="my-3 overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm text-gray-100"
           >
-            <code className={block.lang ? `language-${block.lang}` : undefined}>{block.value}</code>
+            <code className={block.lang ? `language-${block.lang}` : undefined}>
+              {options.highlightCodeBlocks ? highlightCode(block.value, block.lang) : block.value}
+            </code>
           </pre>
         );
       case 'blockquote':
         return (
           <blockquote key={key} className="my-3 border-l-4 border-gray-300 pl-4 text-gray-600">
-            {renderBlocks(block.children, key)}
+            {renderBlocks(block.children, key, options, taskCounter)}
           </blockquote>
         );
       case 'list': {
         const Tag = block.ordered ? 'ol' : 'ul';
+        const hasTasks = block.items.some((item) => item.checked !== null);
         return (
           <Tag
             key={key}
             start={block.ordered ? block.start : undefined}
-            className={cn('my-3 ps-6', block.ordered ? 'list-decimal' : 'list-disc')}
+            className={cn(
+              'my-3',
+              hasTasks ? 'list-none ps-0' : block.ordered ? 'list-decimal ps-6' : 'list-disc ps-6',
+            )}
           >
-            {block.items.map((item, itemIndex) => (
-              <li key={`${key}-item-${itemIndex}`} className="my-1">
-                {item.checked !== null && (
-                  <input
-                    type="checkbox"
-                    checked={item.checked}
-                    readOnly
-                    className="me-2 align-middle"
-                  />
-                )}
-                {renderBlocks(item.children, `${key}-item-${itemIndex}`)}
-              </li>
-            ))}
+            {block.items.map((item, itemIndex) => {
+              const taskIndex = item.checked !== null ? taskCounter.value++ : -1;
+              return (
+                <li
+                  key={`${key}-item-${itemIndex}`}
+                  className={cn('my-1', hasTasks && 'flex items-start gap-2')}
+                >
+                  {item.checked !== null && (
+                    <input
+                      type="checkbox"
+                      checked={item.checked}
+                      readOnly={!options.onTaskToggle}
+                      onChange={
+                        options.onTaskToggle
+                          ? (event) => options.onTaskToggle?.(taskIndex, event.target.checked)
+                          : undefined
+                      }
+                      className="mt-1.5 shrink-0"
+                    />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    {renderBlocks(item.children, `${key}-item-${itemIndex}`, options, taskCounter)}
+                  </div>
+                </li>
+              );
+            })}
           </Tag>
         );
       }
@@ -312,11 +337,23 @@ export type MdProps = {
   children?: string;
   className?: string;
   breaks?: boolean;
+  /** Lightweight syntax coloring for fenced code blocks. Default `true`. */
+  highlightCode?: boolean;
+  /** When set, task-list checkboxes are interactive. */
+  onTaskToggle?: (index: number, checked: boolean) => void;
 } & ParseMarkdownOptions;
 
-export function Md({ value, children, className, breaks = true }: MdProps) {
+export function Md({
+  value,
+  children,
+  className,
+  breaks = true,
+  highlightCode: highlightCodeBlocks = true,
+  onTaskToggle,
+}: MdProps) {
   const source = value ?? children ?? '';
   const blocks = parseMarkdown(source, { breaks });
+  const taskCounter = { value: 0 };
 
   return (
     <div
@@ -328,7 +365,7 @@ export function Md({ value, children, className, breaks = true }: MdProps) {
         className,
       )}
     >
-      {renderBlocks(blocks, 'md')}
+      {renderBlocks(blocks, 'md', { highlightCodeBlocks, onTaskToggle }, taskCounter)}
     </div>
   );
 }

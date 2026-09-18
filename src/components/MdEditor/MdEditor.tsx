@@ -1,14 +1,51 @@
 'use client';
 
 import * as React from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 import { cn, readFileAsDataUrl } from '../../utils';
 import { isSafeUrl } from '../Md/htmlAst';
 import Button from '../Button/Button';
 import { CustomModal } from '../Modal/CustomModal';
 import { Md } from '../Md/Md';
+import {
+  continueListOnEnter,
+  countWords,
+  indentSelection,
+  outdentSelection,
+  toggleNthTask,
+} from './editorHelpers';
 
 export type MdEditorMode = 'edit' | 'preview' | 'split';
+
+export type MdEditorToolId =
+  | 'undo'
+  | 'redo'
+  | 'headings'
+  | 'style'
+  | 'align'
+  | 'blocks'
+  | 'task'
+  | 'link'
+  | 'image'
+  | 'fullscreen'
+  | 'modes';
+
+export type MdEditorHandle = {
+  focus: () => void;
+  blur: () => void;
+  getMarkdown: () => string;
+  setMarkdown: (value: string) => void;
+  insertMarkdown: (snippet: string) => void;
+  undo: () => void;
+  redo: () => void;
+};
 
 export type MdEditorProps = {
   value?: string;
@@ -25,13 +62,28 @@ export type MdEditorProps = {
   disabled?: boolean;
   readOnly?: boolean;
   breaks?: boolean;
+  /** Keep editor/preview scroll positions in sync (split mode). Default `true`. */
+  scrollSync?: boolean;
+  /** Show fullscreen toggle. Default `true`. */
+  fullscreen?: boolean;
+  /** Controlled fullscreen state. */
+  isFullscreen?: boolean;
+  defaultFullscreen?: boolean;
+  onFullscreenChange?: (fullscreen: boolean) => void;
+  /** Indent string for Tab. Default two spaces. */
+  indent?: string;
+  /** Show word/char status bar. Default `true`. */
+  showStatus?: boolean;
+  /** Hide built-in toolbar groups/buttons. */
+  hideTools?: MdEditorToolId[];
+  /** Extra nodes rendered at the end of the toolbar (before mode toggles). */
+  extraTools?: React.ReactNode;
   /**
    * Resolve an image file to a URL inserted into markdown.
    * Omit to use the built-in {@link readFileAsDataUrl} (local data URL).
-   * Pass your own for remote uploads (S3, API, etc.).
    */
   onImageUpload?: (file: File) => Promise<string> | string;
-  /** Fires after an image URL is resolved and inserted (default or custom upload). */
+  /** Fires after an image URL is resolved and inserted. */
   onImageInserted?: (info: { file: File; url: string; alt: string }) => void;
 };
 
@@ -201,28 +253,47 @@ function IconButton({
   );
 }
 
-export function MdEditor({
-  value,
-  defaultValue = '',
-  onChange,
-  placeholder = 'Write markdown…',
-  className,
-  textareaClassName,
-  previewClassName,
-  height = 360,
-  mode,
-  defaultMode = 'split',
-  onModeChange,
-  disabled = false,
-  readOnly = false,
-  breaks = true,
-  onImageUpload,
-  onImageInserted,
-}: MdEditorProps) {
+function Separator() {
+  return <span className="mx-1 h-4 w-px bg-gray-200" />;
+}
+
+export const MdEditor = forwardRef<MdEditorHandle, MdEditorProps>(function MdEditor(
+  {
+    value,
+    defaultValue = '',
+    onChange,
+    placeholder = 'Write markdown…',
+    className,
+    textareaClassName,
+    previewClassName,
+    height = 360,
+    mode,
+    defaultMode = 'split',
+    onModeChange,
+    disabled = false,
+    readOnly = false,
+    breaks = true,
+    scrollSync = true,
+    fullscreen: fullscreenEnabled = true,
+    isFullscreen,
+    defaultFullscreen = false,
+    onFullscreenChange,
+    indent = '  ',
+    showStatus = true,
+    hideTools = [],
+    extraTools,
+    onImageUpload,
+    onImageInserted,
+  },
+  ref,
+) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const syncingScrollRef = useRef(false);
   const [inner, setInner] = useState(defaultValue);
   const [innerMode, setInnerMode] = useState<MdEditorMode>(defaultMode);
+  const [innerFullscreen, setInnerFullscreen] = useState(defaultFullscreen);
   const [dragging, setDragging] = useState(false);
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -247,9 +318,10 @@ export function MdEditor({
   const markdown = isControlled ? value : inner;
   valueRef.current = markdown;
   const currentMode = mode ?? innerMode;
-  const heightStyle = typeof height === 'number' ? `${height}px` : height;
+  const fullscreen = isFullscreen ?? innerFullscreen;
+  const heightStyle = fullscreen ? '100%' : typeof height === 'number' ? `${height}px` : height;
   const toolsDisabled = disabled || readOnly;
-  // historyTick forces a re-render so canUndo/canRedo stay in sync with refs.
+  const hidden = new Set(hideTools);
   const canUndo =
     historyTick >= 0 &&
     (typingOriginRef.current !== null || historyPastRef.current.length > 0);
@@ -358,11 +430,67 @@ export function MdEditor({
     requestAnimationFrame(() => textareaRef.current?.focus());
   }, [applyValue, disabled, readOnly]);
 
+  const setFullscreen = useCallback(
+    (next: boolean) => {
+      if (isFullscreen === undefined) setInnerFullscreen(next);
+      onFullscreenChange?.(next);
+    },
+    [isFullscreen, onFullscreenChange],
+  );
+
+  const insertMarkdownAtCursor = useCallback(
+    (snippet: string) => {
+      const textarea = textareaRef.current;
+      if (!textarea) {
+        setMarkdown(valueRef.current + snippet);
+        return;
+      }
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const next = valueRef.current.slice(0, start) + snippet + valueRef.current.slice(end);
+      setMarkdown(next);
+      requestAnimationFrame(() => {
+        textarea.focus();
+        const pos = start + snippet.length;
+        textarea.setSelectionRange(pos, pos);
+      });
+    },
+    [setMarkdown],
+  );
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus: () => textareaRef.current?.focus(),
+      blur: () => textareaRef.current?.blur(),
+      getMarkdown: () => valueRef.current,
+      setMarkdown: (next) => setMarkdown(next),
+      insertMarkdown: (snippet) => insertMarkdownAtCursor(snippet),
+      undo,
+      redo,
+    }),
+    [insertMarkdownAtCursor, redo, setMarkdown, undo],
+  );
+
   useEffect(() => {
     return () => {
       if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (!fullscreen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setFullscreen(false);
+    };
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [fullscreen, setFullscreen]);
 
   const setCurrentMode = (next: MdEditorMode) => {
     if (mode === undefined) setInnerMode(next);
@@ -379,6 +507,22 @@ export function MdEditor({
     const ctx = getCtx();
     if (!ctx) return;
     tool.run(ctx);
+  };
+
+  const syncScroll = (source: 'editor' | 'preview') => {
+    if (!scrollSync || currentMode !== 'split' || syncingScrollRef.current) return;
+    const editor = textareaRef.current;
+    const preview = previewRef.current;
+    if (!editor || !preview) return;
+    syncingScrollRef.current = true;
+    const from = source === 'editor' ? editor : preview;
+    const to = source === 'editor' ? preview : editor;
+    const range = from.scrollHeight - from.clientHeight;
+    const ratio = range > 0 ? from.scrollTop / range : 0;
+    to.scrollTop = ratio * (to.scrollHeight - to.clientHeight);
+    requestAnimationFrame(() => {
+      syncingScrollRef.current = false;
+    });
   };
 
   const insertImageUrl = useCallback(
@@ -509,96 +653,153 @@ export function MdEditor({
     });
   };
 
+  const applySelectionTransform = (
+    transform: (value: string, start: number, end: number) => {
+      value: string;
+      selectionStart: number;
+      selectionEnd: number;
+    },
+  ) => {
+    const textarea = textareaRef.current;
+    if (!textarea || toolsDisabled) return;
+    const result = transform(markdown, textarea.selectionStart, textarea.selectionEnd);
+    setMarkdown(result.value);
+    requestAnimationFrame(() => {
+      textarea.focus();
+      textarea.setSelectionRange(result.selectionStart, result.selectionEnd);
+    });
+  };
+
   const showEditor = currentMode === 'edit' || currentMode === 'split';
   const showPreview = currentMode === 'preview' || currentMode === 'split';
+  const words = countWords(markdown);
+  const chars = markdown.length;
 
   return (
-    <div className={cn('a2z-md-editor overflow-hidden rounded-lg border border-gray-200 bg-white', className)}>
+    <div
+      className={cn(
+        'a2z-md-editor overflow-hidden rounded-lg border border-gray-200 bg-white',
+        fullscreen && 'fixed inset-0 z-[1000] flex flex-col rounded-none border-0',
+        className,
+      )}
+    >
       <div className="flex flex-wrap items-center gap-1 border-b border-gray-200 bg-gray-50 px-2 py-1">
-        <IconButton
-          label="Undo"
-          title="Undo (Ctrl+Z)"
-          disabled={toolsDisabled || !canUndo}
-          onClick={undo}
-        />
-        <IconButton
-          label="Redo"
-          title="Redo (Ctrl+Y)"
-          disabled={toolsDisabled || !canRedo}
-          onClick={redo}
-        />
-        <span className="mx-1 h-4 w-px bg-gray-200" />
-        {HEADING_LEVELS.map((level) => (
+        {!hidden.has('undo') && (
+          <IconButton label="Undo" title="Undo (Ctrl+Z)" disabled={toolsDisabled || !canUndo} onClick={undo} />
+        )}
+        {!hidden.has('redo') && (
+          <IconButton label="Redo" title="Redo (Ctrl+Y)" disabled={toolsDisabled || !canRedo} onClick={redo} />
+        )}
+        {(!hidden.has('undo') || !hidden.has('redo')) && <Separator />}
+
+        {!hidden.has('headings') &&
+          HEADING_LEVELS.map((level) => (
+            <IconButton
+              key={`h${level}`}
+              label={`H${level}`}
+              title={`Heading ${level}`}
+              disabled={toolsDisabled}
+              onClick={() => {
+                const ctx = getCtx();
+                if (ctx) applyHeading(ctx, level);
+              }}
+            />
+          ))}
+        {!hidden.has('headings') && <Separator />}
+
+        {!hidden.has('style') &&
+          STYLE_TOOLS.map((tool) => (
+            <IconButton
+              key={tool.title}
+              label={tool.label}
+              title={tool.title}
+              disabled={toolsDisabled}
+              onClick={() => runTool(tool)}
+            />
+          ))}
+        {!hidden.has('style') && <Separator />}
+
+        {!hidden.has('align') &&
+          ALIGN_TOOLS.map((tool) => (
+            <IconButton
+              key={tool.align}
+              label={tool.label}
+              title={tool.title}
+              disabled={toolsDisabled}
+              onClick={() => {
+                const ctx = getCtx();
+                if (ctx) applyAlign(ctx, tool.align);
+              }}
+            />
+          ))}
+        {!hidden.has('align') && <Separator />}
+
+        {!hidden.has('blocks') &&
+          BLOCK_TOOLS.map((tool) => (
+            <IconButton
+              key={tool.title}
+              label={tool.label}
+              title={tool.title}
+              disabled={toolsDisabled}
+              onClick={() => runTool(tool)}
+            />
+          ))}
+
+        {!hidden.has('task') && (
           <IconButton
-            key={`h${level}`}
-            label={`H${level}`}
-            title={`Heading ${level}`}
+            label="Task"
+            title="Task list item"
             disabled={toolsDisabled}
             onClick={() => {
               const ctx = getCtx();
-              if (ctx) applyHeading(ctx, level);
+              if (ctx) applyLinePrefix(ctx, '- [ ] ');
             }}
           />
-        ))}
-        <span className="mx-1 h-4 w-px bg-gray-200" />
-        {STYLE_TOOLS.map((tool) => (
+        )}
+
+        {!hidden.has('link') && (
+          <IconButton label="Link" title="Insert link (Ctrl+K)" disabled={toolsDisabled} onClick={openLinkDialog} />
+        )}
+        {!hidden.has('image') && (
           <IconButton
-            key={tool.title}
-            label={tool.label}
-            title={tool.title}
+            label="Img"
+            title="Upload image"
             disabled={toolsDisabled}
-            onClick={() => runTool(tool)}
+            onClick={() => setImageDialogOpen(true)}
           />
-        ))}
-        <span className="mx-1 h-4 w-px bg-gray-200" />
-        {ALIGN_TOOLS.map((tool) => (
+        )}
+
+        {extraTools}
+
+        <Separator />
+
+        {!hidden.has('modes') &&
+          (['edit', 'split', 'preview'] as MdEditorMode[]).map((item) => (
+            <IconButton
+              key={item}
+              label={item}
+              title={item}
+              active={currentMode === item}
+              onClick={() => setCurrentMode(item)}
+            />
+          ))}
+
+        {fullscreenEnabled && !hidden.has('fullscreen') && (
           <IconButton
-            key={tool.align}
-            label={tool.label}
-            title={tool.title}
-            disabled={toolsDisabled}
-            onClick={() => {
-              const ctx = getCtx();
-              if (ctx) applyAlign(ctx, tool.align);
-            }}
+            label={fullscreen ? 'Exit' : 'Full'}
+            title={fullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen'}
+            active={fullscreen}
+            onClick={() => setFullscreen(!fullscreen)}
           />
-        ))}
-        <span className="mx-1 h-4 w-px bg-gray-200" />
-        {BLOCK_TOOLS.map((tool) => (
-          <IconButton
-            key={tool.title}
-            label={tool.label}
-            title={tool.title}
-            disabled={toolsDisabled}
-            onClick={() => runTool(tool)}
-          />
-        ))}
-        <IconButton
-          label="🔗"
-          title="Insert link"
-          disabled={toolsDisabled}
-          onClick={openLinkDialog}
-        />
-        <IconButton
-          label="🖼"
-          title="Upload image"
-          disabled={toolsDisabled}
-          onClick={() => setImageDialogOpen(true)}
-        />
-        <span className="mx-1 h-4 w-px bg-gray-200" />
-        {(['edit', 'split', 'preview'] as MdEditorMode[]).map((item) => (
-          <IconButton
-            key={item}
-            label={item}
-            title={item}
-            active={currentMode === item}
-            onClick={() => setCurrentMode(item)}
-          />
-        ))}
+        )}
       </div>
 
       <div
-        className={cn('grid min-h-0', currentMode === 'split' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1')}
+        className={cn(
+          'grid min-h-0',
+          fullscreen && 'flex-1',
+          currentMode === 'split' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1',
+        )}
         style={{ height: heightStyle }}
       >
         <textarea
@@ -608,8 +809,33 @@ export function MdEditor({
           readOnly={readOnly}
           placeholder={placeholder}
           onChange={(event) => setMarkdownFromInput(event.target.value)}
+          onScroll={() => syncScroll('editor')}
           onKeyDown={(event) => {
-            if (!(event.ctrlKey || event.metaKey) || !textareaRef.current) return;
+            const textarea = textareaRef.current;
+            if (!textarea) return;
+
+            if (event.key === 'Tab') {
+              event.preventDefault();
+              applySelectionTransform((value, start, end) =>
+                event.shiftKey ? outdentSelection(value, start, end, indent) : indentSelection(value, start, end, indent),
+              );
+              return;
+            }
+
+            if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey) {
+              const continued = continueListOnEnter(markdown, textarea.selectionStart);
+              if (continued) {
+                event.preventDefault();
+                setMarkdown(continued.value);
+                requestAnimationFrame(() => {
+                  textarea.focus();
+                  textarea.setSelectionRange(continued.selection, continued.selection);
+                });
+                return;
+              }
+            }
+
+            if (!(event.ctrlKey || event.metaKey)) return;
             const key = event.key.toLowerCase();
             if (key === 'z' && !event.shiftKey) {
               event.preventDefault();
@@ -621,7 +847,7 @@ export function MdEditor({
               redo();
               return;
             }
-            const editorCtx = { textarea: textareaRef.current, value: markdown, setValue: setMarkdown };
+            const editorCtx = { textarea, value: markdown, setValue: setMarkdown };
             if (key === 'b') {
               event.preventDefault();
               applyWrap(editorCtx, '**');
@@ -666,15 +892,36 @@ export function MdEditor({
         />
 
         {showPreview && (
-          <div className={cn('h-full overflow-auto p-3', previewClassName)}>
+          <div
+            ref={previewRef}
+            onScroll={() => syncScroll('preview')}
+            className={cn('h-full overflow-auto p-3', previewClassName)}
+          >
             {markdown.trim() ? (
-              <Md value={markdown} breaks={breaks} />
+              <Md
+                value={markdown}
+                breaks={breaks}
+                onTaskToggle={
+                  toolsDisabled
+                    ? undefined
+                    : (index, checked) => setMarkdown(toggleNthTask(markdown, index, checked))
+                }
+              />
             ) : (
               <p className="text-sm text-gray-400">Preview</p>
             )}
           </div>
         )}
       </div>
+
+      {showStatus && (
+        <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-3 py-1 text-xs text-gray-500">
+          <span>
+            {words} word{words === 1 ? '' : 's'} · {chars} char{chars === 1 ? '' : 's'}
+          </span>
+          <span>Tab indent · Enter continues lists · Esc exits fullscreen</span>
+        </div>
+      )}
 
       <CustomModal
         isOpen={imageDialogOpen}
@@ -708,9 +955,7 @@ export function MdEditor({
             )}
           </label>
 
-          {imageFile && (
-            <p className="truncate text-xs text-gray-500">{imageFile.name}</p>
-          )}
+          {imageFile && <p className="truncate text-xs text-gray-500">{imageFile.name}</p>}
 
           <label className="block">
             <span className="mb-1 block text-sm font-medium text-gray-700">Alt text</span>
@@ -779,6 +1024,8 @@ export function MdEditor({
       </CustomModal>
     </div>
   );
-}
+});
+
+MdEditor.displayName = 'MdEditor';
 
 export default MdEditor;
