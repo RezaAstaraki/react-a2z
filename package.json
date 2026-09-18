@@ -43,6 +43,16 @@
       "import": "./dist/esm/components/PearlButton/PearlButton.js",
       "require": "./dist/cjs/components/PearlButton/PearlButton.js"
     },
+    "./Md": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/components/Md/index.js",
+      "require": "./dist/cjs/components/Md/index.js"
+    },
+    "./MdEditor": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/components/MdEditor/index.js",
+      "require": "./dist/cjs/components/MdEditor/index.js"
+    },
     "./hooks": {
       "types": "./dist/index.d.ts",
       "import": "./dist/esm/hooks/index.js",
