@@ -53,6 +53,11 @@
       "import": "./dist/esm/components/MdEditor/index.js",
       "require": "./dist/cjs/components/MdEditor/index.js"
     },
+    "./Counter": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/components/Counter/index.js",
+      "require": "./dist/cjs/components/Counter/index.js"
+    },
     "./hooks": {
       "types": "./dist/index.d.ts",
       "import": "./dist/esm/hooks/index.js",
