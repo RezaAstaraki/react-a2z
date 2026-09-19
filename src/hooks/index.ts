@@ -21,3 +21,6 @@ export type {
   UseElementSizeOptions,
   UseElementSizeResult,
 } from './useElementSize';
+
+export { useInView } from './useInView';
+export type { UseInViewOptions, UseInViewResult } from './useInView';
