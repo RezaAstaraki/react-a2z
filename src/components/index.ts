@@ -4,9 +4,10 @@ import ClientLogger from "./ClientLogger/Wrapper";
 import PearlButton, { PearlButtonProps } from "./PearlButton/PearlButton";
 import ColorPicker, { ColorPickerProps } from "./ColorPicker/ColorPicker";
 import GradientMaker, { GradientMakerProps } from "./ColorPicker/GradientMaker";
+import Slider, { SliderProps } from "./Slider/Slider";
 
-export { Button, Input, ClientLogger, PearlButton, ColorPicker, GradientMaker };
-export type { PearlButtonProps, ColorPickerProps, GradientMakerProps };
+export { Button, Input, ClientLogger, PearlButton, ColorPicker, GradientMaker, Slider };
+export type { PearlButtonProps, ColorPickerProps, GradientMakerProps, SliderProps };
 export * from "./Modal";
 export * from "./Toast";
 export { Md } from "./Md";

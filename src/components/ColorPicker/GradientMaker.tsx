@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Slider from "../Slider/Slider";
 
 // Predefined gradient presets inspired by cssgradient.io
 const GRADIENT_PRESETS = [
@@ -114,16 +115,19 @@ export default function GradientMaker({
 
       {/* Angle Control */}
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-gray-700">
-          Angle: <span className="font-mono">{angle}°</span>
-        </label>
-        <input
-          type="range"
-          min="0"
-          max="360"
+        <Slider
+          label="Angle"
+          min={0}
+          max={360}
+          step={1}
+          suffix="°"
           value={angle}
-          onChange={handleAngleChange}
-          className="w-full"
+          onChange={(e) => {
+            setAngle(Number(e));
+            const gradient = buildGradient(customColors, Number(e));
+            setSelectedGradient(gradient);
+            onGradientChange?.(gradient);
+          }}
         />
       </div>
 
