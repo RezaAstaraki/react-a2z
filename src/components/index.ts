@@ -1,10 +1,12 @@
 import Button from "./Button/Button";
 import Input from "./Input/Input";
 import ClientLogger from "./ClientLogger/Wrapper";
-import PearlButton from "./PearlButton/PearlButton";
+import PearlButton, { PearlButtonProps } from "./PearlButton/PearlButton";
+import ColorPicker, { ColorPickerProps } from "./ColorPicker/ColorPicker";
+import GradientMaker, { GradientMakerProps } from "./ColorPicker/GradientMaker";
 
-export { Button, Input, ClientLogger, PearlButton };
-export type { PearlButtonProps } from "./PearlButton";
+export { Button, Input, ClientLogger, PearlButton, ColorPicker, GradientMaker };
+export type { PearlButtonProps, ColorPickerProps, GradientMakerProps };
 export * from "./Modal";
 export * from "./Toast";
 export { Md } from "./Md";

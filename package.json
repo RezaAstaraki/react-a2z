@@ -43,6 +43,11 @@
       "import": "./dist/esm/components/PearlButton/PearlButton.js",
       "require": "./dist/cjs/components/PearlButton/PearlButton.js"
     },
+    "./ColorPicker": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/components/ColorPicker/index.js",
+      "require": "./dist/cjs/components/ColorPicker/index.js"
+    },
     "./Md": {
       "types": "./dist/index.d.ts",
       "import": "./dist/esm/components/Md/index.js",
