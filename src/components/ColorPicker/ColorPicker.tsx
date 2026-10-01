@@ -6,12 +6,16 @@ export interface ColorPickerProps {
   label?: string;
   defaultValue?: string;
   onChange?: (color: string) => void;
+  presetColors?: string[];
+  showPresets?: boolean;
 }
 
 export default function ColorPicker({
   label = "Color",
   defaultValue = "#ff0000",
   onChange,
+  presetColors,
+  showPresets = true,
 }: ColorPickerProps) {
   const [color, setColor] = useState(defaultValue);
 
@@ -21,18 +25,6 @@ export default function ColorPicker({
     onChange?.(newColor);
   };
 
-  const presetColors = [
-    "#ff0000", // red
-    "#00ff00", // green
-    "#0000ff", // blue
-    "#ffff00", // yellow
-    "#ff00ff", // magenta
-    "#00ffff", // cyan
-    "#ffa500", // orange
-    "#800080", // purple
-    "#008080", // teal
-    "#808080", // gray
-  ];
 
   return (
     <div className="flex flex-col gap-2">
@@ -45,7 +37,7 @@ export default function ColorPicker({
           className="w-10 h-10 p-1 border border-gray-300 rounded cursor-pointer"
         />
         <div className="flex flex-wrap gap-2">
-          {presetColors.map((c) => (
+          {(presetColors || ['#ff0000', '#00ff00']).map((c) => (
             <button
               key={c}
               type="button"
