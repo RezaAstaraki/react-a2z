@@ -5,13 +5,15 @@ import PearlButton from './PearlButton/PearlButton';
 import ColorPicker from './ColorPicker/ColorPicker';
 import GradientMaker from './ColorPicker/GradientMaker';
 import Slider from './Slider/Slider';
+import Tooltip from './Tooltip/Tooltip';
 
-export { Button, Input, ClientLogger, PearlButton, ColorPicker, GradientMaker, Slider };
+export { Button, Input, ClientLogger, PearlButton, ColorPicker, GradientMaker, Slider, Tooltip };
 
 export type { PearlButtonProps } from './PearlButton/PearlButton';
 export type { ColorPickerProps } from './ColorPicker/ColorPicker';
 export type { GradientMakerProps } from './ColorPicker/GradientMaker';
 export type { SliderProps } from './Slider/Slider';
+export type { TooltipProps } from './Tooltip/Tooltip';
 
 export * from './Modal';
 export * from './Toast';

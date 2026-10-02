@@ -63,6 +63,16 @@
       "import": "./dist/esm/components/Counter/index.js",
       "require": "./dist/cjs/components/Counter/index.js"
     },
+    "./Slider": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/components/Slider/Slider.js",
+      "require": "./dist/cjs/components/Slider/Slider.js"
+    },
+    "./Tooltip": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/components/Tooltip/Tooltip.js",
+      "require": "./dist/cjs/components/Tooltip/Tooltip.js"
+    },
     "./hooks": {
       "types": "./dist/index.d.ts",
       "import": "./dist/esm/hooks/index.js",
