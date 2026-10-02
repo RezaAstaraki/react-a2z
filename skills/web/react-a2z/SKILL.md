@@ -122,6 +122,21 @@ Example:
 />
 ```
 
+### Tooltip
+- **Two APIs:** shorthand (`content={…}` auto-wraps children in `Tooltip.Trigger` + `Tooltip.Content`) OR compound (`Tooltip.Trigger` + `Tooltip.Content`).
+- **Controlled + uncontrolled:** `open` / `defaultOpen` / `onOpenChange`.
+- **Props:** `placement` (`top|right|bottom|left`), `offset` (px), `delayDuration`,
+  `closeDelay`, `disabled`, `showArrow`, `container` (portal target, default `document.body`).
+- **Positioning:** `createPortal` + `position: fixed`, auto-flips when the preferred
+  side overflows, clamps to viewport. Recomputes on scroll/resize.
+- **Accessibility:** `role="tooltip"`, `useId` wires trigger `aria-describedby`,
+  Escape closes while open, focus opens immediately / blur closes.
+- **Styling:** `className` / `classNames={{ root, trigger, content, arrow }}` /
+  `style` / `styles`. Baked-in defaults (`bg-gray-900 text-white text-xs`, blue focus ring).
+- **Render prop:** `render` on `Tooltip.Content` receives
+  `{ ref, className, style, placement, side, open, contentId }`.
+- Files: `src/components/Tooltip/Tooltip.tsx`, `src/components/Tooltip/index.ts`.
+
 ### ColorPicker
 
 Controlled or uncontrolled. Props: `label`, `value`, `defaultValue`, `onChange`,
@@ -198,20 +213,34 @@ Client-side logger (`Wrapper` component for debugging).
 - `preserveDirectives()` plugin re-adds `"use client"` / `"use server"` to each
   chunk because Rollup strips them.
 
-## package.json exports
+## package.json exports — subpath rules
 
-Subpath exports exist for: `.`, `./Button`, `./Input`, `./Modal`, `./Toast`,
-`./PearlButton`, `./ColorPicker`, `./Md`, `./MdEditor`, `./Counter`, `./hooks`,
-`./tailwind`, `./tailwind.css`, `./styles.css`, `./PearlButton/styles.css`.
+Each subpath MUST point at a concrete emitted file, **not** at
+`dist/.../components/<Name>/index.js`. Rollup with `preserveModules` only emits
+an `index.js` for a component folder if the folder's `index.ts` is reachable
+from `src/index.ts` — and today the main barrel imports from `./X/X` directly,
+so those `index.js` files are **never produced**.
 
-**Add `./Slider` when convenient** (mirrors `./ColorPicker`):
+**Correct shape (matches `./Button`, `./Input`, `./PearlButton`, `./Slider`, `./Tooltip`):**
 
 ```json
-"./Slider": {
-  "types": "./dist/index.d.ts",
-  "import": "./dist/esm/components/Slider/index.js",
-  "require": "./dist/cjs/components/Slider/index.js"
+"./Tooltip": {
+  "types":   "./dist/index.d.ts",
+  "import":  "./dist/esm/components/Tooltip/Tooltip.js",
+  "require": "./dist/cjs/components/Tooltip/Tooltip.js"
 }
+```
+
+**Known broken (pre-existing):** `./Modal`, `./Toast`, `./ColorPicker`, `./Md`,
+`./MdEditor`, `./Counter` still target a non-existent `index.js`. Fix by either
+(a) repointing at the concrete file if it exists, or (b) making the folder
+barrel reachable from `src/index.ts` (via `export * from './X'`) so Rollup
+emits `index.js`.
+
+**Verification (run after every build):**
+
+```bash
+node -e "const p=require('./package.json'),fs=require('fs'); for (const [k,v] of Object.entries(p.exports)) { if (typeof v!=='object') continue; const ok=fs.existsSync(v.import); console.log(k.padEnd(16), ok?'OK':'MISSING', v.import); }"
 ```
 
 ## Consumer Setup
@@ -271,6 +300,7 @@ react-a2z/
 │   │   ├── PearlButton/
 │   │   ├── Slider/               # headless compound component
 │   │   ├── Toast/
+│   │   ├── Tooltip/              # portal, compound, two APIs
 │   │   └── index.ts
 │   ├── hooks/
 │   ├── utils/                    # cn, digit converters, form helpers
@@ -302,6 +332,10 @@ react-a2z/
 | Clipboard copy without try/catch                   | Wrap in try/catch; UI feedback via state                           |
 | Preset click didn't sync Slider angle              | Emit through a single `emit(colors, angle)` helper                 |
 | `export *` from a barrel with default export       | Default exports don't propagate — export named values explicitly   |
+| `package.json#exports` points at `dist/.../X/index.js` that Rollup never emits | Point at `X/X.js` (see subpath rules) — or make the folder barrel reachable from `src/index.ts` |
+| `sed -i '/…$/a …'` silently no-ops on CRLF files | Repo is CRLF; `$`-anchored patterns fail. Use `cat > file <<'EOF'` rewrites or `node -e` scripts, never blind `sed` |
+| Leftover `useState` + `useEffect(() => setX(true), [])` "mounted" flag | Remove it — `noUnusedLocals` catches it; SSR-safe code shouldn't need the pattern unless you branch on it |
+| Tooltip content silently missing on first render because `container` is `null` | `createPortal` needs a DOM node; return `null` from `Tooltip.Content` when `container` is falsy (SSR-safe) |
 
 ## Verification Checklist (for a new agent session)
 
@@ -337,6 +371,14 @@ grep -E "Slider|ColorPicker|GradientMaker" dist/index.d.ts
 ```
 
 Should show values and types for each.
+
+Then verify every subpath export resolves to an emitted file:
+
+```bash
+node -e "const p=require('./package.json'),fs=require('fs'); for (const [k,v] of Object.entries(p.exports)) { if (typeof v!=='object') continue; if (!fs.existsSync(v.import)) console.log('MISSING', k, v.import); }"
+```
+
+No output = all subpaths resolve.
 
 ## When Extending the Library
 
