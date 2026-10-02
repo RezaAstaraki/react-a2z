@@ -1,11 +1,5 @@
-/**
- * Slider.tsx
- * A dependency-free, headless, compound Slider component.
- * Supports controlled/uncontrolled values, ranges, vertical orientation,
- * keyboard/pointer interaction, render props, classNames & styles slots.
- */
-
 import * as React from 'react';
+import { cn } from '../../utils';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -64,7 +58,6 @@ export interface OutputRenderProps {
   className: string;
   style: React.CSSProperties;
   value: number | number[];
-  /** Convenience: value formatted with `formatValue` + `suffix`. */
   formatted: React.ReactNode;
 }
 
@@ -73,7 +66,6 @@ export interface LabelRenderProps {
   className: string;
   style: React.CSSProperties;
   value: number | number[];
-  /** Convenience: value formatted with `formatValue` + `suffix`. */
   formatted: React.ReactNode;
 }
 
@@ -96,7 +88,7 @@ export interface SliderProps {
   label?: React.ReactNode;
   /** Optional suffix appended to the formatted value (e.g. "°", "%"). */
   suffix?: React.ReactNode;
-  /** Custom value formatter. Receives the raw value, returns a node. */
+  /** Custom value formatter. */
   formatValue?: SliderValueFormatter;
   /** Whether to render the default output. Defaults to true. */
   showOutput?: boolean;
@@ -119,6 +111,36 @@ export interface SliderProps {
 
   children?: React.ReactNode;
 }
+
+/* ------------------------------------------------------------------ */
+/*  Default classes                                                    */
+/* ------------------------------------------------------------------ */
+
+const DEFAULT_ROOT_H = 'flex w-full flex-col gap-2';
+const DEFAULT_ROOT_V = 'flex h-full flex-col items-center gap-2';
+
+const DEFAULT_LABEL = 'text-sm font-medium text-gray-700';
+const DEFAULT_OUTPUT = 'text-sm text-gray-500';
+
+const DEFAULT_TRACK_H = 'relative h-2 w-full cursor-pointer rounded-full bg-gray-200';
+const DEFAULT_TRACK_V = 'relative h-full w-2 cursor-pointer rounded-full bg-gray-200';
+
+const DEFAULT_FILL_H = 'absolute inset-y-0 rounded-full bg-blue-600';
+const DEFAULT_FILL_V = 'absolute inset-x-0 rounded-full bg-blue-600';
+
+const DEFAULT_THUMB_H =
+  'absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full ' +
+  'border-2 border-blue-600 bg-white shadow ' +
+  'transition-shadow duration-150 ' +
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ' +
+  'disabled:pointer-events-none disabled:opacity-50';
+
+const DEFAULT_THUMB_V =
+  'absolute left-1/2 h-4 w-4 -translate-x-1/2 translate-y-1/2 rounded-full ' +
+  'border-2 border-blue-600 bg-white shadow ' +
+  'transition-shadow duration-150 ' +
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ' +
+  'disabled:pointer-events-none disabled:opacity-50';
 
 /* ------------------------------------------------------------------ */
 /*  Hook: useControllableState                                         */
@@ -149,7 +171,7 @@ function useControllableState<T>({
 }
 
 /* ------------------------------------------------------------------ */
-/*  Small utils                                                        */
+/*  Utils                                                              */
 /* ------------------------------------------------------------------ */
 
 function mergeRefs<T>(...refs: Array<React.Ref<T> | undefined>): React.RefCallback<T> {
@@ -171,12 +193,10 @@ function snapToStep(raw: number, step: number, min: number): number {
   return Math.round((raw - min) / safeStep) * safeStep + min;
 }
 
-/** Default value formatter — joins range values with an en dash. */
 function defaultFormat(value: number | number[]): React.ReactNode {
   return Array.isArray(value) ? value.join(' – ') : value;
 }
 
-/** Combine formatter + suffix into one node. */
 function formatWithSuffix(
   value: number | number[],
   formatValue?: SliderValueFormatter,
@@ -198,7 +218,6 @@ function formatWithSuffix(
 
 interface SliderContextValue {
   value: number | number[];
-
   setValue: (v: number | number[]) => void;
   commitValue: (v: number | number[]) => void;
   min: number;
@@ -212,9 +231,9 @@ interface SliderContextValue {
   styles?: SliderStyles;
   ariaLabel?: string;
   ariaLabelledBy?: string;
-  /** Formatter used by label + output. */
+  labelId: string;
+  hasLabel: boolean;
   formatValue?: SliderValueFormatter;
-  /** Suffix appended after formatted value. */
   suffix?: React.ReactNode;
 }
 
@@ -286,6 +305,9 @@ const SliderRoot = React.forwardRef<HTMLDivElement, SliderProps>(
 
     const values = React.useMemo(() => (Array.isArray(value) ? value : [value]), [value]);
 
+    const labelId = React.useId();
+    const hasLabel = label !== undefined || renderLabel !== undefined;
+
     const ctx: SliderContextValue = {
       value,
       setValue,
@@ -301,14 +323,19 @@ const SliderRoot = React.forwardRef<HTMLDivElement, SliderProps>(
       styles,
       ariaLabel,
       ariaLabelledBy,
+      labelId,
+      hasLabel,
       formatValue,
       suffix,
     };
 
-    const rootClassName = [classNames?.root, className].filter(Boolean).join(' ');
+    const isVertical = orientation === 'vertical';
 
-    // Only render label if provided (or if a renderLabel is given).
-    const hasLabel = label !== undefined || renderLabel !== undefined;
+    const rootClassName = cn(
+      isVertical ? DEFAULT_ROOT_V : DEFAULT_ROOT_H,
+      classNames?.root,
+      className,
+    );
 
     const defaultChildren = (
       <>
@@ -353,13 +380,13 @@ interface LabelProps {
 
 const SliderLabel = React.forwardRef<HTMLLabelElement, LabelProps>(
   ({ children, className, style, render }, forwardedRef) => {
-    const { value, classNames, styles, formatValue, suffix } = useSliderContext('Label');
+    const { value, classNames, styles, formatValue, suffix, labelId } = useSliderContext('Label');
 
     const formatted = formatWithSuffix(value, formatValue, suffix);
 
     const props: LabelRenderProps = {
       ref: forwardedRef,
-      className: [classNames?.label, className].filter(Boolean).join(' '),
+      className: cn(DEFAULT_LABEL, classNames?.label, className),
       style: { ...styles?.label, ...style },
       value,
       formatted,
@@ -368,7 +395,12 @@ const SliderLabel = React.forwardRef<HTMLLabelElement, LabelProps>(
     if (render) return <>{render(props)}</>;
 
     return (
-      <label ref={forwardedRef} className={props.className || undefined} style={props.style}>
+      <label
+        id={labelId}
+        ref={forwardedRef}
+        className={props.className || undefined}
+        style={props.style}
+      >
         {children ?? formatted}
       </label>
     );
@@ -396,9 +428,11 @@ const SliderTrack = React.forwardRef<HTMLDivElement, TrackProps>(
       [forwardedRef, trackRef],
     );
 
+    const isVertical = orientation === 'vertical';
+
     const props: TrackRenderProps = {
       ref: setRef,
-      className: [classNames?.track, className].filter(Boolean).join(' '),
+      className: cn(isVertical ? DEFAULT_TRACK_V : DEFAULT_TRACK_H, classNames?.track, className),
       style: { ...styles?.track, ...style },
       'data-orientation': orientation,
     };
@@ -434,14 +468,15 @@ const SliderFill = React.forwardRef<HTMLDivElement, FillProps>(
       b === undefined ? ((a - min) / span) * 100 : ((Math.max(a, b) - min) / span) * 100;
     const sizePct = Math.max(0, endPct - startPct);
 
-    const positionStyle: React.CSSProperties =
-      orientation === 'horizontal'
-        ? { left: `${startPct}%`, width: `${sizePct}%` }
-        : { bottom: `${startPct}%`, height: `${sizePct}%` };
+    const isVertical = orientation === 'vertical';
+
+    const positionStyle: React.CSSProperties = isVertical
+      ? { bottom: `${startPct}%`, height: `${sizePct}%` }
+      : { left: `${startPct}%`, width: `${sizePct}%` };
 
     const props: FillRenderProps = {
       ref: forwardedRef,
-      className: [classNames?.fill, className].filter(Boolean).join(' '),
+      className: cn(isVertical ? DEFAULT_FILL_V : DEFAULT_FILL_H, classNames?.fill, className),
       style: {
         ...styles?.fill,
         ...positionStyle,
@@ -495,12 +530,15 @@ const SliderThumb = React.forwardRef<HTMLDivElement, ThumbProps>(
       styles,
       ariaLabel,
       ariaLabelledBy,
+      labelId,
+      hasLabel,
     } = useSliderContext('Thumb');
 
     const values = React.useMemo(() => (Array.isArray(value) ? value : [value]), [value]);
     const currentValue = values[index] ?? min;
     const isRange = Array.isArray(value) && values.length > 1;
 
+    /* ----- Pointer drag ----- */
     const handlePointerDown = React.useCallback(
       (e: React.PointerEvent<HTMLDivElement>) => {
         if (disabled) return;
@@ -572,6 +610,7 @@ const SliderThumb = React.forwardRef<HTMLDivElement, ThumbProps>(
       ],
     );
 
+    /* ----- Keyboard ----- */
     const handleKeyDown = React.useCallback(
       (e: React.KeyboardEvent<HTMLDivElement>) => {
         if (disabled) return;
@@ -644,12 +683,20 @@ const SliderThumb = React.forwardRef<HTMLDivElement, ThumbProps>(
 
     const percent = max === min ? 0 : ((currentValue - min) / (max - min)) * 100;
 
+    const isVertical = orientation === 'vertical';
+
+    // Effective aria-labelledby: explicit prop > root aria-labelledby > auto label id
+    const effectiveLabelledBy =
+      ariaLabelledByProp ?? ariaLabelledBy ?? (hasLabel ? labelId : undefined);
+
+    const effectiveLabel = ariaLabelProp ?? ariaLabel;
+
     const props: ThumbRenderProps = {
       ref: forwardedRef,
-      className: [classNames?.thumb, className].filter(Boolean).join(' '),
+      className: cn(isVertical ? DEFAULT_THUMB_V : DEFAULT_THUMB_H, classNames?.thumb, className),
       style: {
         ...styles?.thumb,
-        ...(orientation === 'horizontal' ? { left: `${percent}%` } : { bottom: `${percent}%` }),
+        ...(isVertical ? { bottom: `${percent}%` } : { left: `${percent}%` }),
         ...style,
       },
       role: 'slider',
@@ -657,10 +704,8 @@ const SliderThumb = React.forwardRef<HTMLDivElement, ThumbProps>(
       'aria-valuemax': max,
       'aria-valuenow': currentValue,
       'aria-orientation': orientation,
-      ...(ariaLabelProp || ariaLabel ? { 'aria-label': ariaLabelProp ?? ariaLabel } : {}),
-      ...(ariaLabelledByProp || ariaLabelledBy
-        ? { 'aria-labelledby': ariaLabelledByProp ?? ariaLabelledBy }
-        : {}),
+      ...(effectiveLabel ? { 'aria-label': effectiveLabel } : {}),
+      ...(effectiveLabelledBy ? { 'aria-labelledby': effectiveLabelledBy } : {}),
       tabIndex: disabled ? -1 : 0,
       onKeyDown: handleKeyDown,
       onPointerDown: handlePointerDown,
@@ -691,7 +736,7 @@ const SliderOutput = React.forwardRef<HTMLDivElement, OutputProps>(
 
     const props: OutputRenderProps = {
       ref: forwardedRef,
-      className: [classNames?.output, className].filter(Boolean).join(' '),
+      className: cn(DEFAULT_OUTPUT, classNames?.output, className),
       style: { ...styles?.output, ...style },
       value,
       formatted,
@@ -727,5 +772,5 @@ Slider.Fill = SliderFill;
 Slider.Thumb = SliderThumb;
 Slider.Output = SliderOutput;
 
-export { Slider };
 export default Slider;
+export { Slider };

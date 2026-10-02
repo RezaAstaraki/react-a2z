@@ -1,131 +1,243 @@
 ---
 name: react-a2z
-description: React component library with Tailwind CSS and Rollup bundling.
-version: 1.0.0
-author: Hermes Agent
+description: React + TypeScript component library with Tailwind CSS, Rollup bundling, headless compound components, and Next.js App Router support.
+version: 2.0.0
+author: Reza Astaraki
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
   hermes:
-    tags: [react, components, tailwind, library]
+    tags: [react, components, tailwind, library, headless, rollup]
     related_skills: [dogfood]
 ---
 
 # react-a2z
 
-React component library providing reusable UI components, hooks, and utilities for building modern React applications with Tailwind CSS styling and TypeScript support.
+React component library with Tailwind CSS, TypeScript, and Rollup. Ships reusable
+UI components, hooks, and utilities for React / Next.js apps.
 
 ## Overview
 
-This library provides pre-built React components with Tailwind CSS classes, TypeScript types, and Rollup bundling. All interactive components include `"use client"` directive for Next.js App Router compatibility.
+- **Stack:** React 18+, TypeScript 5+, Tailwind CSS 3.4+ / v4, Rollup.
+- **Interop:** Every interactive component ships with `"use client"` (preserved
+  through Rollup by `preserveDirectives()` in `rollup.config.js`).
+- **Bundling:** `preserveModules: true` → per-file ESM + CJS output.
+- **Peers:** `react`, `react-dom`, `tailwindcss`, `zustand`.
+- **Runtime deps:** only `clsx`, `tailwind-merge`, `classNames` (via `cn`).
 
-## When to Use
+## House Style (non-negotiable — every component follows this)
 
-- You need Button, Input, Modal, Toast, or Markdown editor components
-- You need utility hooks like `useDebounce`, `useInView`, or `useWindowSize`
-- You need utility functions like `cn` for class merging or digit conversion
-- You're building a React/Next.js application with Tailwind CSS
+1. `import * as React from 'react'` — never named-import from React.
+2. `React.forwardRef<HTMLElement, Props>` for any component that renders a DOM node.
+3. Set `Component.displayName = 'Component'`.
+4. `"use client"` at the top of every interactive component file.
+5. Class merging uses `cn` from `../../utils` — **never** `.filter(Boolean).join(' ')`.
+   `cn` = `twMerge(clsx(...))` so the last conflicting Tailwind class wins.
+6. **Baked-in default classes** matching the house palette
+   (`blue-600` primary, `gray-*` neutrals, `focus-visible:ring-2 ring-blue-500 ring-offset-2`).
+   Components look right out of the box, override via `className` / `classNames` / `styles`.
+7. `className`, `classNames`, `style`, `styles` slots — consumers always win.
+8. **Controlled + uncontrolled** via the shared `useControllableState` pattern.
+9. **`useId()`** for auto-wiring `<label htmlFor>` ↔ `<input id>` ↔ `aria-labelledby`.
+10. **Accessibility defaults:** keyboard handlers, `aria-*`, `focus-visible:ring-2`,
+    `disabled:cursor-not-allowed disabled:opacity-50`.
+11. **Type exports use `export type { … }`.** Never mix value + type imports in
+    one statement. This is the #1 source of build errors here.
+12. Prefer `ref={mergeRefs(forwardedRef, localRef)}` when a component needs its
+    own DOM ref internally (Slider does this).
 
-Don't use for:
-- Creating your own component variants without customization
-- Pure server-side rendering without client components
-- Projects not using Tailwind CSS
+## Barrel / Re-export Rules
+
+Chain of exports must stay clean:
+
+```
+src/index.ts                → export * from "./components" | "./hooks" | "./utils"
+src/components/index.ts     → per-component value + type exports (see below)
+src/components/X/index.ts   → default + named value, then type-only exports
+```
+
+**Correct pattern for a sub-barrel:**
+
+```ts
+import Slider from './Slider';
+export type { SliderProps, SliderClassNames } from './Slider';
+export { Slider };
+export default Slider;
+```
+
+**Never** do `import X, { XProps } from "./X"` — split into a value import and
+a separate `export type { … }`.
 
 ## Components
 
 ### Button
-Clickable button with variants (`filled-blue`, etc.) for primary actions.
+
+Variants: `filled-blue`, `outlined-blue`, `text-blue`, `filled-gray`,
+`outlined-white`, `text-white`. Sizes: `xs | sm | md | lg`.
+Props: `variant`, `size`, `buttonType` (`text | icon-only`), `icon`,
+`iconPosition` (`left | right | center`), `loading`, `text`.
 
 ### Input
-Form input with label and placeholder support for text entry.
 
-### MdEditor
-Markdown editor (1032 lines) with rich text editing capabilities.
+Form input with `label` + `placeholder`. Uses `useId` for label linkage.
 
-### Md
-Markdown renderer with syntax highlighting for displaying markdown content.
+### Slider (headless compound component)
+
+- **Compound:** `Slider`, `Slider.Label`, `Slider.Track`, `Slider.Fill`,
+  `Slider.Thumb`, `Slider.Output`.
+- **Controlled + uncontrolled:** `value` / `defaultValue` / `onChange` / `onChangeEnd`.
+- **Range:** pass `number[]` for `value` / `defaultValue` — renders multiple thumbs.
+- **Orientation:** `horizontal` (default) or `vertical`.
+- **Accessibility:** `role="slider"`, `aria-valuemin/max/now`, `aria-orientation`,
+  arrow / PageUp / PageDown / Home / End keys, `useId` links `<Slider.Label>`.
+- **Styling:** baked-in Tailwind defaults for both orientations. Override with:
+  - `classNames={{ root, label, track, fill, thumb, output }}`
+  - `styles={{ root, label, track, fill, thumb, output }}`
+  - `className` on any compound child
+- **Render props:** on the root (`renderThumb`, `renderTrack`, `renderFill`,
+  `renderOutput`, `renderLabel`) **and** as `render` on each compound child.
+- **Value formatting:** `label`, `suffix`, `formatValue`, `showOutput`.
+- **Pointer handling:** `setPointerCapture` + `pointerup`/`pointercancel` cleanup.
+- **Range safety:** thumbs can't cross — each is clamped between neighbors.
+- **Step safety:** `snapToStep` guards `step <= 0`.
+
+Example:
+
+```tsx
+<Slider
+  label="Angle"
+  min={0}
+  max={360}
+  step={1}
+  suffix="°"
+  value={angle}
+  onChange={(v) => setAngle(Array.isArray(v) ? v[0]! : v)}
+/>
+
+// Range, vertical, custom styling
+<Slider
+  orientation="vertical"
+  defaultValue={[20, 80]}
+  classNames={{ fill: "bg-gradient-to-t from-orange-400 to-red-600" }}
+/>
+```
+
+### ColorPicker
+
+Controlled or uncontrolled. Props: `label`, `value`, `defaultValue`, `onChange`,
+`presetColors`, `showPresets`, `showValue`, `disabled`, `className`. Uses
+`useId` + `aria-pressed` on preset buttons; input forwards ref.
+
+### GradientMaker
+
+Props: `label`, `onGradientChange`, `className`. Composes 11 gradient presets,
+custom color pickers, and the Slider for angle. Keyframes hoisted to
+`a2z-gradient-pan` to avoid consumer collisions. Copy button uses inline
+"Copied!" state — **no `alert()`**.
+
+### Md / MdEditor
+
+Markdown renderer (with syntax highlighting) and editor. Editor exposes
+`MdEditorHandle`, `MdEditorMode`, `MdEditorToolId`.
 
 ### Modal
-Modal dialogs using `CustomModal` and `GlobalModal` with state management.
 
-### PearlButton
-Specialized button component with custom styling.
+`CustomModal` + `GlobalModal` with Zustand store.
 
 ### Toast
-Notification toast system with `GlobalToast` and `ToastItem` components.
 
-### ClientLogger
-Client-side logging utility with `Wrapper` component for debugging.
+`GlobalToast` + `ToastItem` with Zustand store.
+
+### PearlButton
+
+Gloss hover + press. Ships `styles/pearl-button.css` (prefix `a2z-pearl-btn`).
+Optional import: `react-a2z/PearlButton/styles.css`.
 
 ### Counter
-Counter utility component for increment/decrement operations.
 
-## Hooks
+Increment/decrement with `CounterVariant`, `CounterPlace`, `CounterInView`.
 
-- `useDebounce`: Debounce utility for delayed execution
-- `useDebouncedCallback`: Debounced callback wrapper for event handlers
-- `useElementSize`: Element size observer hook
-- `useInView`: Intersection Observer hook for scroll detection
-- `useThrottle`: Throttle utility for rate-limited operations
-- `useWindowSize`: Window size observer hook
+### ClientLogger
 
-## Utilities
+Client-side logger (`Wrapper` component for debugging).
 
-Located in `src/utils`:
+## Hooks (`src/hooks`)
 
-- `cn`: Class name merger for conditional styling
-- `englishDigitsToPersian`: Convert English digits to Persian
-- `persianToEnglishDigits`: Convert Persian digits to English
-- `formDataMaker`: Form data helper for structured data
-- `sanitizeNumericInput`: Input sanitization for numeric values
-- `truncateText`: Text truncation with ellipsis
-- `readFileAsDataUrl`: File reader helper for data URLs
+- `useDebounce` — debounced value
+- `useDebouncedCallback` — debounced function
+- `useElementSize` — ResizeObserver
+- `useInView` — IntersectionObserver
+- `useThrottle` — throttled value
+- `useWindowSize` — window resize
 
-## Styling
+## Utilities (`src/utils`)
 
-- Tailwind CSS with custom `pearl-button.css` theme
-- `tailwind.config.js` and `tailwind.preset.js` for configuration
-- `tailwind.css` auto-scans `dist` for library class names
+- `cn` — clsx + tailwind-merge (**use this everywhere for class merging**)
+- `englishDigitsToPersian` / `persianToEnglishDigits`
+- `formDataMaker`, `sanitizeNumericInput`, `truncateText`, `readFileAsDataUrl`
+
+## Styling Model
+
+- Components ship **Tailwind utility classes baked in** (not CSS files) except
+  `PearlButton`, which has its own CSS because the effects can't be expressed
+  cleanly with utilities.
+- Consumers style by passing `className`, `classNames`, `style`, or `styles`.
+  `cn()` guarantees consumer classes always win over defaults.
+- `tailwind.preset.js` is currently **empty** — components only use stock
+  Tailwind tokens. If you add brand tokens later, extend the preset and reuse
+  them inside components.
+- `tailwind.css` uses `@source "./dist"` so Tailwind v4 scans compiled output.
 
 ## Build
 
-- Rollup bundling with `rollup.config.js`
-- TypeScript with `tsconfig.json`
-- All interactive components include `"use client"` directive
+- `npm run rollup` — production build
+- `npm run dev` — watch mode
+- `rollup.config.js` — `preserveModules: true`, `preserveModulesRoot: 'src'`,
+  `terser({ compress: { directives: false } })` so `"use client"` survives.
+- Two outputs: `dist/cjs`, `dist/esm`, plus flattened `dist/index.d.ts`.
+- `preserveDirectives()` plugin re-adds `"use client"` / `"use server"` to each
+  chunk because Rollup strips them.
 
-## Installation
+## package.json exports
 
-```bash
-npm install react-a2z
+Subpath exports exist for: `.`, `./Button`, `./Input`, `./Modal`, `./Toast`,
+`./PearlButton`, `./ColorPicker`, `./Md`, `./MdEditor`, `./Counter`, `./hooks`,
+`./tailwind`, `./tailwind.css`, `./styles.css`, `./PearlButton/styles.css`.
+
+**Add `./Slider` when convenient** (mirrors `./ColorPicker`):
+
+```json
+"./Slider": {
+  "types": "./dist/index.d.ts",
+  "import": "./dist/esm/components/Slider/index.js",
+  "require": "./dist/cjs/components/Slider/index.js"
+}
 ```
 
-## Tailwind v4 Setup (Recommended)
+## Consumer Setup
 
-In your app's `globals.css`:
+### Tailwind v4 (recommended)
 
 ```css
-@import "tailwindcss";
+/* globals.css */
+@import 'tailwindcss';
 @source "./src/**/*.{js,ts,jsx,tsx}";
-@import "react-a2z/tailwind.css";
+@import 'react-a2z/tailwind.css';
 ```
-
-Use PostCSS configuration:
 
 ```js
 // postcss.config.mjs
-export default {
-  plugins: { "@tailwindcss/postcss": {} },
-};
+export default { plugins: { '@tailwindcss/postcss': {} } };
 ```
 
-## Tailwind v3 Setup (Legacy)
+### Tailwind v3
 
 ```js
-import reactA2zPreset, { contentPaths } from "react-a2z/tailwind";
+import reactA2zPreset, { contentPaths } from 'react-a2z/tailwind';
 
 export default {
   presets: [reactA2zPreset],
-  content: ["./src/**/*.{js,ts,jsx,tsx}", ...contentPaths],
+  content: ['./src/**/*.{js,ts,jsx,tsx}', ...contentPaths],
 };
 ```
 
@@ -135,21 +247,11 @@ export default {
 @tailwind utilities;
 ```
 
-## Usage Example
+### Usage
 
 ```tsx
-"use client";
-
-import { Button, Input } from "react-a2z";
-
-export default function Page() {
-  return (
-    <>
-      <Button variant="filled-blue" text="Click me" />
-      <Input label="Email" placeholder="you@example.com" />
-    </>
-  );
-}
+'use client';
+import { Button, Input, Slider, ColorPicker, GradientMaker } from 'react-a2z';
 ```
 
 ## File Structure
@@ -160,28 +262,19 @@ react-a2z/
 │   ├── components/
 │   │   ├── Button/
 │   │   ├── ClientLogger/
+│   │   ├── ColorPicker/          # ColorPicker + GradientMaker
 │   │   ├── Counter/
 │   │   ├── Input/
-│   │   ├── MdEditor/
 │   │   ├── Md/
+│   │   ├── MdEditor/
 │   │   ├── Modal/
 │   │   ├── PearlButton/
-│   │   └── Toast/
+│   │   ├── Slider/               # headless compound component
+│   │   ├── Toast/
+│   │   └── index.ts
 │   ├── hooks/
-│   │   ├── useDebounce.ts
-│   │   ├── useDebouncedCallback.ts
-│   │   ├── useElementSize.ts
-│   │   ├── useInView.ts
-│   │   ├── useThrottle.ts
-│   │   └── useWindowSize.ts
-│   └── utils/
-│       ├── cn.tsx
-│       ├── englishDigitsToPersian.ts
-│       ├── persianToEnglishDigits.ts
-│       ├── formDataMaker.ts
-│       ├── sanitizeNumericInput.ts
-│       ├── truncateText.ts
-│       └── readFileAsDataUrl.ts
+│   ├── utils/                    # cn, digit converters, form helpers
+│   └── index.ts
 ├── styles/
 │   └── pearl-button.css
 ├── tailwind.config.js
@@ -192,11 +285,82 @@ react-a2z/
 └── package.json
 ```
 
-## Verification
+## Common Pitfalls (already hit, don't repeat)
 
-To verify the library works in your project:
+| Pitfall                                            | Fix                                                                |
+| -------------------------------------------------- | ------------------------------------------------------------------ |
+| `import X, { XProps }` in one statement            | Split: value import + `export type`                                |
+| `values[0]` under `noUncheckedIndexedAccess`       | `values[0] ?? min` or `Array.isArray(...) ? ... : [value]`         |
+| Mixing value + type in one `export { … }`          | Use `export { X }` for values, `export type { X }` for types       |
+| `key={index}` for dynamic lists                    | Use a stable identifier (name, id, color)                          |
+| `alert()` in components                            | Inline state + timeout, cleanup on unmount                         |
+| Inline `<style>` per render                        | Hoist keyframes once at the component root; prefix `a2z-`          |
+| `renderThumb` on props but never forwarded         | Plumb into default children OR remove from the API                 |
+| Range `Slider.Fill` computed from `values[0]` only | Compute `left` + `width` (or `bottom` + `height`) from both bounds |
+| `step = 0` → `Infinity`                            | `snapToStep` guards `step <= 0`                                    |
+| `forwardedRef ?? rootRef` — one silently wins      | Use `mergeRefs(forwardedRef, localRef)`                            |
+| Clipboard copy without try/catch                   | Wrap in try/catch; UI feedback via state                           |
+| Preset click didn't sync Slider angle              | Emit through a single `emit(colors, angle)` helper                 |
+| `export *` from a barrel with default export       | Default exports don't propagate — export named values explicitly   |
 
-1. Install the package: `npm install react-a2z`
-2. Configure Tailwind CSS as shown above
-3. Import and use components: `import { Button } from "react-a2z"`
-4. Build your project: `npm run build`
+## Verification Checklist (for a new agent session)
+
+Before making changes, run:
+
+```bash
+cat package.json
+cat rollup.config.js
+cat src/index.ts
+cat src/components/index.ts
+cat src/utils/cn.tsx
+```
+
+These five files define the public surface, build pipeline, and shared style
+utility. Everything else follows from them.
+
+After changes, run:
+
+```bash
+npm run rollup
+```
+
+Expected output:
+
+- No `TS2322` / `TS2345` warnings from `src/components/**`.
+- `dist/index.d.ts` contains all component + type names.
+- No `RollupError: Failed to compile` from `rollup-plugin-dts`.
+
+Then verify exports:
+
+```bash
+grep -E "Slider|ColorPicker|GradientMaker" dist/index.d.ts
+```
+
+Should show values and types for each.
+
+## When Extending the Library
+
+If you add a new component:
+
+1. Create `src/components/NewComponent/NewComponent.tsx` + `index.ts`.
+2. Follow the House Style above (forwardRef, cn, useId, controlled/uncontrolled, disabled, className).
+3. Bake in default Tailwind classes matching the palette (`blue-600`, `gray-*`).
+4. Split value + type exports.
+5. Add to `src/components/index.ts` with per-component value + type exports.
+6. Add a `package.json#exports` subpath if it's a top-level entry.
+7. If it needs CSS that can't be expressed as utilities, add `styles/new-component.css`
+   and list it in `package.json#files` + a `./NewComponent/styles.css` export.
+8. Run `npm run rollup` and verify the d.ts surface.
+
+## Design Principles
+
+- **Headless where it matters:** compound components + render props let consumers
+  build any look without forking the library.
+- **Opinionated defaults:** components look right without any props. Override,
+  don't configure.
+- **Zero runtime CSS:** everything is Tailwind utilities except PearlButton's CSS.
+- **Accessible by default:** labels auto-linked, focus rings, keyboard handlers,
+  proper ARIA roles.
+- **No hidden globals:** no required CSS import for a component to look correct.
+- **Composability over configuration:** expose `Slider.Track`, `Slider.Thumb`, etc.
+  rather than a giant props matrix.

@@ -1,5 +1,8 @@
-import ColorPicker, { ColorPickerProps } from "./ColorPicker";
-import GradientMaker, { GradientMakerProps } from "./GradientMaker";
+import ColorPicker from './ColorPicker';
+import GradientMaker from './GradientMaker';
 
-export type { GradientMakerProps };
+export type { ColorPickerProps } from './ColorPicker';
+export type { GradientMakerProps } from './GradientMaker';
+
 export { ColorPicker, GradientMaker };
+export default ColorPicker;
