@@ -16,6 +16,57 @@ metadata:
 React component library with Tailwind CSS, TypeScript, and Rollup. Ships reusable
 UI components, hooks, and utilities for React / Next.js apps.
 
+## Session Protocol (how to work with this user in this repo)
+
+**Environment:**
+- Windows host + WSL. Repo path in WSL: `/mnt/c/Users/reza/tavana/github/react-a2z`.
+- Editor (VS Code) may write CRLF. Repo has `.gitattributes` with `* text=auto` —
+  blobs are LF, worktree may be CRLF. Do **not** try to normalize the worktree.
+- Push uses a classic PAT (`repo` scope) over HTTPS.
+
+**Interaction model:**
+- The user runs every shell command himself. Give **ONE command block at a time**,
+  he pastes the output, THEN you proceed. Never batch probes.
+- Lead with the exact copy-paste block. No prose first.
+- When giving code: name the file, and offer a verification command in the same
+  message (`wc -l`, `cat`, `grep -c`).
+
+**Shell gotchas (all have burned us):**
+
+| Trap | Fix |
+|------|-----|
+| `sed -i '/foo$/a bar'` silently no-ops | Worktree may be CRLF; `---
+name: react-a2z
+description: React + TypeScript component library with Tailwind CSS, Rollup bundling, headless compound components, and Next.js App Router support.
+version: 2.0.0
+author: Reza Astaraki
+license: MIT
+platforms: [linux, macos, windows]
+metadata:
+  hermes:
+    tags: [react, components, tailwind, library, headless, rollup]
+    related_skills: [dogfood]
+---
+
+# react-a2z
+
+React component library with Tailwind CSS, TypeScript, and Rollup. Ships reusable
+UI components, hooks, and utilities for React / Next.js apps.
+
+ anchors fail. Prefer `cat > file <<'EOF'` rewrites or a `node` script written to `/tmp/*.js`. |
+| `node -e '…'` when the JS contains `'` | Write the script to `/tmp/x.js` via heredoc, then `node /tmp/x.js`. |
+| Bare `!` in bash | History expansion. Put it in a script file, or use `[ -f x ]` tests. |
+| `find` / `git diff` opens pager | Use `git --no-pager <cmd>` or pipe to `cat`. |
+| Bulk `git status` noise after editor writes | Almost always CRLF churn — verify with `git diff --ignore-cr-at-eol --name-only`. |
+
+**Skill file location:**
+- This file: `skills/web/react-a2z/SKILL.md` (in repo, committed).
+- Unrelated 33-line stub at `~/.hermes/skills/software-development/react-a2z-component-library/SKILL.md` — ignore it, don't confuse them.
+
+**Commit hygiene:**
+- Identity: `RezaAstaraki <reza.astaraky@gmail.com>`.
+- Stage only intended files (`git add <file>`), never `git add .`.
+
 ## Overview
 
 - **Stack:** React 18+, TypeScript 5+, Tailwind CSS 3.4+ / v4, Rollup.
