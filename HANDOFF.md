@@ -1,0 +1,172 @@
+# HANDOFF — How to work with me on this project
+
+Paste/attach this file at the start of any new chat session so the assistant
+has the full context. Keep it up to date when our working rules change.
+
+Canonical library doc: `skills/web/react-a2z/SKILL.md` (in repo, committed).
+That file is the source of truth for the library API, house style, pitfalls,
+build pipeline, and the shell-gotcha table. THIS file is the source of truth
+for how we *interact* and how to start / verify a session.
+
+---
+
+## 1. Environment
+
+- OS / shell: WSL (Ubuntu) on Windows — bash, not PowerShell.
+- I always launch WSL from the project root, so cwd is already the repo
+  root. Never include absolute paths in commands.
+- Editor (VS Code) may write CRLF. `.gitattributes` has `* text=auto` —
+  blobs are LF, worktree may be CRLF. Do NOT try to normalize the worktree.
+- Push uses a classic PAT (`repo` scope) over HTTPS.
+- Stack: React 18+, TypeScript 5+, Tailwind CSS 3.4+ / v4, Rollup with
+  `preserveModules: true`. Published as `react-a2z`. Full library
+  surface, house style, and pitfalls live in SKILL.md.
+
+I run every command myself in WSL and paste the output back to you.
+I cannot run PowerShell here, and I cannot run commands outside the
+project root unless you say otherwise.
+
+---
+
+## 2. How I want you to communicate
+
+These are hard rules. Follow them every response.
+
+1. One command at a time. Never bundle multiple shell commands in one
+   reply expecting me to run them in sequence. Give me exactly one
+   command, then stop and wait for my output.
+2. Wait for output. Do not guess what the command will return. Do not
+   proceed to the next step until I paste the result.
+3. No invented file contents. If you need to see a file, ask me to
+   cat it. Never assume its contents.
+4. Explain before code. A one-paragraph "why" before any code block,
+   so I can sanity-check the plan.
+5. Minimal diffs. Prefer the smallest change that fixes the problem.
+   Don't refactor unrelated code unless I ask.
+6. Reversible edits. When rewriting a file, back it up first
+   (cp file file.bak) and print a short verification (e.g. tail -n 20).
+7. Copy-paste ready. Every code block should be runnable as-is.
+8. Markdown output. Use fenced code blocks with a language tag.
+9. When in doubt, ask. A clarifying question is cheaper than a wrong edit.
+
+---
+
+## 3. How I want you to give me file changes
+
+10. NEVER tell me to open an editor and paste code in. Every file creation
+    or edit must be delivered as a bash command I can run in WSL.
+11. Use `cat > file <<'EOF'` for new files and `cat >> file <<'EOF'` for
+    appends. Single-quoted EOF so bash does not expand `$`, backticks, etc.
+12. Keep each heredoc under ~50 lines. Long pastes get truncated by my
+    terminal (we hit this). Split into multiple commands if needed, one
+    command per reply, and wait for my confirmation after each.
+13. Always back up before overwriting: `cp file file.bak`.
+    NOTE: this repo's `.gitignore` does NOT cover `*.bak` (unlike my other
+    projects). Delete backups with `rm` when done, don't leave them to show
+    up in `git status`.
+14. End each write command with a short verification, e.g.
+    `wc -l file && tail -n 5 file`.
+15. Never assume a previous command succeeded. Ask me to run
+    `wc -l file && tail -n 3 file` and wait for the output.
+16. For CRLF-sensitive edits (in-place `sed`, anchored patterns) prefer
+    a `cat > file <<'EOF'` rewrite or a script written to `/tmp/*.js` and
+    run with `node /tmp/x.js` — see the shell-gotcha table in SKILL.md.
+
+---
+
+## 4. Shell gotchas (pointer)
+
+The full trap table lives in SKILL.md → "Shell gotchas (all have burned us)".
+Highlights, because they've cost us real time:
+
+- Worktree may be CRLF → `sed -i '/foo$/a bar'` can silently no-op.
+  Prefer a full `cat > file <<'EOF'` rewrite or a `/tmp/*.js` node script.
+- `node -e '...'` breaks when the JS contains `'`. Write to `/tmp/x.js`
+  via heredoc, then `node /tmp/x.js`.
+- Bare `!` in bash triggers history expansion. Keep it in a script, or
+  use `[ -f x ]` style tests.
+- `find` / `git diff` can open a pager. Use `git --no-pager <cmd>` or
+  pipe to `cat`.
+- After editor writes, bulk `git status` noise is almost always CRLF churn.
+  Confirm with `git --no-pager diff --ignore-cr-at-eol --name-only`.
+
+---
+
+## 5. Build + verify quick reference
+
+Build: `npm run rollup`
+Watch: `npm run dev`
+
+After a build, verify:
+
+1. No `TS2322` / `TS2345` from `src/components/**`.
+2. `dist/index.d.ts` contains all component + type names:
+   `grep -E "Slider|ColorPicker|GradientMaker" dist/index.d.ts`
+3. Every `package.json#exports` subpath resolves to an emitted file:
+   `node -e "const p=require('./package.json'),fs=require('fs'); for (const [k,v] of Object.entries(p.exports)) { if (typeof v!=='object') continue; if (!fs.existsSync(v.import)) console.log('MISSING', k, v.import); }"`
+   No output = all subpaths resolve.
+4. Known-broken subpaths today (`./Modal`, `./Toast`, `./ColorPicker`,
+   `./Md`, `./MdEditor`, `./Counter`) target `dist/.../X/index.js` which
+   Rollup never emits with `preserveModules` + current barrels. See
+   SKILL.md → "package.json exports — subpath rules".
+
+---
+
+## 6. Project layout cheatsheet
+
+- `src/components/<Name>/` — one folder per component: `<Name>.tsx` + `index.ts`.
+- `src/hooks/` — reusable hooks.
+- `src/utils/` — `cn`, digit converters, form helpers.
+- `src/index.ts` — top barrel. `src/components/index.ts` — component barrel.
+- `styles/` — non-utility CSS (currently only `pearl-button.css`).
+- `tailwind.css`, `tailwind.preset.js`, `tailwind.config.js` — Tailwind wiring.
+- `rollup.config.js` — `preserveModules: true`, `preserveModulesRoot: 'src'`,
+  `terser({ compress: { directives: false } })`, `preserveDirectives()`
+  plugin re-adds `"use client"` / `"use server"`.
+- `skills/web/react-a2z/SKILL.md` — canonical library doc (see top of file).
+
+---
+
+## 7. Git / commit hygiene
+
+- Identity: `RezaAstaraki <reza.astaraky@gmail.com>`.
+- Stage only intended files: `git add <file>`. Never `git add .`.
+- This repo has no husky / lint-staged, so `git commit` is fine in WSL.
+  (My other project, eshop2, has hooks — those commits must happen in
+  PowerShell. Not applicable here.)
+- Use `git --no-pager log` / `git --no-pager diff` to avoid the pager.
+- If `git status` suddenly shows many files after an editor save, check
+  for CRLF churn first: `git --no-pager diff --ignore-cr-at-eol --name-only`.
+- Commit message style seen in history: `fix: ...`, `chore: ...`,
+  `skill(react-a2z): ...`, `add ...`. Match the most recent style.
+
+---
+
+## 8. Session start checklist
+
+When I paste this file at the start of a session, please:
+
+1. Acknowledge you have read the rules in sections 2 and 3.
+2. Ask what we are working on this session.
+3. If I mention a file, ask me to `cat` it — never assume.
+4. Apply rule 1 (one command at a time) from the very first reply.
+5. If the task touches library API / house style / pitfalls, read
+   `skills/web/react-a2z/SKILL.md` first and mirror its conventions.
+
+---
+
+## 9. Session log
+
+- 2026-10-05: Created this HANDOFF.md. Decision recorded: SKILL.md stays
+  the canonical library doc (API, house style, pitfalls, build); HANDOFF.md
+  covers interaction rules + session workflow and *references* SKILL.md
+  rather than duplicating it. Noted for next time:
+
+  - This repo's `.gitignore` does NOT ignore `*.bak` (unlike eshop2).
+    If we leave backups, they show up in `git status`. Either delete them
+    when done, or add `*.bak` to `.gitignore` (not done yet — pending call).
+  - SKILL.md's environment line names a different repo path than my actual
+    WSL path. HANDOFF.md avoids naming absolute paths for this reason:
+    "cwd is the repo root" is the durable phrasing.
+  - No husky / lint-staged here, so WSL `git commit` is fine. Do not copy
+    eshop2's "commit in PowerShell" rule into this repo.
