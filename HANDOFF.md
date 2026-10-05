@@ -163,8 +163,9 @@ When I paste this file at the start of a session, please:
   rather than duplicating it. Noted for next time:
 
   - This repo's `.gitignore` does NOT ignore `*.bak` (unlike eshop2).
-    If we leave backups, they show up in `git status`. Either delete them
-    when done, or add `*.bak` to `.gitignore` (not done yet — pending call).
+    DECISION: leave it that way. Backups should stay visible in `git status`
+    as a reminder and be deleted (`rm`) before each commit. Do not add
+    `*.bak` to `.gitignore`.
   - SKILL.md's environment line names a different repo path than my actual
     WSL path. HANDOFF.md avoids naming absolute paths for this reason:
     "cwd is the repo root" is the durable phrasing.
