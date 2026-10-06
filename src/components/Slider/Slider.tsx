@@ -441,6 +441,30 @@ const SliderTrack = React.forwardRef<HTMLDivElement, TrackProps>(
 
     const isVertical = orientation === 'vertical';
 
+    const [dragging, setDragging] = React.useState(false);
+    const moveRef = React.useRef<((e: PointerEvent) => void) | null>(null);
+    const upRef = React.useRef<((e: PointerEvent) => void) | null>(null);
+
+    // Listeners live here so their teardown runs on unmount, not only on
+    // pointerup. The refs carry the per-drag logic, so this effect never
+    // re-registers while `value` changes mid-drag.
+    React.useEffect(() => {
+      if (!dragging) return;
+      const move = (ev: PointerEvent) => moveRef.current?.(ev);
+      const up = (ev: PointerEvent) => {
+        upRef.current?.(ev);
+        setDragging(false);
+      };
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+      window.addEventListener('pointercancel', up);
+      return () => {
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+        window.removeEventListener('pointercancel', up);
+      };
+    }, [dragging]);
+
     const handlePointerDown = React.useCallback(
       (e: React.PointerEvent<HTMLDivElement>) => {
         if (disabled) return;
@@ -480,16 +504,9 @@ const SliderTrack = React.forwardRef<HTMLDivElement, TrackProps>(
           if (commit) commitValue(next);
         };
         emit(e.clientX, e.clientY, false);
-        const move = (ev: PointerEvent) => emit(ev.clientX, ev.clientY, false);
-        const up = (ev: PointerEvent) => {
-          window.removeEventListener('pointermove', move);
-          window.removeEventListener('pointerup', up);
-          window.removeEventListener('pointercancel', up);
-          emit(ev.clientX, ev.clientY, true);
-        };
-        window.addEventListener('pointermove', move);
-        window.addEventListener('pointerup', up);
-        window.addEventListener('pointercancel', up);
+        moveRef.current = (ev) => emit(ev.clientX, ev.clientY, false);
+        upRef.current = (ev) => emit(ev.clientX, ev.clientY, true);
+        setDragging(true);
       },
       [disabled, min, max, step, orientation, value, setValue, commitValue, trackRef],
     );
@@ -605,6 +622,29 @@ const SliderThumb = React.forwardRef<HTMLDivElement, ThumbProps>(
     const currentValue = values[index] ?? min;
     const isRange = Array.isArray(value) && values.length > 1;
 
+    const [dragging, setDragging] = React.useState(false);
+    const moveRef = React.useRef<((e: PointerEvent) => void) | null>(null);
+    const upRef = React.useRef<((e: PointerEvent) => void) | null>(null);
+
+    // See Track: listeners are owned by the effect so they tear down on
+    // unmount, and the refs keep the per-drag logic stable across renders.
+    React.useEffect(() => {
+      if (!dragging) return;
+      const move = (ev: PointerEvent) => moveRef.current?.(ev);
+      const up = (ev: PointerEvent) => {
+        upRef.current?.(ev);
+        setDragging(false);
+      };
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+      window.addEventListener('pointercancel', up);
+      return () => {
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+        window.removeEventListener('pointercancel', up);
+      };
+    }, [dragging]);
+
     /* ----- Pointer drag ----- */
     const handlePointerDown = React.useCallback(
       (e: React.PointerEvent<HTMLDivElement>) => {
@@ -648,17 +688,18 @@ const SliderThumb = React.forwardRef<HTMLDivElement, ThumbProps>(
 
         move(e.nativeEvent);
 
-        const up = (ev: PointerEvent) => {
-          el.releasePointerCapture(e.pointerId);
-          window.removeEventListener('pointermove', move);
-          window.removeEventListener('pointerup', up);
-          window.removeEventListener('pointercancel', up);
+        moveRef.current = (ev) => {
+          setValue(buildNext(compute(ev.clientX, ev.clientY)));
+        };
+        upRef.current = (ev) => {
+          try {
+            el.releasePointerCapture(e.pointerId);
+          } catch {
+            /* element may already be detached */
+          }
           commitValue(buildNext(compute(ev.clientX, ev.clientY)));
         };
-
-        window.addEventListener('pointermove', move);
-        window.addEventListener('pointerup', up);
-        window.addEventListener('pointercancel', up);
+        setDragging(true);
       },
       [
         disabled,
