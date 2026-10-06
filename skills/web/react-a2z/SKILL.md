@@ -266,11 +266,12 @@ Client-side logger (`Wrapper` component for debugging).
 
 ## package.json exports — subpath rules
 
-Each subpath MUST point at a concrete emitted file, **not** at
-`dist/.../components/<Name>/index.js`. Rollup with `preserveModules` only emits
-an `index.js` for a component folder if the folder's `index.ts` is reachable
-from `src/index.ts` — and today the main barrel imports from `./X/X` directly,
-so those `index.js` files are **never produced**.
+Rollup flattens pure re-export modules — a file whose body is only
+`export ... from ...` and has no code of its own — unless the file is an
+explicit entry point. Under `preserveModules`, an interior barrel is therefore
+not emitted as its own chunk: its exports are hoisted into the parent, and no
+`X/index.js` is written. This is independent of `treeshake.moduleSideEffects`
+and of `hoistTransitiveImports` (the latter is ignored under `preserveModules`).
 
 **Correct shape (matches `./Button`, `./Input`, `./PearlButton`, `./Slider`, `./Tooltip`):**
 
@@ -282,11 +283,11 @@ so those `index.js` files are **never produced**.
 }
 ```
 
-**Known broken (pre-existing):** `./Modal`, `./Toast`, `./ColorPicker`, `./Md`,
-`./MdEditor`, `./Counter` still target a non-existent `index.js`. Fix by either
-(a) repointing at the concrete file if it exists, or (b) making the folder
-barrel reachable from `src/index.ts` (via `export * from './X'`) so Rollup
-emits `index.js`.
+**Resolved (2026-10-05):** `./Modal`, `./Toast`, `./ColorPicker`, `./Md`,
+`./MdEditor`, `./Counter`, and `./hooks` used to target a non-existent
+`index.js`. Fixed by listing those barrels as explicit entry points in
+`rollup.config.js` (the `entries` array). When you add a subpath export that
+targets `X/index.js`, add `src/.../X/index.ts` to that array as well.
 
 **Verification (run after every build):**
 
@@ -383,7 +384,9 @@ react-a2z/
 | Clipboard copy without try/catch                   | Wrap in try/catch; UI feedback via state                           |
 | Preset click didn't sync Slider angle              | Emit through a single `emit(colors, angle)` helper                 |
 | `export *` from a barrel with default export       | Default exports don't propagate — export named values explicitly   |
-| `package.json#exports` points at `dist/.../X/index.js` that Rollup never emits | Point at `X/X.js` (see subpath rules) — or make the folder barrel reachable from `src/index.ts` |
+| `package.json#exports` points at `dist/.../X/index.js` that Rollup never emits | List `src/.../X/index.ts` in `rollup.config.js` `entries`, OR point the subpath at the concrete `X/X.js` file. Making the barrel reachable from `src/index.ts` does NOT help |
+| Barrel `X/index.ts` is a pure re-export and no `X/index.js` is emitted | List `src/.../X/index.ts` in the `entries` array in `rollup.config.js` — barrels are only emitted when they are explicit entry points |
+| Window `pointermove`/`pointerup` listeners leak if the component unmounts mid-drag | Pre-existing in `Slider` thumb + track handlers. Move listener registration into a `useEffect` with cleanup that removes them. Not yet fixed |
 | `sed -i '/…$/a …'` silently no-ops on CRLF files | Repo is CRLF; `$`-anchored patterns fail. Use `cat > file <<'EOF'` rewrites or `node -e` scripts, never blind `sed` |
 | Leftover `useState` + `useEffect(() => setX(true), [])` "mounted" flag | Remove it — `noUnusedLocals` catches it; SSR-safe code shouldn't need the pattern unless you branch on it |
 | Tooltip content silently missing on first render because `container` is `null` | `createPortal` needs a DOM node; return `null` from `Tooltip.Content` when `container` is falsy (SSR-safe) |

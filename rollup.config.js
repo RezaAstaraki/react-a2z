@@ -33,9 +33,23 @@ const preservedOutput = {
   sourcemap: true,
 };
 
+// package.json#exports points at `.../X/index.js` for several barrels.
+// Rollup flattens pure re-export modules unless they're explicit entry
+// points, so list them here alongside the main entry.
+const entries = [
+  'src/index.ts',
+  'src/hooks/index.ts',
+  'src/components/Modal/index.ts',
+  'src/components/Toast/index.ts',
+  'src/components/ColorPicker/index.ts',
+  'src/components/Md/index.ts',
+  'src/components/MdEditor/index.ts',
+  'src/components/Counter/index.ts',
+];
+
 export default [
   {
-    input: 'src/index.ts',
+    input: entries,
     output: [
       {
         dir: "./dist/cjs",
