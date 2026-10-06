@@ -19,7 +19,8 @@ UI components, hooks, and utilities for React / Next.js apps.
 ## Session Protocol (how to work with this user in this repo)
 
 **Environment:**
-- Windows host + WSL. Repo path in WSL: `/mnt/c/Users/reza/tavana/github/react-a2z`.
+- Windows host + WSL. Launch WSL from the repo root, so cwd is already the
+  repo root — never bake an absolute path into a command.
 - Editor (VS Code) may write CRLF. Repo has `.gitattributes` with `* text=auto` —
   blobs are LF, worktree may be CRLF. Do **not** try to normalize the worktree.
 - Push uses a classic PAT (`repo` scope) over HTTPS.
@@ -73,19 +74,56 @@ UI components, hooks, and utilities for React / Next.js apps.
    or a portal — never on presentational components. Keep dumb primitives
    (button/input-like) hook-free so they stay usable as Server Components.
 5. Class merging uses `cn` from `../../utils` — **never** `.filter(Boolean).join(' ')`.
-   `cn` = `twMerge(clsx(...))` so the last conflicting Tailwind class wins.
-6. **Baked-in default classes** matching the house palette
-   (`blue-600` primary, `gray-*` neutrals, `focus-visible:ring-2 ring-blue-500 ring-offset-2`).
-   Components look right out of the box, override via `className` / `classNames` / `styles`.
+   `cn` = `twMerge(clsx(...))` and the last conflicting class wins. It is
+   token-aware: the library's `-600` / `-soft` / `-fg` names merge against
+   plain Tailwind colours, so a consumer's `bg-red-500` beats `bg-primary-600`.
+6. **Baked-in classes come from design tokens** — never a raw Tailwind palette
+   colour. Use `bg-primary-600`, `text-fg-muted`, `border-border`, `ring-ring`,
+   `rounded-md`, `ease-a2z` (see **Design tokens**). Components look right out
+   of the box and re-theme when a consumer overrides `--a2z-*` variables.
 7. `className`, `classNames`, `style`, `styles` slots — consumers always win.
-8. **Controlled + uncontrolled** via the shared `useControllableState` pattern.
+8. **Controlled + uncontrolled** via `useControllableState` from `../../hooks`
+   — shipped, not a pattern to reimplement. Same for `mergeRefs` below.
 9. **`useId()`** for auto-wiring `<label htmlFor>` ↔ `<input id>` ↔ `aria-labelledby`.
 10. **Accessibility defaults:** keyboard handlers, `aria-*`, `focus-visible:ring-2`,
     `disabled:cursor-not-allowed disabled:opacity-50`.
 11. **Type exports use `export type { … }`.** Never mix value + type imports in
     one statement. This is the #1 source of build errors here.
-12. Prefer `ref={mergeRefs(forwardedRef, localRef)}` when a component needs its
-    own DOM ref internally (Slider does this).
+12. `ref={mergeRefs(forwardedRef, localRef)}` — `mergeRefs` from `../../utils`
+    is shipped. Never write `forwardedRef ?? rootRef`; one silently wins.
+
+## Design tokens
+
+Every colour, radius, shadow and font is a CSS custom property in
+`tokens.css` at the package root. That file is the single source of
+values; the Tailwind names are mapped from it (v3 preset + v4 `@theme`).
+
+- **Channels are "R G B" triples**, never hex. v3 needs
+  `rgb(var(--a2z-primary-600) / <alpha-value>)` for opacity modifiers to work,
+  and that only composes with a triple.
+- **Aliases use `var()`**, resolved at computed-value time, so overriding
+  `--a2z-primary-600` re-themes every alias derived from it.
+- **The `-soft` washes are baked `rgba()`** values, not channel triples —
+  they need overriding separately if you change the base hue.
+- **`--a2z-radius` is the single radius knob**; all other radii are `calc()`
+  from it, so `--a2z-radius: 0` yields a fully square UI.
+- **Dark mode is class-based** (`.a2z-dark` / `.dark`), never
+  `prefers-color-scheme`, so an app can force either mode.
+
+**v3 vs v4 mapping.** v3 consumers get names from `tailwind.preset.js`.
+v4 consumers get them from the `@theme inline` block in `tailwind.css`.
+The block is `inline` deliberately: plain `@theme` would emit a second
+`--color-primary-600` variable for utilities to reference, giving two names for
+one knob. `inline` bakes the `var(--a2z-*)` reference straight into the
+utility, so `--a2z-*` stays the only override path.
+
+This is why the README can promise no-rebuild re-theming: a consumer
+overrides a variable and every utility that references it updates.
+
+**Verify the layer with** `node scripts/verify-tokens.mjs` — checks that every
+export subpath resolves, that `cn` merges token classes last-one-wins, that the
+slot-aware recipe resolves per-slot and compound variants, and that no
+component emits a raw palette colour.
 
 ## Barrel / Re-export Rules
 
@@ -113,14 +151,28 @@ a separate `export type { … }`.
 
 ### Button
 
-Variants: `filled-blue`, `outlined-blue`, `text-blue`, `filled-gray`,
-`outlined-white`, `text-white`. Sizes: `xs | sm | md | lg`.
-Props: `variant`, `size`, `buttonType` (`text | icon-only`), `icon`,
-`iconPosition` (`left | right | center`), `loading`, `text`.
+`variant` is the SHAPE, `color` is the HUE — they are independent, so
+5 x 6 = 30 combinations without a variant per pair.
+- `variant`: `solid | soft | outline | ghost | link` (default `solid`)
+- `color`: `primary | neutral | success | warning | danger | info` (default `primary`)
+- `size`: `xs | sm | md | lg`
+- `shape`: `text | icon-only` (`buttonType` is the deprecated alias)
+- `icon` / `iconPosition` (`left | right | both`), `loading`, `loadingIcon`,
+  `fullWidth`, `text`, `children`
+- `classNames` / `styles`: slots `root | text | icon | spinner`
 
 ### Input
 
 Form input with `label` + `placeholder`. Uses `useId` for label linkage.
+- `size`: `sm | md | lg`. States come from real props: `required`,
+  `disabled`, native `readOnly`, `isInvalid`, `error`, `helperText`.
+  There is no `variant` prop — an earlier design had one and it is gone.
+- `startIcon` / `endIcon` / `currency` (start slot, inline-start edge)
+- `classNames` / `styles`: slots `root | label | wrapper | input |
+  startIcon | endIcon | helper | helperText`
+- Deprecated, still accepted for one major: `inputClassName` ->
+  `classNames.input`, `labelClassName` -> `classNames.label`,
+  `readonly` -> `readOnly`, `errorMessage` -> `error`
 
 ### Slider (headless compound component)
 
@@ -294,9 +346,18 @@ Client-side logger (`Wrapper` component for debugging).
 
 ## Utilities (`src/utils`)
 
-- `cn` — clsx + tailwind-merge (**use this everywhere for class merging**)
+- `cn` — clsx + tailwind-merge, token-aware (**use everywhere for class merging**)
+- `createCn` — build your own token-aware `cn` with extra class groups
+- `a2zClassGroups` — the (intentionally near-empty) token class-group config
+- `createRecipe` — slot-aware variant resolver (see below)
+- `mergeRefs` — combine a forwarded ref with a local ref
+- `copyToClipboard`
 - `englishDigitsToPersian` / `persianToEnglishDigits`
 - `formDataMaker`, `sanitizeNumericInput`, `truncateText`, `readFileAsDataUrl`
+
+Hooks in `src/hooks`: `useControllableState`, `useDebounce`,
+`useDebouncedCallback`, `useElementSize`, `useInView`, `useThrottle`,
+`useThrottledCallback`, `useWindowSize`.
 
 ## Styling Model
 
@@ -305,10 +366,11 @@ Client-side logger (`Wrapper` component for debugging).
   cleanly with utilities.
 - Consumers style by passing `className`, `classNames`, `style`, or `styles`.
   `cn()` guarantees consumer classes always win over defaults.
-- `tailwind.preset.js` is currently **empty** — components only use stock
-  Tailwind tokens. If you add brand tokens later, extend the preset and reuse
-  them inside components.
-- `tailwind.css` uses `@source "./dist"` so Tailwind v4 scans compiled output.
+- Components use **design tokens**, never stock Tailwind palette colours.
+  `bg-primary-600`, not `bg-blue-600`. See **Design tokens** above.
+- `tailwind.preset.js` maps the tokens to Tailwind names **for v3**.
+  `tailwind.css` does the equivalent for v4 via `@theme inline` and sets
+  `@source "./dist"` so v4 scans the compiled output.
 
 ## Build
 
@@ -319,6 +381,11 @@ Client-side logger (`Wrapper` component for debugging).
 - Two outputs: `dist/cjs`, `dist/esm`, plus flattened `dist/index.d.ts`.
 - `preserveDirectives()` plugin re-adds `"use client"` / `"use server"` to each
   chunk because Rollup strips them.
+- `external: ['clsx', 'tailwind-merge']` — **required**. `peerDepsExternal()`
+  only externalizes peer dependencies; these are regular deps, and without
+  the rule Rollup bundles them into `dist/esm/node_modules/...` and rewrites
+  the import to a relative path. Node then parses that copy as CJS and the
+  named export fails at load, crashing every consumer.
 
 ## package.json exports — subpath rules
 
@@ -447,6 +514,9 @@ react-a2z/
 | Leftover `useState` + `useEffect(() => setX(true), [])` "mounted" flag | Remove it — `noUnusedLocals` catches it; SSR-safe code shouldn't need the pattern unless you branch on it |
 | Tooltip content silently missing on first render because `container` is `null` | `createPortal` needs a DOM node; return `null` from `Tooltip.Content` when `container` is falsy (SSR-safe) |
 | Tooltip never opens on hover, and `delayDuration` looks ignored | A shared `cancelTimers()` cleared **both** timers and was wired to `pointermove`. `pointermove` fires continuously while the pointer is over the trigger, so it cancelled the pending *open* unless the pointer stopped dead on arrival — worst with a long `delayDuration`, which is why the delay prop appeared broken. `pointermove` must clear only the close timer (`cancelCloseTimer`). Fixed in `Tooltip` |
+| Rollup bundles `clsx` / `tailwind-merge` despite `peerDepsExternal()` | Only peer deps are externalized. Add `external: ['clsx', 'tailwind-merge']` to the JS config; the bundled copy is parsed as CJS and the named export fails at load |
+| Tokens declared in `:root` but no utility is generated (v4) | Tailwind v4 only generates utilities from `@theme`. Use `@theme inline` in `tailwind.css` so `--a2z-*` stays the only override path |
+| An unknown prop silently no-ops (`next dev` still returns 200) | `next dev` does not type-check; React 19 passes unknown props through to the DOM as no-ops. Run `next build` or grep the built `d.ts` before trusting a demo |
 
 ## Verification Checklist (for a new agent session)
 
@@ -483,13 +553,16 @@ grep -E "Slider|ColorPicker|GradientMaker" dist/index.d.ts
 
 Should show values and types for each.
 
-Then verify every subpath export resolves to an emitted file:
+Then run the token-layer harness. It checks exports, token-aware `cn`,
+the slot recipe, and that no migrated component emits a raw palette colour:
 
 ```bash
-node -e "const p=require('./package.json'),fs=require('fs'); for (const [k,v] of Object.entries(p.exports)) { if (typeof v!=='object') continue; if (!fs.existsSync(v.import)) console.log('MISSING', k, v.import); }"
+node scripts/verify-tokens.mjs
 ```
 
-No output = all subpaths resolve.
+Expected: `All checks passed.` A bare `node -e "... !fs.existsSync ..."`
+one-liner fails here — bash expands `!` (history expansion) before node sees
+it. Keep the check in a script file, as above.
 
 ## When Extending the Library
 
@@ -497,7 +570,10 @@ If you add a new component:
 
 1. Create `src/components/NewComponent/NewComponent.tsx` + `index.ts`.
 2. Follow the House Style above (forwardRef, cn, useId, controlled/uncontrolled, disabled, className).
-3. Bake in default Tailwind classes matching the palette (`blue-600`, `gray-*`).
+3. Bake in default classes from **design tokens** (`bg-primary-600`,
+   `text-fg-muted`), never a raw palette colour. Add a token to `tokens.css`
+   first if one is missing, then map it in `tailwind.preset.js` (v3) **and**
+   the `@theme inline` block in `tailwind.css` (v4).
 4. Split value + type exports.
 5. Add to `src/components/index.ts` with per-component value + type exports.
 6. Add a `package.json#exports` subpath if it's a top-level entry.
@@ -511,9 +587,12 @@ If you add a new component:
   build any look without forking the library.
 - **Opinionated defaults:** components look right without any props. Override,
   don't configure.
-- **Zero runtime CSS:** everything is Tailwind utilities except PearlButton's CSS.
+- **One token layer:** values live only in `tokens.css`; v3 and v4 both map
+  names onto the same variables, so there is no second source of truth.
 - **Accessible by default:** labels auto-linked, focus rings, keyboard handlers,
   proper ARIA roles.
-- **No hidden globals:** no required CSS import for a component to look correct.
+- **One required import, documented:** consumers import `react-a2z/tailwind.css`
+  (v4) or add the preset + token stylesheets (v3). Utilities come from Tailwind;
+  no component CSS is loaded behind your back.
 - **Composability over configuration:** expose `Slider.Track`, `Slider.Thumb`, etc.
   rather than a giant props matrix.
