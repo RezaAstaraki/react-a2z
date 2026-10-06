@@ -70,17 +70,9 @@ symlink.
 
 ## Doc drift — trust the repo, not the doc
 
-- `HANDOFF.md` §7 and SKILL.md "Commit hygiene" state the commit identity is
-  `RezaAstaraki <reza.astaraki@gmail.com>`. The repo is actually configured
-  `r a <reza.astaraki.work@gmail.com>`, which is what recent commits are
-  authored under. Check `git config user.email`; do not "correct" the config to
-  match the docs without asking.
-- SKILL.md names a WSL repo path (`/mnt/c/Users/reza/tavana/github/react-a2z`)
-  that does not match every machine. HANDOFF deliberately avoids absolute paths.
-- SKILL.md's pitfall table is stale in at least one row: the Slider window
-  `pointermove`/`pointerup` leak is listed "Not yet fixed" while the fix sits in
-  `src/components/Slider/Slider.tsx`.
-- SKILL.md is malformed around lines 38–56: a duplicate copy of its own YAML
-  frontmatter and `# react-a2z` heading is embedded inside the "Shell gotchas"
-  table, splitting that table in two. Read past it; don't copy the pattern.
-- `src/components/textArea/` is an empty, untracked leftover.
+- Reconciled 2026-10-06. The bullets previously here (commit identity, a WSL
+  absolute path in SKILL.md, a "not yet fixed" Slider row, a malformed
+  SKILL.md region, and an empty `src/components/textArea/`) were all stale
+  and have been removed.
+- The rule stands: when a doc and the repo disagree, the repo wins — and the
+  fix is to correct the doc, not to work around it.
