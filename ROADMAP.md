@@ -14,20 +14,22 @@ Companion docs: `SKILL.md` (library API + house style), `AGENTS.md` (repo rules)
 - **2 of 14 components are migrated**: `Button` and `Input`.
 - The other 12 still emit raw Tailwind palette classes and do not re-theme.
 
-## 1. Invert the verifier (do this FIRST)
+## 1. Invert the verifier — DONE (f5ea5f2)
 
-`scripts/verify-tokens.mjs` hardcodes `Button.tsx` and `Input.tsx` in its
-raw-palette assertion, so it guards only the finished work and reports
-"All checks passed" while anything else regresses.
+The raw-palette assertion used to hardcode `Button.tsx` and `Input.tsx`, so it
+guarded only the finished work and would report "All checks passed" while
+anything else regressed.
 
-- [ ] Replace the hardcoded pair with an EXEMPTION LIST of not-yet-migrated
-      components, and assert that everything not on the list is clean.
-- [ ] Each migration then removes one entry, so the check covers new work
-      automatically.
+- [x] `MIGRATED` array + disk scan; unmigrated files report as pending.
+- [x] `from|to|via` added to the regex (gradient utilities were invisible).
+- [x] `existsSync` per MIGRATED entry, so a rename cannot drop it silently.
 
-**Why first:** it is a contained change to one script, and it makes every
-migration below safe. Right now the net protects the done work and ignores
-the in-progress work — backwards.
+Still to do: add each component to `MIGRATED` in the same commit as its
+migration.
+
+**Why it came first:** it was a contained change to one script and it made
+every migration below safe. The net used to protect the finished work and
+ignore the in-progress work — backwards.
 
 ## 2. Migrate the remaining components
 
