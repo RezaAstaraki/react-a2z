@@ -105,10 +105,16 @@ After a build, verify:
 3. Every `package.json#exports` subpath resolves to an emitted file:
    `node -e "const p=require('./package.json'),fs=require('fs'); for (const [k,v] of Object.entries(p.exports)) { if (typeof v!=='object') continue; if (!fs.existsSync(v.import)) console.log('MISSING', k, v.import); }"`
    No output = all subpaths resolve.
-4. Known-broken subpaths today (`./Modal`, `./Toast`, `./ColorPicker`,
-   `./Md`, `./MdEditor`, `./Counter`) target `dist/.../X/index.js` which
-   Rollup never emits with `preserveModules` + current barrels. See
+4. Barrels (`./Modal`, `./Toast`, `./ColorPicker`, `./Md`, `./MdEditor`,
+   `./Counter`, `./hooks`) are emitted because they are listed as explicit
+   entry points in `rollup.config.js` (`entries`). If a subpath regresses,
+   check that its `src/.../X/index.ts` is still in that array. See
    SKILL.md → "package.json exports — subpath rules".
+
+Consumer note: the test app (`../test-app-for-lib`) loads this package
+through a `node_modules` symlink. After `npm run rollup`, **hard-refresh
+the browser** (`Ctrl+Shift+R`) — HMR does not reliably pick up changes
+that flow through the symlink.
 
 ---
 
