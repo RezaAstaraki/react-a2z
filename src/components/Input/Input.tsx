@@ -2,7 +2,7 @@ import * as React from 'react';
 import { forwardRef } from 'react';
 import { cn } from '../../utils';
 
-type InputProps = {
+export type InputProps = {
   label?: string;
   placeholder?: string;
   error?: string;
@@ -25,7 +25,12 @@ type InputProps = {
   currency?: string;
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>;
 
-export default forwardRef<HTMLInputElement, InputProps>(function Input(
+/**
+ * Styled native input. Deliberately hook-free so it stays a Server Component
+ * and adds nothing to the client bundle — pass `id` (as you would on a native
+ * input) to get the `<label htmlFor>` and `aria-describedby` wiring.
+ */
+const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   {
     label,
     placeholder,
@@ -47,13 +52,19 @@ export default forwardRef<HTMLInputElement, InputProps>(function Input(
     maxLength,
     onInput,
     currency,
+    id,
     ...props
   },
   ref,
 ) {
+  // Native-style wiring: an explicit `id` is what makes the label association
+  // and described-by reference possible without a client-side hook.
+  const messageId = id ? `${id}-message` : undefined;
+
   // Determine if input should be in error state
   const hasError = isInvalid || !!error || !!errorMessage;
   const displayError = error || errorMessage;
+  const hasMessage = !!displayError || !!helperText;
 
   const baseInputClasses = 'w-full transition-all duration-200 focus:outline-none text-right';
 
@@ -62,7 +73,7 @@ export default forwardRef<HTMLInputElement, InputProps>(function Input(
       'bg-white border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
     required:
       'bg-white border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
-    disabled: 'bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed opacity-60',
+    disabled: 'bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed opacity-50',
     focused: 'bg-white border border-blue-500 rounded-lg ring-1 ring-blue-500',
     error:
       'bg-white border border-red-500 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-500',
@@ -101,7 +112,11 @@ export default forwardRef<HTMLInputElement, InputProps>(function Input(
 
   return (
     <div className={cn('w-full', className)}>
-      {label && <label className={labelClasses}>{label}</label>}
+      {label && (
+        <label htmlFor={id} className={labelClasses}>
+          {label}
+        </label>
+      )}
 
       <div className="relative">
         {startIcon && (
@@ -112,12 +127,17 @@ export default forwardRef<HTMLInputElement, InputProps>(function Input(
 
         <input
           ref={ref}
+          id={id}
           type={type}
           placeholder={placeholder}
           disabled={disabled}
           readOnly={readonly}
           maxLength={maxLength}
           onInput={onInput}
+          required={required}
+          aria-required={required || undefined}
+          aria-invalid={hasError || undefined}
+          aria-describedby={hasMessage ? messageId : undefined}
           className={inputClasses}
           {...props}
         />
@@ -135,8 +155,8 @@ export default forwardRef<HTMLInputElement, InputProps>(function Input(
         )}
       </div>
 
-      {(displayError || helperText) && (
-        <div className="mt-1">
+      {hasMessage && (
+        <div className="mt-1" id={messageId}>
           {displayError && <p className={helperTextClasses}>{displayError}</p>}
           {helperText && !displayError && <p className={helperTextClasses}>{helperText}</p>}
         </div>
@@ -144,3 +164,7 @@ export default forwardRef<HTMLInputElement, InputProps>(function Input(
     </div>
   );
 });
+
+Input.displayName = 'Input';
+
+export default Input;
