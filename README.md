@@ -8,7 +8,8 @@ React component library with Tailwind CSS styling, TypeScript support, and Next.
 npm install react-a2z
 ```
 
-Peer dependencies: `react` (>=18) and `tailwindcss` (>=3.4 or v4).
+Peer dependencies: `react` and `react-dom` (>=18), `tailwindcss` (>=3.4 or v4),
+and `zustand` (>=5, required by `Modal` and `Toast`).
 
 ## Tailwind v4 setup (recommended)
 
@@ -66,4 +67,4 @@ export default function Page() {
 }
 ```
 
-All interactive components include `"use client"`, so they work in the Next.js App Router without extra wrappers.
+Components that need interactivity (`Slider`, `Tooltip`, `ColorPicker`, `Counter`, `MdEditor`, `Modal`, `Toast`) already include `"use client"`, so they work in the App Router without extra wrappers. Presentational components (`Button`, `Input`, `PearlButton`, `Md`) are deliberately hook-free and stay Server Components, so importing them adds nothing to the client bundle — add `"use client"` at your own call site only when you pass them event handlers.
