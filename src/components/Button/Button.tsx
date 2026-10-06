@@ -39,6 +39,10 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
 }
 
+/**
+ * Styled native button. Deliberately hook-free so it stays a Server Component —
+ * do not add "use client" here; add it at your call site if you pass handlers.
+ */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
@@ -148,7 +152,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         ref={ref}
         disabled={isDisabled}
-        aria-label={buttonType === 'icon-only' && icon ? `${icon} button` : undefined}
+        aria-label={
+          buttonType === 'icon-only' && typeof icon === 'string' ? `${icon} button` : undefined
+        }
         {...props}
       >
         {children || renderContent()}
@@ -160,4 +166,4 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = 'Button';
 
 export default Button;
-// export type { ButtonProps, ButtonVariant, ButtonSize, ButtonType, IconPosition };
+export type { ButtonProps, ButtonVariant, ButtonSize, ButtonType, IconPosition };
