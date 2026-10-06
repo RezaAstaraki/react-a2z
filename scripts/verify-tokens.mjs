@@ -88,8 +88,8 @@ assertEqual(
 );
 assertEqual(
   'slot class beats variant default (same family)',
-  cn('bg-primary-600', 'bg-primary-subtle'),
-  'bg-primary-subtle',
+  cn('bg-primary-600', 'bg-primary-soft'),
+  'bg-primary-soft',
 );
 assertEqual(
   'unrelated classes all survive',
