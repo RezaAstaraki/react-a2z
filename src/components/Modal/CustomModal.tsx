@@ -69,6 +69,12 @@ const PLACEMENT_CLASS: Record<ModalPlacement, string> = {
   'top-center': 'items-start justify-center',
   bottom: 'items-end justify-center',
   'bottom-center': 'items-end justify-center',
+  'top-start': 'items-start justify-start',
+  'top-end': 'items-start justify-end',
+  'center-start': 'items-center justify-start',
+  'center-end': 'items-center justify-end',
+  'bottom-start': 'items-end justify-start',
+  'bottom-end': 'items-end justify-end',
 };
 
 const BACKDROP_CLASS: Record<ModalBackdrop, string> = {

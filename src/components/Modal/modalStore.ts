@@ -14,13 +14,26 @@ export type ModalSize =
   | "5xl"
   | "full"
 
+/**
+ * Logical placement on a 3x3 grid. `start` / `end` follow the writing
+ * direction, so `top-start` is top-left in LTR and top-right in RTL.
+ *
+ * `auto` and `center` are equivalent; `top` / `bottom` are aliases of the
+ * `-center` variants, kept for backwards compatibility.
+ */
 export type ModalPlacement =
   | "auto"
   | "bottom"
   | "bottom-center"
+  | "bottom-end"
+  | "bottom-start"
   | "center"
+  | "center-end"
+  | "center-start"
   | "top"
   | "top-center"
+  | "top-end"
+  | "top-start"
 
 export type ModalBackdrop = "opaque" | "blur" | "transparent"
 
