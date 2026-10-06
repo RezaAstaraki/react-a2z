@@ -343,6 +343,12 @@ export type MdProps = {
   onTaskToggle?: (index: number, checked: boolean) => void;
 } & ParseMarkdownOptions;
 
+/**
+ * Markdown renderer. Deliberately hook-free so it stays a Server Component and
+ * markdown can be rendered on the server — do not add "use client" here. The
+ * task-list `onChange` is only attached when the consumer passes
+ * `onTaskToggle`, which itself requires a client caller.
+ */
 export function Md({
   value,
   children,

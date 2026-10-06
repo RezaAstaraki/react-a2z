@@ -3,6 +3,10 @@ import { cn } from '../../utils';
 
 export type PearlButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
 
+/**
+ * Styled native button with CSS-driven effects. Deliberately hook-free so it
+ * stays a Server Component — do not add "use client" here.
+ */
 const PearlButton = React.forwardRef<HTMLButtonElement, PearlButtonProps>(
   (
     {
