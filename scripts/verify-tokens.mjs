@@ -12,7 +12,7 @@
  *   3. the slot-aware recipe resolves per-slot, compound, and boolean variants
  */
 import { createRequire } from 'node:module';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
@@ -162,14 +162,41 @@ for (const needle of ['primary', 'neutral', 'success', 'warning', 'danger', 'inf
 }
 assertIncludes('v3 preset uses the alpha placeholder', preset, '<alpha-value>');
 
-// Every raw palette utility the migrated components emit must be gone.
-const buttonSrc = readFileSync(resolve(root, 'src/components/Button/Button.tsx'), 'utf8');
-const inputSrc = readFileSync(resolve(root, 'src/components/Input/Input.tsx'), 'utf8');
-const RAINBOW = /\b(bg|text|border|ring)-(blue|red|green|gray|emerald|sky|amber|orange|indigo|purple|slate|zinc|yellow|teal|violet|rose|lime|pink)-[0-9]{2,3}\b/g;
-const strayButton = [...buttonSrc.matchAll(RAINBOW)].map((m) => m[0]);
-const strayInput = [...inputSrc.matchAll(RAINBOW)].map((m) => m[0]);
-assertEqual('Button has zero raw palette utilities', strayButton.join(','), '');
-assertEqual('Input has zero raw palette utilities', strayInput.join(','), '');
+// Raw palette utilities are banned in MIGRATED components; everything else is
+// tracked as pending. Add a component here in the same commit you migrate it —
+// the assertion then covers it automatically, instead of only the two files
+// this check started with. See ROADMAP.md.
+const MIGRATED = [
+  'src/components/Button/Button.tsx',
+  'src/components/Input/Input.tsx',
+];
+
+const componentDir = resolve(root, 'src/components');
+const allComponentFiles = readdirSync(componentDir, { recursive: true })
+  .filter((f) => typeof f === 'string' && f.endsWith('.tsx'))
+  .map((f) => 'src/components/' + f.replace(/\\/g, '/'));
+
+// from/to/via catch gradient utilities, which a bg|text|border|ring regex misses.
+const RAINBOW = /\b(bg|text|border|ring|from|to|via)-(blue|red|green|gray|emerald|sky|amber|orange|indigo|purple|slate|zinc|yellow|teal|violet|rose|lime|pink)-[0-9]{2,3}\b/g;
+
+// A rename would silently drop a file from the assertion; assert they exist.
+for (const rel of MIGRATED) {
+  assertEqual(`${rel} exists`, existsSync(resolve(root, rel)) ? 'yes' : 'no', 'yes');
+}
+
+const pending = [];
+for (const rel of allComponentFiles) {
+  const src = readFileSync(resolve(root, rel), 'utf8');
+  const stray = [...src.matchAll(RAINBOW)].map((m) => m[0]);
+  if (MIGRATED.includes(rel)) {
+    assertEqual(`${rel} is token-clean`, stray.join(','), '');
+  } else if (stray.length > 0) {
+    pending.push(rel);
+  }
+}
+
+console.log(`  i ${MIGRATED.length} migrated, ${pending.length} pending migration`);
+for (const rel of pending) console.log(`      pending: ${rel}`);
 
 /* --------------------------------------------------------------------- done */
 console.log(
