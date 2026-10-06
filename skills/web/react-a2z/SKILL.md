@@ -35,25 +35,7 @@ UI components, hooks, and utilities for React / Next.js apps.
 
 | Trap | Fix |
 |------|-----|
-| `sed -i '/foo$/a bar'` silently no-ops | Worktree may be CRLF; `---
-name: react-a2z
-description: React + TypeScript component library with Tailwind CSS, Rollup bundling, headless compound components, and Next.js App Router support.
-version: 2.0.0
-author: Reza Astaraki
-license: MIT
-platforms: [linux, macos, windows]
-metadata:
-  hermes:
-    tags: [react, components, tailwind, library, headless, rollup]
-    related_skills: [dogfood]
----
-
-# react-a2z
-
-React component library with Tailwind CSS, TypeScript, and Rollup. Ships reusable
-UI components, hooks, and utilities for React / Next.js apps.
-
- anchors fail. Prefer `cat > file <<'EOF'` rewrites or a `node` script written to `/tmp/*.js`. |
+| `sed -i '/foo$/a bar'` silently no-ops | Worktree may be CRLF; `$`-anchored patterns fail. Prefer `cat > file <<'EOF'` rewrites or a `node` script written to `/tmp/*.js`. |
 | `node -e '…'` when the JS contains `'` | Write the script to `/tmp/x.js` via heredoc, then `node /tmp/x.js`. |
 | Bare `!` in bash | History expansion. Put it in a script file, or use `[ -f x ]` tests. |
 | `find` / `git diff` opens pager | Use `git --no-pager <cmd>` or pipe to `cat`. |
@@ -386,7 +368,7 @@ react-a2z/
 | `export *` from a barrel with default export       | Default exports don't propagate — export named values explicitly   |
 | `package.json#exports` points at `dist/.../X/index.js` that Rollup never emits | List `src/.../X/index.ts` in `rollup.config.js` `entries`, OR point the subpath at the concrete `X/X.js` file. Making the barrel reachable from `src/index.ts` does NOT help |
 | Barrel `X/index.ts` is a pure re-export and no `X/index.js` is emitted | List `src/.../X/index.ts` in the `entries` array in `rollup.config.js` — barrels are only emitted when they are explicit entry points |
-| Window `pointermove`/`pointerup` listeners leak if the component unmounts mid-drag | Pre-existing in `Slider` thumb + track handlers. Move listener registration into a `useEffect` with cleanup that removes them. Not yet fixed |
+| Window `pointermove`/`pointerup` listeners leak if the component unmounts mid-drag | Fixed in `Slider` (track + thumb): the listeners are owned by a `useEffect` keyed on a `dragging` flag, with the per-drag logic carried in refs so the effect does not re-register while the value changes. Never move registration back into the `pointerdown` handler |
 | `sed -i '/…$/a …'` silently no-ops on CRLF files | Repo is CRLF; `$`-anchored patterns fail. Use `cat > file <<'EOF'` rewrites or `node -e` scripts, never blind `sed` |
 | Leftover `useState` + `useEffect(() => setX(true), [])` "mounted" flag | Remove it — `noUnusedLocals` catches it; SSR-safe code shouldn't need the pattern unless you branch on it |
 | Tooltip content silently missing on first render because `container` is `null` | `createPortal` needs a DOM node; return `null` from `Tooltip.Content` when `container` is falsy (SSR-safe) |
