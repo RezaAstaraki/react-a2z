@@ -22,6 +22,30 @@ for how we *interact* and how to start / verify a session.
   `preserveModules: true`. Published as `react-a2z`. Full library
   surface, house style, and pitfalls live in SKILL.md.
 
+### Remote / resume
+
+- Remote: `origin` → `https://github.com/RezaAstaraki/react-a2z.git`
+  (fetch + push). Branch `main`, tracking `origin/main`. This is the only
+  remote.
+- Auth: classic PAT (`repo` scope) over HTTPS. `credential.helper` is
+  already `manager` in this repo, so the PAT is picked up automatically.
+- Last synced state (2026-10-06): HEAD `373aaa2` on `main`, level with
+  `origin/main` (0 ahead / 0 behind).
+- To resume on another machine:
+
+      git clone https://github.com/RezaAstaraki/react-a2z.git
+      cd react-a2z && npm install
+      npm run rollup
+
+- The consumer app is a *separate* repo
+  (`https://github.com/RezaAstaraki/test-app-for-lib.git`) that depends on
+  this one as `file:../react-a2z`. On a fresh machine clone BOTH repos as
+  siblings with those exact directory names, or the dependency breaks
+  silently.
+- Never copy `node_modules` between machines — this one is a Windows
+  install carrying win32 native binaries (`lightningcss`,
+  `@tailwindcss/oxide`). Always `npm install` on the target platform.
+
 I run every command myself in WSL and paste the output back to you.
 I cannot run PowerShell here, and I cannot run commands outside the
 project root unless you say otherwise.
