@@ -68,6 +68,7 @@ const entries = [
 export default [
   {
     input: entries,
+    external: ['clsx', 'tailwind-merge'],
     output: [
       {
         dir: "./dist/cjs",
