@@ -52,18 +52,26 @@ UI components, hooks, and utilities for React / Next.js apps.
 ## Overview
 
 - **Stack:** React 18+, TypeScript 5+, Tailwind CSS 3.4+ / v4, Rollup.
-- **Interop:** Every interactive component ships with `"use client"` (preserved
-  through Rollup by `preserveDirectives()` in `rollup.config.js`).
+- **Interop:** Server-safe by default. A component carries `"use client"` only
+  when it genuinely needs hooks, state, browser APIs, or a portal (preserved
+  through Rollup by `preserveDirectives()` in `rollup.config.js`). Never stamp
+  it on a presentational component — that forces the component and its subtree
+  into the client bundle, and no build check will catch the mistake.
+  Currently client: `Slider`, `Tooltip`, `ColorPicker`, `Counter`, `MdEditor`,
+  `ClientLogger`, `Modal`, `Toast`. Currently Server Components: `Button`,
+  `Input`, `PearlButton`, `Md`.
 - **Bundling:** `preserveModules: true` → per-file ESM + CJS output.
 - **Peers:** `react`, `react-dom`, `tailwindcss`, `zustand`.
-- **Runtime deps:** only `clsx`, `tailwind-merge`, `classNames` (via `cn`).
+- **Runtime deps:** only `clsx` + `tailwind-merge`, merged by `cn`.
 
 ## House Style (non-negotiable — every component follows this)
 
 1. `import * as React from 'react'` — never named-import from React.
 2. `React.forwardRef<HTMLElement, Props>` for any component that renders a DOM node.
 3. Set `Component.displayName = 'Component'`.
-4. `"use client"` at the top of every interactive component file.
+4. `"use client"` **only** when the component needs hooks, state, browser APIs,
+   or a portal — never on presentational components. Keep dumb primitives
+   (button/input-like) hook-free so they stay usable as Server Components.
 5. Class merging uses `cn` from `../../utils` — **never** `.filter(Boolean).join(' ')`.
    `cn` = `twMerge(clsx(...))` so the last conflicting Tailwind class wins.
 6. **Baked-in default classes** matching the house palette
@@ -188,9 +196,68 @@ custom color pickers, and the Slider for angle. Keyframes hoisted to
 Markdown renderer (with syntax highlighting) and editor. Editor exposes
 `MdEditorHandle`, `MdEditorMode`, `MdEditorToolId`.
 
+### CodeBox
+
+Read-only code block with lightweight syntax coloring and a copy button.
+
+- **Boundary:** `CodeBox.tsx` is **hook-free**, so it is a Server Component — the
+  coloring runs on the server and only `CodeBoxCopyButton` (internal,
+  `"use client"`) ships to the client. Do **not** add `"use client"` to
+  `CodeBox.tsx`. This is the reference example of the client-boundary policy.
+- **Props:** `code`, `language` (`ts | tsx | js | py | bash | css | json`),
+  `filename`, `showLanguage`, `copyable` (default `true`), `wrap`, `highlight`
+  (default `true`), `labels={{ copy, copied, error }}`, plus `classNames` /
+  `styles` slots for `root | header | filename | language | pre | code |
+  copyButton`.
+- **Reuses** `highlightCode()` from `Md` — the same zero-dependency colorizer, so
+  there is no second tokenizer to keep in sync.
+- **Copy** uses the shared public `copyToClipboard` util, which falls back to a
+  temporary textarea when `navigator.clipboard` is unavailable (non-secure
+  contexts, e.g. plain-http LAN/device testing).
+- **Known limitation:** the token colors (`text-sky-300`, `text-emerald-300`,
+  `text-amber-300`, `text-gray-400`) are baked into `highlightCode`, so they are
+  **not** reachable through `classNames` — CodeBox is effectively dark-only
+  until the syntax palette moves to CSS variables.
+
 ### Modal
 
 `CustomModal` + `GlobalModal` with Zustand store.
+
+- **`placement` is a logical 3x3 grid:** `top-start`, `top-center`, `top-end`,
+  `center-start`, `center`, `center-end`, `bottom-start`, `bottom-center`,
+  `bottom-end`. `start` / `end` follow the writing direction, so `top-start` is
+  top-left in LTR and top-right in RTL. Placement is implemented purely as flex
+  alignment (`items-*` / `justify-*`) on the fixed wrapper.
+- **Aliases kept for compatibility** (each equals a grid cell, these are not dead
+  values): `auto` ≡ `center`, `top` ≡ `top-center`, `bottom` ≡ `bottom-center`.
+- Other props: `size` (10 values), `backdrop` (`opaque | blur | transparent`),
+  `variant` (`default | unstyled`), `scrollBehavior` (`inside | normal |
+  outside`), `isDismissible`, `showCloseButton`, `isDraggable` /
+  `headerDraggable`, `zIndex`, `stackable`, and `className` /
+  `contentClassName` / `bodyClassName` / `backdropClassName`.
+- **`setModalOpen` payload excludes `zIndex`** — the store computes stacking
+  itself (`50 + 10` per layer). Passing `zIndex` there is a type error; use
+  `CustomModal` directly if you need to pin it.
+- **Known dead surface** (declared, read by no renderer): the store's
+  `modalIconColor`, `modalTitleColor`, `modalBorderColor`, `modalBgIcon`,
+  `modalIconName` and `modalDescription`, plus `CustomModalProps.stackable`
+  (stacking is store-driven). Candidates for removal.
+
+```tsx
+// placement is a logical 3x3 grid; start / end follow the writing direction.
+//   top-start    | top-center    | top-end
+//   center-start | center        | center-end
+//   bottom-start | bottom-center | bottom-end
+<CustomModal isOpen={open} onClose={close} placement="top-start" title="Top start" />
+<CustomModal isOpen={open} onClose={close} placement="bottom-end" title="Bottom end" />
+
+// Pin the z-index by rendering CustomModal directly — the store computes it.
+<CustomModal isOpen={open} onClose={close} placement="center-end" zIndex={70} />
+
+// Through the store. NOTE the prop is `modalTitle` here, not `title`, and
+// `zIndex` is rejected by the payload type — the store owns stacking.
+setModalOpen({ modalTitle: "Settings", placement: "bottom-end", size: "md" });
+```
 
 ### Toast
 

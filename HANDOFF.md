@@ -134,6 +134,13 @@ After a build, verify:
    entry points in `rollup.config.js` (`entries`). If a subpath regresses,
    check that its `src/.../X/index.ts` is still in that array. See
    SKILL.md → "package.json exports — subpath rules".
+5. Client/server boundary — do **not** add `"use client"` unless the component
+   needs hooks, state, browser APIs, or a portal. `Button`, `Input`,
+   `PearlButton` and `Md` are hook-free Server Components; `Slider`, `Tooltip`,
+   `ColorPicker`, `Counter`, `MdEditor`, `ClientLogger`, `Modal` and `Toast` are
+   client components. A *missing* directive fails the Next build loudly, but an
+   *unnecessary* one fails nothing at all — so check this by eye whenever you
+   add a component. See SKILL.md → "House Style" rule 4.
 
 Consumer note: the test app (`../test-app-for-lib`) loads this package
 through a `node_modules` symlink. After `npm run rollup`, **hard-refresh
@@ -201,3 +208,56 @@ When I paste this file at the start of a session, please:
     "cwd is the repo root" is the durable phrasing.
   - No husky / lint-staged here, so WSL `git commit` is fine. Do not copy
     eshop2's "commit in PowerShell" rule into this repo.
+
+- 2026-10-06: Added the "Remote / resume" subsection to §1 (origin URL, branch,
+  PAT auth, last synced HEAD, clone-and-rebuild steps for another machine).
+  Also appended this client/server boundary rule as verify step 5 in §5.
+
+  - DECISION: `"use client"` is applied only when a component genuinely needs
+    hooks, state, browser APIs, or a portal — never blanket-applied.
+    `Button`, `Input`, `PearlButton` and `Md` are hook-free Server Components;
+    `Slider`, `Tooltip`, `ColorPicker`, `Counter`, `MdEditor`, `ClientLogger`,
+    `Modal` and `Toast` are client components.
+  - WHY IT NEEDS WRITING DOWN: the two mistakes are not symmetric. A *missing*
+    directive fails the Next build with an explicit error ("importing a module
+    that depends on `useState` into a React Server Component module"). An
+    *unnecessary* one fails nothing — no lint, no type error, no test — it just
+    silently pushes that component and its subtree into the client bundle. So
+    the only guard against over-applying it is knowing the rule.
+  - Recorded in SKILL.md (Overview "Interop" + House Style rule 4), README.md,
+    and a why-comment at the top of each server-safe component so the reason
+    travels with the code.
+
+- 2026-10-06 (later): Two library additions.
+
+  - **`CodeBox`** (`src/components/CodeBox/`) — read-only code block that reuses
+    `highlightCode()` from `Md` (no second tokenizer), plus a new public
+    `copyToClipboard` util in `src/utils/`. `CodeBox.tsx` is hook-free
+    (server-safe); only the internal `CodeBoxCopyButton` carries `"use client"`.
+    Known limitation: the syntax token colours are baked into `highlightCode`,
+    so they are NOT reachable through `classNames` — CodeBox is dark-only until
+    the palette moves to CSS variables.
+
+  - **Modal `placement` is now a logical 3x3 grid** — six new values:
+    `top-start`, `top-end`, `center-start`, `center-end`, `bottom-start`,
+    `bottom-end`. `auto` / `top` / `bottom` remain aliases of the centre column
+    (kept for compatibility, not dead values).
+
+    ```tsx
+    <CustomModal isOpen={open} onClose={close} placement="top-start" title="Top start" />
+
+    // zIndex is NOT in the setModalOpen payload — the store computes stacking.
+    setModalOpen({ modalTitle: "Settings", placement: "bottom-end", size: "md" });
+    ```
+
+  - DECISION: `start` / `end` are **logical**, not physical. There is no
+    CSS-only way to pin a physical left in RTL — `justify-start` follows the
+    writing direction — so `top-start` is top-left in LTR and top-right in RTL.
+    Naming them `left` / `right` would make the API lie in RTL.
+  - Implementation is unchanged: placement is still just flex `items-*` /
+    `justify-*` on the fixed wrapper, so no layout behaviour moved and the six
+    new combos are purely additive.
+  - Also recorded in SKILL.md: the full Modal prop list, the `zIndex` exclusion
+    from `setModalOpen`, and the known dead surface (`modalIconColor`,
+    `modalTitleColor`, `modalBorderColor`, `modalBgIcon`, `modalIconName`,
+    `modalDescription`, `stackable`).
