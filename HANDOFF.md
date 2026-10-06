@@ -261,3 +261,63 @@ When I paste this file at the start of a session, please:
     from `setModalOpen`, and the known dead surface (`modalIconColor`,
     `modalTitleColor`, `modalBorderColor`, `modalBgIcon`, `modalIconName`,
     `modalDescription`, `stackable`).
+
+- 2026-10-06 (session 3): Finished the token layer and proved it end to end.
+
+  **The v4 gap.** The token layer existed but only worked for v3.
+  `tailwind.preset.js` mapped every `--a2z-*` variable onto a Tailwind name,
+  but nothing did the equivalent for v4 — `tokens.css` declared the variables
+  and `tailwind.css` only set `@source`, which tells v4 where to scan for
+  class names without *generating* anything. So v4 consumers got the
+  variables and none of the utilities: `bg-primary-600`, `rounded-md` etc.
+  compiled to nothing and the migrated Button/Input rendered unstyled.
+  Fixed with a `@theme inline` block in `tailwind.css`.
+
+  - DECISION: `inline`, not plain `@theme`. Plain `@theme` would emit a
+    second `--color-primary-600` variable for utilities to reference, giving
+    two names for one knob. `inline` bakes the `var(--a2z-*)` reference
+    straight into the utility, so `--a2z-*` stays the only override path.
+  - Verified in the browser: overriding `--a2z-primary-600` on a wrapper
+    re-hues both the solid button and its derived `-soft` wash, with no
+    rebuild.
+
+  **The build bug.** `peerDepsExternal()` only externalizes
+  `peerDependencies`. `clsx` and `tailwind-merge` are regular deps, so
+  Rollup bundled them into `dist/esm/node_modules/...` and rewrote the
+  import to a relative path. Node then parsed that copy as CJS and the named
+  `twMerge` export failed at load — every consumer import would have crashed.
+  Fixed with an explicit `external: ['clsx', 'tailwind-merge']`.
+
+  - Caught by `scripts/verify-tokens.mjs`, not by the build. The build was
+    green the whole time. This is the argument for keeping the harness.
+
+  **The demo migrations.** Both `ButtonDemo` and `InputDemo` were on the
+  pre-token API. Button used `variant="filled-blue"` (no longer a variant);
+  Input used `variant="default|focused|error"` (no longer a prop at all).
+
+  - WHY IT DID NOT FAIL: React 19 passes unknown props through to the DOM as
+    no-ops, and `next dev` does not type-check. The dev server returned 200
+    while five "different" input states rendered identically. Only
+    `next build`, or grepping the built `d.ts`, would have caught it.
+  - Both demos rewritten against the real APIs and verified in the browser.
+
+  **Doc reconciliation.** SKILL.md, README.md, `tailwind.preset.js`'s header
+  and `AGENTS.md` all predated the token work.
+
+  - SKILL.md: Button/Input API sections, House Style rules 5/6/8/12,
+    Utilities, Styling Model, Build, Design Principles, When Extending, the
+    Verification Checklist, plus a new "Design tokens" section and three new
+    pitfall rows.
+  - README.md: usage example fixed, new Theming section.
+  - `AGENTS.md` "Doc drift": all five bullets were stale, and stale in the
+    dangerous direction — they told agents to distrust docs that are now
+    correct. Replaced with the standing rule rather than a fresh list of
+    claims that will rot the same way.
+
+  Pushed: `react-a2z` `e29db55..ca0b47c`, `test-app-for-lib`
+  `fbfdbe2..d76faab`.
+
+  - NOTE: `955e65c "in middle i continued"` carries the whole token layer and
+    was pushed with that subject. Left alone deliberately — rewording a
+    non-tip commit means an interactive rebase 6 deep, which is more risk
+    than a bad subject line is worth.
