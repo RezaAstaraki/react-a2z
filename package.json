@@ -28,6 +28,11 @@
       "import": "./dist/esm/components/Input/Input.js",
       "require": "./dist/cjs/components/Input/Input.js"
     },
+    "./CodeBox": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/components/CodeBox/CodeBox.js",
+      "require": "./dist/cjs/components/CodeBox/CodeBox.js"
+    },
     "./Modal": {
       "types": "./dist/index.d.ts",
       "import": "./dist/esm/components/Modal/index.js",
@@ -141,7 +146,6 @@
     "zustand": "^5.0.15"
   },
   "dependencies": {
-    "classnames": "^2.5.1",
     "clsx": "^2.1.1",
     "tailwind-merge": "^3.0.1"
   }
