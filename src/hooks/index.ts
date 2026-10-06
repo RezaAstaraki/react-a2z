@@ -1,3 +1,6 @@
+export { useControllableState } from './useControllableState';
+export type { UseControllableStateOptions } from './useControllableState';
+
 export { useDebounce } from './useDebounce';
 export type { UseDebounceOptions } from './useDebounce';
 

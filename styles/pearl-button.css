@@ -1,42 +1,76 @@
-/* Pearl button — gloss hover + press (prefix: a2z-) */
+/* ==========================================================================
+   PearlButton — gloss hover + press
+   ==========================================================================
+
+   The only stylesheet in the library that cannot be expressed as Tailwind
+   utilities, so it is plain CSS by design.
+
+   Everything is now token-driven. NOTE: this file is intentionally NOT wrapped in
+   `@layer`, so its declarations beat Tailwind utilities on the same element —
+   a `style={{...}}`, an inherited property, or one of the `--a2z-pearl-*`
+   variables below are the ways to override it.
+
+   Override per instance:
+
+     <PearlButton style={{ '--a2z-pearl-bg': '#1e3a8a' } as React.CSSProperties} />
+
+   Override everywhere:
+
+     :root { --a2z-pearl-bg: #1e3a8a; --a2z-pearl-radius: 0.75rem; }
+   ========================================================================== */
+
 .a2z-pearl-btn {
+  /* Scoped defaults — declare on the element so they are inheritable and
+     overridable at any ancestor, and so a single instance can be re-skinned
+     without touching the rest. */
+  --a2z-pearl-bg: #080808;
+  --a2z-pearl-fg: rgb(255 255 255 / 0.7);
+  --a2z-pearl-radius: var(--a2z-radius-full);
+  --a2z-pearl-glow: rgb(255 255 255 / 0.12);
+  --a2z-pearl-sheen: rgb(255 255 255 / 0.3);
+  --a2z-pearl-inner-top: rgb(255 255 255 / 0.3);
+  --a2z-pearl-inner-bottom: rgb(255 255 255 / 0.5);
+  --a2z-pearl-inner-dark: rgb(0 0 0 / 0.7);
+  --a2z-pearl-drop: rgb(0 0 0 / 0.22);
+  --a2z-pearl-drop-tight: rgb(0 0 0 / 0.55);
+  --a2z-pearl-focus: rgb(255 255 255 / 0.35);
+  --a2z-pearl-duration: var(--a2z-duration);
+
   position: relative;
   cursor: pointer;
   border: 0;
   outline: none;
-  border-radius: 9999px;
-  background-color: #080808;
-  transition: all 0.2s ease;
+  border-radius: var(--a2z-pearl-radius);
+  background-color: var(--a2z-pearl-bg);
+  transition: all var(--a2z-pearl-duration) var(--a2z-ease);
   box-shadow:
-    inset 0 0.3rem 0.9rem rgba(255, 255, 255, 0.3),
-    inset 0 -0.1rem 0.3rem rgba(0, 0, 0, 0.7),
-    inset 0 -0.4rem 0.9rem rgba(255, 255, 255, 0.5),
-    0 1.25rem 1.25rem rgba(0, 0, 0, 0.22),
-    0 0.55rem 0.55rem -0.3rem rgba(0, 0, 0, 0.55);
+    inset 0 0.3rem 0.9rem var(--a2z-pearl-inner-top),
+    inset 0 -0.1rem 0.3rem var(--a2z-pearl-inner-dark),
+    inset 0 -0.4rem 0.9rem var(--a2z-pearl-inner-bottom),
+    0 1.25rem 1.25rem var(--a2z-pearl-drop),
+    0 0.55rem 0.55rem -0.3rem var(--a2z-pearl-drop-tight);
 }
 
 .a2z-pearl-btn:hover {
-  box-shadow:
-    inset 0 0.3rem 0.5rem rgba(255, 255, 255, 0.4),
-    inset 0 -0.1rem 0.3rem rgba(0, 0, 0, 0.7),
-    inset 0 -0.4rem 0.9rem rgba(255, 255, 255, 0.7),
-    0 1.25rem 1.25rem rgba(0, 0, 0, 0.22),
-    0 0.55rem 0.55rem -0.3rem rgba(0, 0, 0, 0.55);
+  --a2z-pearl-inner-top: rgb(255 255 255 / 0.4);
+  --a2z-pearl-inner-bottom: rgb(255 255 255 / 0.7);
 }
 
 .a2z-pearl-btn:active {
   transform: translateY(4px);
-  box-shadow:
-    inset 0 0.3rem 0.5rem rgba(255, 255, 255, 0.5),
-    inset 0 -0.1rem 0.3rem rgba(0, 0, 0, 0.8),
-    inset 0 -0.4rem 0.9rem rgba(255, 255, 255, 0.4),
-    0 1.25rem 1.25rem rgba(0, 0, 0, 0.22),
-    0 0.55rem 0.55rem -0.3rem rgba(0, 0, 0, 0.55);
+  --a2z-pearl-inner-top: rgb(255 255 255 / 0.5);
+  --a2z-pearl-inner-dark: rgb(0 0 0 / 0.8);
+  --a2z-pearl-inner-bottom: rgb(255 255 255 / 0.4);
 }
 
 .a2z-pearl-btn:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.35);
+  outline: 2px solid var(--a2z-pearl-focus);
   outline-offset: 3px;
+}
+
+.a2z-pearl-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .a2z-pearl-btn__wrap {
@@ -47,7 +81,7 @@
   padding: 0.85rem 1.75rem;
   font-size: 0.95rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--a2z-pearl-fg);
 }
 
 .a2z-pearl-btn__glow {
@@ -58,8 +92,8 @@
   top: -100%;
   bottom: 25%;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.12);
-  transition: transform 0.3s ease;
+  background-color: var(--a2z-pearl-glow);
+  transition: transform var(--a2z-duration-slow) var(--a2z-ease);
 }
 
 .a2z-pearl-btn:hover .a2z-pearl-btn__glow {
@@ -74,14 +108,14 @@
   top: 12%;
   bottom: 40%;
   border-radius: 22px 22px 0 0;
-  box-shadow: inset 0 10px 8px -10px rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 10px 8px -10px var(--a2z-pearl-sheen);
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.3) 0%,
-    rgba(0, 0, 0, 0) 50%,
-    rgba(0, 0, 0, 0) 100%
+    var(--a2z-pearl-sheen) 0%,
+    rgb(0 0 0 / 0) 50%,
+    rgb(0 0 0 / 0) 100%
   );
-  transition: all 0.3s ease;
+  transition: all var(--a2z-duration-slow) var(--a2z-ease);
 }
 
 .a2z-pearl-btn:hover .a2z-pearl-btn__shine {
@@ -97,7 +131,7 @@
   justify-content: center;
   gap: 0.65rem;
   margin: 0;
-  transition: transform 0.2s ease;
+  transition: transform var(--a2z-duration) var(--a2z-ease);
   transform: translateY(2%);
   mask-image: linear-gradient(to bottom, white 40%, transparent);
 }

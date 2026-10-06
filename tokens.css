@@ -1,0 +1,216 @@
+/* ==========================================================================
+   react-a2z — design tokens
+   ==========================================================================
+
+   EVERY public token is a CSS custom property, so a consumer can re-theme the
+   whole library from their own stylesheet without touching library source and
+   without a build step:
+
+     :root                     { --a2z-primary-600: 124 58 237; }
+     [data-a2z-theme="brand"]  { --a2z-primary-600: 14 165 233; }
+     .my-widget                { --a2z-primary-600: 14 165 233; }
+
+   Two rules keep the two supported Tailwind majors honest:
+
+   1. Channel values are stored as "R G B" triples, never as hex. Tailwind v3
+      needs `rgb(var(--a2z-primary-600) / <alpha-value>)` for opacity modifiers
+      (`bg-primary-600/50`) to work, and that only composes with a triple.
+      Tailwind v4 users can still write `rgb(var(--a2z-primary-600))`.
+   2. Aliases point at channels with `var()`, which browsers resolve at
+      computed-value time — so overriding `--a2z-primary-600` alone re-themes
+      every alias derived from it, including the translucent ones.
+
+   Tailwind v3: values arrive via tailwind.preset.js -> styles.css.
+   Tailwind v4: this same file is imported by tailwind.css.
+   ========================================================================== */
+
+:root {
+  /* ---------- palette: primary ---------------------------------------- */
+  --a2z-primary-50: 239 246 255;
+  --a2z-primary-100: 219 234 254;
+  --a2z-primary-200: 191 219 254;
+  --a2z-primary-300: 147 197 253;
+  --a2z-primary-400: 96 165 250;
+  --a2z-primary-500: 59 130 246;
+  --a2z-primary-600: 37 99 235;
+  --a2z-primary-700: 29 78 216;
+  --a2z-primary-800: 30 64 175;
+  --a2z-primary-900: 30 58 138;
+  --a2z-primary-fg: 255 255 255;
+
+  /* ---------- palette: neutral ---------------------------------------- */
+  --a2z-neutral-50: 249 250 251;
+  --a2z-neutral-100: 243 244 246;
+  --a2z-neutral-200: 229 231 235;
+  --a2z-neutral-300: 209 213 219;
+  --a2z-neutral-400: 156 163 175;
+  --a2z-neutral-500: 107 114 128;
+  --a2z-neutral-600: 75 85 99;
+  --a2z-neutral-700: 55 65 81;
+  --a2z-neutral-800: 31 41 55;
+  --a2z-neutral-900: 17 24 39;
+  --a2z-neutral-fg: 255 255 255;
+
+  /* ---------- palette: status ----------------------------------------- */
+  --a2z-success-50: 236 253 245;
+  --a2z-success-100: 209 250 229;
+  --a2z-success-300: 110 231 183;
+  --a2z-success-500: 16 185 129;
+  --a2z-success-600: 5 150 105;
+  --a2z-success-700: 4 120 87;
+  --a2z-success-fg: 255 255 255;
+
+  --a2z-warning-50: 255 251 235;
+  --a2z-warning-100: 254 243 199;
+  --a2z-warning-300: 252 211 77;
+  --a2z-warning-500: 245 158 11;
+  --a2z-warning-600: 217 119 6;
+  --a2z-warning-700: 180 83 9;
+  --a2z-warning-fg: 255 255 255;
+
+  --a2z-danger-50: 254 242 242;
+  --a2z-danger-100: 254 226 226;
+  --a2z-danger-300: 252 165 165;
+  --a2z-danger-500: 239 68 68;
+  --a2z-danger-600: 220 38 38;
+  --a2z-danger-700: 185 28 28;
+  --a2z-danger-fg: 255 255 255;
+
+  --a2z-info-50: 240 249 255;
+  --a2z-info-100: 224 242 254;
+  --a2z-info-300: 125 211 252;
+  --a2z-info-500: 14 165 233;
+  --a2z-info-600: 2 132 199;
+  --a2z-info-700: 3 105 161;
+  --a2z-info-fg: 255 255 255;
+
+  /* ---------- semantic surfaces --------------------------------------- */
+  --a2z-bg: 255 255 255;
+  --a2z-surface: 255 255 255;
+  --a2z-surface-raised: 255 255 255;
+  --a2z-surface-sunken: 249 250 251;
+  --a2z-overlay: 17 24 39;
+
+  /* ---------- semantic content ---------------------------------------- */
+  --a2z-fg: 17 24 39;
+  --a2z-fg-muted: 107 114 128;
+  --a2z-fg-subtle: 156 163 175;
+  --a2z-fg-inverted: 255 255 255;
+
+  /* ---------- semantic borders / rings -------------------------------- */
+  --a2z-border: 229 231 235;
+  --a2z-border-strong: 209 213 219;
+  --a2z-ring: var(--a2z-primary-500);
+  --a2z-ring-offset: 255 255 255;
+
+  /* ---------- translucent "soft" state washes ------------------------
+     Baked as literal rgba() rather than `rgb(var(--x) / 0.5)` so they need no
+     palette knowledge and no per-major syntax. A consumer overrides the whole
+     variable in one declaration.
+
+     Named `-soft`, not `-subtle`: tailwind-merge has its own `text-subtle`-style
+     conventions, and `soft` keeps every name a clean `bg-<color>-<tone>` shape. */
+  --a2z-primary-soft: rgb(37 99 235 / 0.08);
+  --a2z-primary-soft-hover: rgb(37 99 235 / 0.14);
+  --a2z-neutral-soft: rgb(75 85 99 / 0.06);
+  --a2z-neutral-soft-hover: rgb(75 85 99 / 0.12);
+  --a2z-success-soft: rgb(5 150 105 / 0.08);
+  --a2z-success-soft-hover: rgb(5 150 105 / 0.14);
+  --a2z-warning-soft: rgb(217 119 6 / 0.08);
+  --a2z-warning-soft-hover: rgb(217 119 6 / 0.14);
+  --a2z-danger-soft: rgb(220 38 38 / 0.08);
+  --a2z-danger-soft-hover: rgb(220 38 38 / 0.14);
+  --a2z-info-soft: rgb(2 132 199 / 0.08);
+  --a2z-info-soft-hover: rgb(2 132 199 / 0.14);
+
+  /* ---------- disabled ------------------------------------------------ */
+  --a2z-disabled-bg: 243 244 246;
+  --a2z-disabled-fg: 156 163 175;
+  --a2z-disabled-border: 229 231 235;
+
+  /* ---------- radius ---------------------------------------------------
+     --a2z-radius is the single knob; every other radius derives from it, so
+     `--a2z-radius: 0` yields a fully square UI and `1rem` a pill-ish one. */
+  --a2z-radius: 0.5rem;
+  --a2z-radius-sm: calc(var(--a2z-radius) - 0.25rem);
+  --a2z-radius-md: var(--a2z-radius);
+  --a2z-radius-lg: calc(var(--a2z-radius) + 0.25rem);
+  --a2z-radius-xl: calc(var(--a2z-radius) + 0.5rem);
+  --a2z-radius-full: 9999px;
+
+  /* ---------- elevation ------------------------------------------------ */
+  --a2z-shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --a2z-shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --a2z-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --a2z-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --a2z-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* ---------- typography / motion -------------------------------------- */
+  --a2z-font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --a2z-font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  --a2z-duration-fast: 120ms;
+  --a2z-duration: 200ms;
+  --a2z-duration-slow: 320ms;
+  --a2z-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ---------- focus ring ---------------------------------------------- */
+  --a2z-ring-width: 2px;
+  --a2z-ring-offset-width: 2px;
+}
+
+/* ==========================================================================
+   Dark theme
+   --------------------------------------------------------------------------
+   Scoped to a class, not to `prefers-color-scheme`, so an app can force either
+   mode regardless of OS setting. Opt into OS-following explicitly:
+
+     <html class="a2z-dark">   ... forced dark
+     <html class="dark">       ... if your app drives dark mode this way
+     <html>                    ... light (default)
+
+   For OS-following, add this once in your own CSS:
+     @media (prefers-color-scheme: dark) { :root:not(.a2z-light) { ...copy the
+     .a2z-dark block's declarations here... } }
+   ========================================================================== */
+.a2z-dark,
+.dark {
+  --a2z-bg: 3 7 18;
+  --a2z-surface: 17 24 39;
+  --a2z-surface-raised: 31 41 55;
+  --a2z-surface-sunken: 3 7 18;
+  --a2z-overlay: 0 0 0;
+
+  --a2z-fg: 243 244 246;
+  --a2z-fg-muted: 156 163 175;
+  --a2z-fg-subtle: 107 114 128;
+  --a2z-fg-inverted: 17 24 39;
+
+  --a2z-border: 55 65 81;
+  --a2z-border-strong: 75 85 99;
+  --a2z-ring: var(--a2z-primary-400);
+  --a2z-ring-offset: 3 7 18;
+
+  /* Lighter tints read better than the light-mode shades on dark surfaces. */
+  --a2z-primary-soft: rgb(96 165 250 / 0.16);
+  --a2z-primary-soft-hover: rgb(96 165 250 / 0.26);
+  --a2z-neutral-soft: rgb(255 255 255 / 0.08);
+  --a2z-neutral-soft-hover: rgb(255 255 255 / 0.14);
+  --a2z-success-soft: rgb(52 211 153 / 0.16);
+  --a2z-success-soft-hover: rgb(52 211 153 / 0.26);
+  --a2z-warning-soft: rgb(251 191 36 / 0.16);
+  --a2z-warning-soft-hover: rgb(251 191 36 / 0.26);
+  --a2z-danger-soft: rgb(248 113 113 / 0.16);
+  --a2z-danger-soft-hover: rgb(248 113 113 / 0.26);
+  --a2z-info-soft: rgb(56 189 248 / 0.16);
+  --a2z-info-soft-hover: rgb(56 189 248 / 0.26);
+
+  --a2z-disabled-bg: 31 41 55;
+  --a2z-disabled-fg: 75 85 99;
+  --a2z-disabled-border: 55 65 81;
+
+  --a2z-shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --a2z-shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.5), 0 1px 2px -1px rgb(0 0 0 / 0.5);
+  --a2z-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+  --a2z-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.5);
+  --a2z-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.5);
+}

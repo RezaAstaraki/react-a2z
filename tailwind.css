@@ -1,2 +1,23 @@
-/* Tailwind v4 — import in your app globals.css after @import "tailwindcss" */
+@import "./tokens.css";
+@import "./components.css";
+
+/* ==========================================================================
+   react-a2z — Tailwind v4 entry point.
+   ==========================================================================
+
+   Import AFTER Tailwind itself, in your app's globals.css:
+
+     @import "tailwindcss";
+     @import "react-a2z/tailwind.css";   <-- this file
+     @source "./src";
+
+   This file pulls in the design tokens, the prebuilt component CSS, and tells
+   Tailwind v4 to scan the library's compiled output for the utility classes the
+   components reference.
+
+   Re-theming needs no rebuild and no JS config — override the variables:
+
+     :root { --a2z-primary-600: 124 58 237; }
+   ========================================================================== */
+
 @source "./dist";

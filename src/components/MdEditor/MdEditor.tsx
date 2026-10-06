@@ -974,7 +974,8 @@ export const MdEditor = forwardRef<MdEditorHandle, MdEditorProps>(function MdEdi
           <div className="flex justify-end gap-2">
             <Button
               type="button"
-              variant="filled-gray"
+              variant="soft"
+              color="neutral"
               size="sm"
               text="Cancel"
               disabled={uploading}
@@ -982,7 +983,8 @@ export const MdEditor = forwardRef<MdEditorHandle, MdEditorProps>(function MdEdi
             />
             <Button
               type="button"
-              variant="filled-blue"
+              variant="solid"
+              color="primary"
               size="sm"
               text="Insert"
               loading={uploading}
@@ -1017,8 +1019,8 @@ export const MdEditor = forwardRef<MdEditorHandle, MdEditorProps>(function MdEdi
           </label>
           {linkError && <p className="text-sm text-red-600">{linkError}</p>}
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="filled-gray" size="sm" text="Cancel" onClick={closeLinkDialog} />
-            <Button type="button" variant="filled-blue" size="sm" text="Insert" onClick={insertChosenLink} />
+            <Button type="button" variant="soft" color="neutral" size="sm" text="Cancel" onClick={closeLinkDialog} />
+            <Button type="button" variant="solid" color="primary" size="sm" text="Insert" onClick={insertChosenLink} />
           </div>
         </div>
       </CustomModal>

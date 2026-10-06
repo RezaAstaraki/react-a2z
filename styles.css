@@ -1,2 +1,16 @@
-/* react-a2z fancy component styles — import once in the app */
-@import "./styles/pearl-button.css";
+/* react-a2z — Tailwind v3 stylesheet entry point.
+ *
+ * Import once in the app, AFTER your Tailwind directives.
+ * (Tailwind v4 users should use `react-a2z/tailwind.css` instead, which pulls
+ * these same files in automatically.)
+ *
+ *   @tailwind base;
+ *   @tailwind components;
+ *   @tailwind utilities;
+ *   @import "react-a2z/styles.css";
+ *
+ * Deliberately does NOT include tokens.css: Tailwind v3 adds those same
+ * variables to the cascade through `tailwind.preset.js` -> `theme.extend`, and
+ * importing both would emit the `:root` block twice.
+ */
+@import "./components.css";

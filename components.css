@@ -1,0 +1,16 @@
+/* ==========================================================================
+   react-a2z — prebuilt component CSS
+   ==========================================================================
+
+   The few library styles that cannot be expressed as Tailwind utilities.
+
+   Tailwind v4:  imported automatically by `react-a2z/tailwind.css`.
+   Tailwind v3:  import once in your app, after the tokens:
+
+     @import "react-a2z/tokens.css";
+     @import "react-a2z/components.css";
+
+   Import order matters: this file assumes the `--a2z-*` variables exist.
+   ========================================================================== */
+
+@import "./styles/pearl-button.css";

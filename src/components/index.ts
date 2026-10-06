@@ -10,8 +10,17 @@ import Tooltip from './Tooltip/Tooltip';
 
 export { Button, Input, ClientLogger, CodeBox, PearlButton, ColorPicker, GradientMaker, Slider, Tooltip };
 
-export type { ButtonProps, ButtonVariant, ButtonSize, ButtonType, IconPosition } from './Button/Button';
-export type { InputProps } from './Input/Input';
+export type {
+  ButtonProps,
+  ButtonVariant,
+  ButtonColor,
+  ButtonSize,
+  ButtonShape,
+  ButtonClassNames,
+  ButtonStyles,
+  IconPosition,
+} from './Button/Button';
+export type { InputProps, InputSize, InputClassNames, InputStyles } from './Input/Input';
 export type {
   CodeBoxProps,
   CodeBoxClassNames,

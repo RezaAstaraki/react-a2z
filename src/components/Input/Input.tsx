@@ -2,33 +2,85 @@ import * as React from 'react';
 import { forwardRef } from 'react';
 import { cn } from '../../utils';
 
+export type InputSize = 'sm' | 'md' | 'lg';
+
+/**
+ * Overridable parts.
+ *
+ * `Input` is deliberately hook-free (it stays a Server Component), so it cannot
+ * call `useId` to wire `<label htmlFor>` for you. Pass `id` to get the label
+ * association and `aria-describedby`; without it the visual label is not
+ * programmatically associated with the field.
+ */
+export type InputClassNames = {
+  root?: string;
+  label?: string;
+  /** Positioning context for the adornments. */
+  wrapper?: string;
+  input?: string;
+  startIcon?: string;
+  endIcon?: string;
+  /** The `<div>` holding the helper/error text. */
+  helper?: string;
+  /** Each message `<p>` (error and helper share this slot). */
+  helperText?: string;
+};
+
+export type InputStyles = {
+  root?: React.CSSProperties;
+  label?: React.CSSProperties;
+  wrapper?: React.CSSProperties;
+  input?: React.CSSProperties;
+  startIcon?: React.CSSProperties;
+  endIcon?: React.CSSProperties;
+  helper?: React.CSSProperties;
+  helperText?: React.CSSProperties;
+};
+
 export type InputProps = {
   label?: string;
   placeholder?: string;
+  /** Shown as the error message and forces the invalid visual state. */
   error?: string;
+  /** @deprecated Use `error`. */
   errorMessage?: string;
   helperText?: string;
-  variant?: 'default' | 'required' | 'disabled' | 'focused' | 'error';
-  size?: 'sm' | 'md' | 'lg';
+  size?: InputSize;
   disabled?: boolean;
+  /** @deprecated Use the native `readOnly`. */
   readonly?: boolean;
   required?: boolean;
+  /** Forces the invalid visual state without an error message. */
   isInvalid?: boolean;
   className?: string;
+  /** @deprecated Use `classNames.input`. */
   inputClassName?: string;
+  /** @deprecated Use `classNames.label`. */
   labelClassName?: string;
+  classNames?: InputClassNames;
+  styles?: InputStyles;
   startIcon?: React.ReactNode;
   endIcon?: React.ReactNode;
   type?: string;
   maxLength?: number;
   onInput?: (e: React.FormEvent<HTMLInputElement>) => void;
+  /** Renders a currency-affix label on the inline-start edge. */
   currency?: string;
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>;
 
+const SIZES: Record<InputSize, { input: string; label: string; helper: string }> = {
+  sm: { input: 'px-3 py-2 text-sm', label: 'text-xs', helper: 'text-xs' },
+  md: { input: 'px-4 py-3 text-sm', label: 'text-sm', helper: 'text-xs' },
+  lg: { input: 'px-4 py-4 text-base', label: 'text-sm', helper: 'text-sm' },
+};
+
 /**
- * Styled native input. Deliberately hook-free so it stays a Server Component
- * and adds nothing to the client bundle — pass `id` (as you would on a native
- * input) to get the `<label htmlFor>` and `aria-describedby` wiring.
+ * Styled native input. Deliberately hook-free so it stays a Server Component and
+ * adds nothing to the client bundle — pass `id` (as you would on a native input)
+ * to get the `<label htmlFor>` and `aria-describedby` wiring.
+ *
+ * Colours come from design tokens, so the field re-skins when a consumer
+ * overrides `--a2z-*` variables, or per instance via `classNames` / `styles`.
  */
 const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   {
@@ -37,7 +89,6 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     error,
     errorMessage,
     helperText,
-    variant = 'default',
     size = 'md',
     disabled = false,
     readonly = false,
@@ -46,6 +97,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     className,
     inputClassName,
     labelClassName,
+    classNames,
+    styles,
     startIcon,
     endIcon,
     type = 'text',
@@ -53,74 +106,70 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     onInput,
     currency,
     id,
+    readOnly,
     ...props
   },
   ref,
 ) {
-  // Native-style wiring: an explicit `id` is what makes the label association
-  // and described-by reference possible without a client-side hook.
+  // An explicit `id` is what makes the label association and described-by
+  // reference possible without a client-side hook.
   const messageId = id ? `${id}-message` : undefined;
 
-  // Determine if input should be in error state
-  const hasError = isInvalid || !!error || !!errorMessage;
   const displayError = error || errorMessage;
+  const hasError = isInvalid || !!displayError;
   const hasMessage = !!displayError || !!helperText;
+  const isReadOnly = readOnly ?? readonly;
 
-  const baseInputClasses = 'w-full transition-all duration-200 focus:outline-none text-right';
-
-  const variantClasses = {
-    default:
-      'bg-white border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
-    required:
-      'bg-white border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
-    disabled: 'bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed opacity-50',
-    focused: 'bg-white border border-blue-500 rounded-lg ring-1 ring-blue-500',
-    error:
-      'bg-white border border-red-500 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-500',
-  };
-
-  const sizeClasses = {
-    sm: 'px-3 py-2 text-sm',
-    md: 'px-4 py-3 text-sm',
-    lg: 'px-4 py-4 text-base',
-  };
+  const sizeTokens = SIZES[size];
 
   const inputClasses = cn(
-    baseInputClasses,
-    hasError ? variantClasses.error : variantClasses[variant],
-    sizeClasses[size],
-    disabled && 'opacity-50 cursor-not-allowed bg-gray-100',
-    readonly && 'bg-gray-50 cursor-default',
-    startIcon && 'pl-10',
-    endIcon && 'pr-10',
-    currency && 'pr-12',
+    'w-full transition-colors duration-200 ease-a2z focus:outline-none',
+    'rounded-lg border bg-surface text-fg placeholder:text-fg-subtle',
+    'focus-visible:ring-1 focus-visible:ring-offset-0',
+    // Invalid last so it wins over the resting border colour.
+    hasError
+      ? 'border-danger-500 focus-visible:border-danger-500 focus-visible:ring-danger-500'
+      : 'border-border focus-visible:border-primary-500 focus-visible:ring-primary-500',
+    'disabled:cursor-not-allowed disabled:bg-disabled disabled:text-disabled-fg disabled:border-disabled',
+    isReadOnly && 'cursor-default bg-surface-sunken',
+    startIcon || currency ? 'ps-10' : undefined,
+    endIcon && 'pe-10',
+    sizeTokens.input,
+    classNames?.input,
     inputClassName,
   );
 
   const labelClasses = cn(
-    'block text-sm font-medium text-gray-700 mb-2 text-right',
-    required && "after:content-['*'] after:text-red-500 after:mr-1",
-    disabled && 'text-gray-400',
-    hasError && 'text-red-600',
+    'block font-medium text-fg text-start mb-2',
+    required && "after:content-['*'] after:text-danger-500 after:ms-1",
+    disabled && 'text-fg-subtle',
+    hasError && 'text-danger-600',
+    sizeTokens.label,
+    classNames?.label,
     labelClassName,
   );
 
   const helperTextClasses = cn(
-    'text-xs mt-1 text-right',
-    hasError ? 'text-red-600' : disabled ? 'text-gray-400' : 'text-gray-500',
+    'text-start',
+    sizeTokens.helper,
+    hasError ? 'text-danger-600' : disabled ? 'text-fg-subtle' : 'text-fg-muted',
+    classNames?.helperText,
   );
 
+  const adornmentBase =
+    'pointer-events-none absolute top-1/2 -translate-y-1/2 flex items-center text-fg-subtle';
+
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn('w-full', classNames?.root, className)} style={styles?.root}>
       {label && (
-        <label htmlFor={id} className={labelClasses}>
+        <label htmlFor={id} className={labelClasses} style={styles?.label}>
           {label}
         </label>
       )}
 
-      <div className="relative">
+      <div className={cn('relative', classNames?.wrapper)} style={styles?.wrapper}>
         {startIcon && (
-          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+          <div className={cn(adornmentBase, 'start-3', classNames?.startIcon)} style={styles?.startIcon}>
             {startIcon}
           </div>
         )}
@@ -131,7 +180,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           type={type}
           placeholder={placeholder}
           disabled={disabled}
-          readOnly={readonly}
+          readOnly={isReadOnly}
           maxLength={maxLength}
           onInput={onInput}
           required={required}
@@ -139,26 +188,35 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           aria-invalid={hasError || undefined}
           aria-describedby={hasMessage ? messageId : undefined}
           className={inputClasses}
+          style={styles?.input}
           {...props}
         />
 
-        {currency && (
-          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
+        {currency && !startIcon && (
+          <div className={cn(adornmentBase, 'start-3 text-sm', classNames?.startIcon)} style={styles?.startIcon}>
             {currency}
           </div>
         )}
 
         {endIcon && (
-          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+          <div className={cn(adornmentBase, 'end-3', classNames?.endIcon)} style={styles?.endIcon}>
             {endIcon}
           </div>
         )}
       </div>
 
       {hasMessage && (
-        <div className="mt-1" id={messageId}>
-          {displayError && <p className={helperTextClasses}>{displayError}</p>}
-          {helperText && !displayError && <p className={helperTextClasses}>{helperText}</p>}
+        <div className={cn('mt-1', classNames?.helper)} style={styles?.helper} id={messageId}>
+          {displayError && (
+            <p className={helperTextClasses} style={styles?.helperText}>
+              {displayError}
+            </p>
+          )}
+          {helperText && !displayError && (
+            <p className={helperTextClasses} style={styles?.helperText}>
+              {helperText}
+            </p>
+          )}
         </div>
       )}
     </div>
@@ -168,3 +226,4 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 Input.displayName = 'Input';
 
 export default Input;
+export { Input };
