@@ -26,6 +26,24 @@ function preserveDirectives() {
   };
 }
 
+/** The CJS output sits inside a `"type": "module"` package, so its `.js` files
+ *  would be parsed as ESM and `require('react-a2z')` would fail. Mark dist/cjs
+ *  as CommonJS so the `require` export condition actually works. */
+function cjsPackageJson() {
+  return {
+    name: 'cjs-package-json',
+    generateBundle(options) {
+      const dir = (options.dir || '').replace(/\\/g, '/');
+      if (!dir.endsWith('/cjs')) return;
+      this.emitFile({
+        type: 'asset',
+        fileName: 'package.json',
+        source: '{"type":"commonjs"}\n',
+      });
+    },
+  };
+}
+
 const preservedOutput = {
   preserveModules: true,
   preserveModulesRoot: 'src',
@@ -76,6 +94,7 @@ export default [
       preserveDirectives(),
       typescript({ declaration: false, sourceMap: true }),
       terser({ compress: { directives: false } }),
+      cjsPackageJson(),
     ],
   },
   {
