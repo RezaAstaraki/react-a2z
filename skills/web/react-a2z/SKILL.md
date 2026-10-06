@@ -41,6 +41,7 @@ UI components, hooks, and utilities for React / Next.js apps.
 | Bare `!` in bash | History expansion. Put it in a script file, or use `[ -f x ]` tests. |
 | `find` / `git diff` opens pager | Use `git --no-pager <cmd>` or pipe to `cat`. |
 | Bulk `git status` noise after editor writes | Almost always CRLF churn — verify with `git diff --ignore-cr-at-eol --name-only`. |
+| Long heredoc / paste truncates silently | The terminal drops the tail or the terminator, so a half-written script runs — and may still exit 0. Keep heredocs short, write long ones to `/tmp/x.cjs`, and prove the effect with `git diff --stat` rather than trusting the script's own "success" line. |
 
 **Skill file location:**
 - This file: `skills/web/react-a2z/SKILL.md` (in repo, committed).
@@ -337,11 +338,14 @@ Client-side logger (`Wrapper` component for debugging).
 
 ## Hooks (`src/hooks`)
 
+- `useControllableState` — controlled/uncontrolled state in one hook; every
+  stateful component uses this rather than a local `useState` pair
 - `useDebounce` — debounced value
 - `useDebouncedCallback` — debounced function
 - `useElementSize` — ResizeObserver
 - `useInView` — IntersectionObserver
 - `useThrottle` — throttled value
+- `useThrottledCallback` — throttled function
 - `useWindowSize` — window resize
 
 ## Utilities (`src/utils`)
@@ -355,10 +359,6 @@ Client-side logger (`Wrapper` component for debugging).
 - `englishDigitsToPersian` / `persianToEnglishDigits`
 - `formDataMaker`, `sanitizeNumericInput`, `truncateText`, `readFileAsDataUrl`
 
-Hooks in `src/hooks`: `useControllableState`, `useDebounce`,
-`useDebouncedCallback`, `useElementSize`, `useInView`, `useThrottle`,
-`useThrottledCallback`, `useWindowSize`.
-
 ## Styling Model
 
 - Components ship **Tailwind utility classes baked in** (not CSS files) except
@@ -366,8 +366,14 @@ Hooks in `src/hooks`: `useControllableState`, `useDebounce`,
   cleanly with utilities.
 - Consumers style by passing `className`, `classNames`, `style`, or `styles`.
   `cn()` guarantees consumer classes always win over defaults.
-- Components use **design tokens**, never stock Tailwind palette colours.
-  `bg-primary-600`, not `bg-blue-600`. See **Design tokens** above.
+- New and migrated components use **design tokens** — `bg-primary-600`,
+  `text-fg-muted` — never stock Tailwind palette colours. See **Design
+  tokens** above. **Migration is in progress:** `Button` and `Input` are
+  converted; `Slider`, `Tooltip`, `ColorPicker`, `GradientMaker`, `Md`,
+  `MdEditor`, `CodeBox`, `Modal`, `Toast` and `ClientLogger` still emit raw
+  palette classes and have not been re-themed. Convert a component only when
+  you can verify it in `test-app-for-lib` — the palette classes look fine,
+  so nothing fails loudly if the token mapping is wrong.
 - `tailwind.preset.js` maps the tokens to Tailwind names **for v3**.
   `tailwind.css` does the equivalent for v4 via `@theme inline` and sets
   `@source "./dist"` so v4 scans the compiled output.
