@@ -60,7 +60,8 @@ import { Button, Input } from "react-a2z";
 export default function Page() {
   return (
     <>
-      <Button variant="filled-blue" text="Click me" />
+      {/* variant is the shape, color is the hue — they are independent */}
+      <Button variant="solid" color="primary" text="Click me" />
       <Input label="Email" placeholder="you@example.com" />
     </>
   );
@@ -68,3 +69,35 @@ export default function Page() {
 ```
 
 Components that need interactivity (`Slider`, `Tooltip`, `ColorPicker`, `Counter`, `MdEditor`, `Modal`, `Toast`) already include `"use client"`, so they work in the App Router without extra wrappers. Presentational components (`Button`, `Input`, `PearlButton`, `Md`) are deliberately hook-free and stay Server Components, so importing them adds nothing to the client bundle — add `"use client"` at your own call site only when you pass them event handlers.
+
+## Theming
+
+Every colour, radius, shadow and font is a CSS custom property, so you can
+re-theme the library from your own stylesheet, with no rebuild and no JS config.
+
+```css
+:root {
+  --a2z-primary-600: 124 58 237;   /* "R G B" channels, not hex */
+  --a2z-radius: 0.25rem;           /* every other radius derives from this */
+}
+```
+
+Scope the override to a data attribute, a class, or a single component.
+The -soft washes are baked rgba() values, so they need overriding
+separately if you change the base hue:
+
+```css
+:root {
+  --a2z-primary-soft: rgb(124 58 237 / 0.08);
+  --a2z-primary-soft-hover: rgb(124 58 237 / 0.14);
+}
+```
+
+Dark mode ships as .a2z-dark / .dark (class-based, not
+prefers-color-scheme, so you control it). The full token list is in
+tokens.css; the utility-name mapping is in tailwind.preset.js (v3) and
+tailwind.css (v4).
+
+For per-instance overrides, most components accept classNames and styles
+keyed by slot (root, label, input, ...). Those merge last, so they
+always beat the library defaults.

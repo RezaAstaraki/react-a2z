@@ -1,8 +1,9 @@
 /**
  * react-a2z — Tailwind v3 preset.
  *
- * The token VALUES live in exactly one place: `styles/tokens.css`, as CSS custom
- * properties. This preset only maps Tailwind utility names onto those variables,
+ * The token VALUES live in exactly one place: `tokens.css` at the package
+ * root, as CSS custom properties. This preset only maps Tailwind utility
+ * names onto those variables,
  * so the same token layer serves Tailwind v3 and v4 and a consumer can re-theme
  * by overriding CSS variables alone — no JS config edit, no rebuild.
  *
