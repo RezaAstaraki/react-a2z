@@ -165,6 +165,13 @@ Example:
 
 ### Tooltip
 - **Two APIs:** shorthand (`content={…}` auto-wraps children in `Tooltip.Trigger` + `Tooltip.Content`) OR compound (`Tooltip.Trigger` + `Tooltip.Content`).
+- **The trigger owns the interaction.** `Tooltip.Trigger` renders a `<span>` and wires
+  `pointerenter` (open after `delayDuration`), `pointerleave` (close after `closeDelay`),
+  `pointermove` (cancels a pending *close* only), `focus` (open immediately) and `blur`
+  (close) itself — never attach your own; handlers you pass are composed with the
+  built-in ones. Because that span is not focusable, **what you wrap must be the focusable
+  element** (`<button>`, `<a>`, `<input>`). Wrapping plain text or a bare `<span>` makes the
+  tooltip mouse-only. There is no `asChild`, so you cannot render the trigger *as* your element.
 - **Controlled + uncontrolled:** `open` / `defaultOpen` / `onOpenChange`.
 - **Props:** `placement` (`top|right|bottom|left`), `offset` (px), `delayDuration`,
   `closeDelay`, `disabled`, `showArrow`, `container` (portal target, default `document.body`).
@@ -439,6 +446,7 @@ react-a2z/
 | `sed -i '/…$/a …'` silently no-ops on CRLF files | Repo is CRLF; `$`-anchored patterns fail. Use `cat > file <<'EOF'` rewrites or `node -e` scripts, never blind `sed` |
 | Leftover `useState` + `useEffect(() => setX(true), [])` "mounted" flag | Remove it — `noUnusedLocals` catches it; SSR-safe code shouldn't need the pattern unless you branch on it |
 | Tooltip content silently missing on first render because `container` is `null` | `createPortal` needs a DOM node; return `null` from `Tooltip.Content` when `container` is falsy (SSR-safe) |
+| Tooltip never opens on hover, and `delayDuration` looks ignored | A shared `cancelTimers()` cleared **both** timers and was wired to `pointermove`. `pointermove` fires continuously while the pointer is over the trigger, so it cancelled the pending *open* unless the pointer stopped dead on arrival — worst with a long `delayDuration`, which is why the delay prop appeared broken. `pointermove` must clear only the close timer (`cancelCloseTimer`). Fixed in `Tooltip` |
 
 ## Verification Checklist (for a new agent session)
 
