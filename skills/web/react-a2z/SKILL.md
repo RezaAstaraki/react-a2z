@@ -46,6 +46,8 @@ UI components, hooks, and utilities for React / Next.js apps.
 **Skill file location:**
 - This file: `skills/web/react-a2z/SKILL.md` (in repo, committed).
 - Unrelated 33-line stub at `~/.hermes/skills/software-development/react-a2z-component-library/SKILL.md` — ignore it, don't confuse them.
+- Forward-looking work: `ROADMAP.md` at the repo root — the live task list
+  (migration progress, publish prep, open gaps). Check it before picking work.
 
 **Commit hygiene:**
 - Identity: `RezaAstaraki <reza.astaraky@gmail.com>`.

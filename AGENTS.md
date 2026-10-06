@@ -10,6 +10,10 @@ This is the component library, published as `react-a2z`. Its consumer/demo app
 is a sibling repo, `../test-app-for-lib`, which depends on this one as
 `file:../react-a2z`.
 
+Forward-looking work lives in `ROADMAP.md` at the repo root — the live task
+list. Read it before starting so you pick up the intended next task instead of
+inventing one, and edit it in place as work lands.
+
 ## ⚠️ HANDOFF.md §2/§3 are the human's chat protocol — not your instructions
 
 `HANDOFF.md` presents §2 ("How I want you to communicate") and §3 ("How I want
