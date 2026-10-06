@@ -11,13 +11,147 @@
      @import "react-a2z/tailwind.css";   <-- this file
      @source "./src";
 
-   This file pulls in the design tokens, the prebuilt component CSS, and tells
-   Tailwind v4 to scan the library's compiled output for the utility classes the
-   components reference.
+   This file does three things:
+     1. pulls in the design tokens (tokens.css) and prebuilt component CSS
+        (components.css)
+     2. maps every token onto a Tailwind v4 utility name via `@theme inline`
+     3. tells Tailwind v4 to scan the library's compiled output for the
+        utility classes the components reference
+
+   Why `@theme inline` and not plain `@theme`:
+     Plain `@theme` would emit `:root { --color-primary-600: rgb(var(--a2z-...)) }`
+     and utilities would reference `var(--color-primary-600)`. That gives two
+     names for the same knob, and `--color-primary-600` is a Tailwind
+     convention a consumer might set by accident — creating a second,
+     undocumented override path.
+
+     `inline` bakes the reference straight into the utility:
+       .bg-primary-600 { background-color: rgb(var(--a2z-primary-600)) }
+     so `--a2z-*` stays the ONLY knob, which is what tokens.css promises.
 
    Re-theming needs no rebuild and no JS config — override the variables:
 
      :root { --a2z-primary-600: 124 58 237; }
+
+   Tailwind v3 users get the equivalent mapping from `tailwind.preset.js`.
    ========================================================================== */
 
 @source "./dist";
+
+@theme inline {
+  /* ---------- palette: primary ---------------------------------------- */
+  --color-primary-50:  rgb(var(--a2z-primary-50));
+  --color-primary-100: rgb(var(--a2z-primary-100));
+  --color-primary-200: rgb(var(--a2z-primary-200));
+  --color-primary-300: rgb(var(--a2z-primary-300));
+  --color-primary-400: rgb(var(--a2z-primary-400));
+  --color-primary-500: rgb(var(--a2z-primary-500));
+  --color-primary-600: rgb(var(--a2z-primary-600));
+  --color-primary-700: rgb(var(--a2z-primary-700));
+  --color-primary-800: rgb(var(--a2z-primary-800));
+  --color-primary-900: rgb(var(--a2z-primary-900));
+  --color-primary-fg: rgb(var(--a2z-primary-fg));
+  --color-primary-soft: var(--a2z-primary-soft);
+  --color-primary-soft-hover: var(--a2z-primary-soft-hover);
+
+  /* ---------- palette: neutral ---------------------------------------- */
+  --color-neutral-50:  rgb(var(--a2z-neutral-50));
+  --color-neutral-100: rgb(var(--a2z-neutral-100));
+  --color-neutral-200: rgb(var(--a2z-neutral-200));
+  --color-neutral-300: rgb(var(--a2z-neutral-300));
+  --color-neutral-400: rgb(var(--a2z-neutral-400));
+  --color-neutral-500: rgb(var(--a2z-neutral-500));
+  --color-neutral-600: rgb(var(--a2z-neutral-600));
+  --color-neutral-700: rgb(var(--a2z-neutral-700));
+  --color-neutral-800: rgb(var(--a2z-neutral-800));
+  --color-neutral-900: rgb(var(--a2z-neutral-900));
+  --color-neutral-fg: rgb(var(--a2z-neutral-fg));
+  --color-neutral-soft: var(--a2z-neutral-soft);
+  --color-neutral-soft-hover: var(--a2z-neutral-soft-hover);
+
+  /* ---------- palette: success ---------------------------------------- */
+  --color-success-50:  rgb(var(--a2z-success-50));
+  --color-success-100: rgb(var(--a2z-success-100));
+  --color-success-300: rgb(var(--a2z-success-300));
+  --color-success-500: rgb(var(--a2z-success-500));
+  --color-success-600: rgb(var(--a2z-success-600));
+  --color-success-700: rgb(var(--a2z-success-700));
+  --color-success-fg: rgb(var(--a2z-success-fg));
+  --color-success-soft: var(--a2z-success-soft);
+  --color-success-soft-hover: var(--a2z-success-soft-hover);
+
+  /* ---------- palette: warning ---------------------------------------- */
+  --color-warning-50:  rgb(var(--a2z-warning-50));
+  --color-warning-100: rgb(var(--a2z-warning-100));
+  --color-warning-300: rgb(var(--a2z-warning-300));
+  --color-warning-500: rgb(var(--a2z-warning-500));
+  --color-warning-600: rgb(var(--a2z-warning-600));
+  --color-warning-700: rgb(var(--a2z-warning-700));
+  --color-warning-fg: rgb(var(--a2z-warning-fg));
+  --color-warning-soft: var(--a2z-warning-soft);
+  --color-warning-soft-hover: var(--a2z-warning-soft-hover);
+
+  /* ---------- palette: danger ----------------------------------------- */
+  --color-danger-50:  rgb(var(--a2z-danger-50));
+  --color-danger-100: rgb(var(--a2z-danger-100));
+  --color-danger-300: rgb(var(--a2z-danger-300));
+  --color-danger-500: rgb(var(--a2z-danger-500));
+  --color-danger-600: rgb(var(--a2z-danger-600));
+  --color-danger-700: rgb(var(--a2z-danger-700));
+  --color-danger-fg: rgb(var(--a2z-danger-fg));
+  --color-danger-soft: var(--a2z-danger-soft);
+  --color-danger-soft-hover: var(--a2z-danger-soft-hover);
+
+  /* ---------- palette: info ------------------------------------------- */
+  --color-info-50:  rgb(var(--a2z-info-50));
+  --color-info-100: rgb(var(--a2z-info-100));
+  --color-info-300: rgb(var(--a2z-info-300));
+  --color-info-500: rgb(var(--a2z-info-500));
+  --color-info-600: rgb(var(--a2z-info-600));
+  --color-info-700: rgb(var(--a2z-info-700));
+  --color-info-fg: rgb(var(--a2z-info-fg));
+  --color-info-soft: var(--a2z-info-soft);
+  --color-info-soft-hover: var(--a2z-info-soft-hover);
+
+  /* ---------- semantic surfaces --------------------------------------- */
+  --color-bg: rgb(var(--a2z-bg));
+  --color-surface: rgb(var(--a2z-surface));
+  --color-surface-raised: rgb(var(--a2z-surface-raised));
+  --color-surface-sunken: rgb(var(--a2z-surface-sunken));
+  --color-overlay: rgb(var(--a2z-overlay));
+
+  /* ---------- semantic content ---------------------------------------- */
+  --color-fg: rgb(var(--a2z-fg));
+  --color-fg-muted: rgb(var(--a2z-fg-muted));
+  --color-fg-subtle: rgb(var(--a2z-fg-subtle));
+  --color-fg-inverted: rgb(var(--a2z-fg-inverted));
+
+  /* ---------- semantic borders / rings -------------------------------- */
+  --color-border: rgb(var(--a2z-border));
+  --color-border-strong: rgb(var(--a2z-border-strong));
+  --color-ring: rgb(var(--a2z-ring));
+  --color-ring-offset: rgb(var(--a2z-ring-offset));
+
+  /* ---------- disabled ------------------------------------------------ */
+  --color-disabled: rgb(var(--a2z-disabled-bg));
+  --color-disabled-fg: rgb(var(--a2z-disabled-fg));
+  --color-disabled-border: rgb(var(--a2z-disabled-border));
+
+  /* ---------- radius --------------------------------------------------- */
+  --radius-sm: var(--a2z-radius-sm);
+  --radius-md: var(--a2z-radius-md);
+  --radius-lg: var(--a2z-radius-lg);
+  --radius-xl: var(--a2z-radius-xl);
+
+  /* ---------- elevation ----------------------------------------------- */
+  --shadow-xs: var(--a2z-shadow-xs);
+  --shadow-sm: var(--a2z-shadow-sm);
+  --shadow-md: var(--a2z-shadow-md);
+  --shadow-lg: var(--a2z-shadow-lg);
+  --shadow-xl: var(--a2z-shadow-xl);
+
+  /* ---------- typography / motion ------------------------------------- */
+  --font-sans: var(--a2z-font-sans);
+  --font-mono: var(--a2z-font-mono);
+  --ease-a2z: var(--a2z-ease);
+}
