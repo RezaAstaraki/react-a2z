@@ -176,6 +176,8 @@ interface TooltipContextValue {
   closeNow: () => void;
   closeWithDelay: () => void;
   cancelTimers: () => void;
+  /** Clears only a pending close — pointermove must not cancel a pending open. */
+  cancelCloseTimer: () => void;
 }
 
 const TooltipContext = React.createContext<TooltipContextValue | null>(null);
@@ -231,6 +233,15 @@ const TooltipRoot = React.forwardRef<HTMLSpanElement, TooltipProps>(
         window.clearTimeout(openTimer.current);
         openTimer.current = null;
       }
+      if (closeTimer.current !== null) {
+        window.clearTimeout(closeTimer.current);
+        closeTimer.current = null;
+      }
+    }, []);
+
+    /* Close timer only. `pointermove` fires continuously while the pointer is
+       over the trigger, so it must not be able to cancel a pending open. */
+    const cancelCloseTimer = React.useCallback(() => {
       if (closeTimer.current !== null) {
         window.clearTimeout(closeTimer.current);
         closeTimer.current = null;
@@ -308,6 +319,7 @@ const TooltipRoot = React.forwardRef<HTMLSpanElement, TooltipProps>(
       closeNow,
       closeWithDelay,
       cancelTimers,
+      cancelCloseTimer,
     };
 
     const setRootRef = React.useMemo(
@@ -350,7 +362,17 @@ TooltipRoot.displayName = 'Tooltip';
 
 const TooltipTrigger = React.forwardRef<HTMLSpanElement, TooltipTriggerProps>(
   (
-    { children, className, style, onPointerEnter, onPointerLeave, onFocus, onBlur, ...rest },
+    {
+      children,
+      className,
+      style,
+      onPointerEnter,
+      onPointerLeave,
+      onPointerMove,
+      onFocus,
+      onBlur,
+      ...rest
+    },
     forwardedRef,
   ) => {
     const {
@@ -364,7 +386,7 @@ const TooltipTrigger = React.forwardRef<HTMLSpanElement, TooltipTriggerProps>(
       openWithDelay,
       closeNow,
       closeWithDelay,
-      cancelTimers,
+      cancelCloseTimer,
     } = useTooltipContext('Trigger');
 
     const setRef = React.useMemo(
@@ -388,8 +410,16 @@ const TooltipTrigger = React.forwardRef<HTMLSpanElement, TooltipTriggerProps>(
 
     const handleBlur = composeHandlers<React.FocusEvent<HTMLSpanElement>>(onBlur, () => closeNow());
 
-    /* Cancel a pending close when the pointer lands on the trigger again */
-    const handlePointerMove = () => cancelTimers();
+    /* Re-entering cancels a pending *close*. This must not touch the open timer:
+       pointermove fires continuously while the pointer is over the trigger, so
+       clearing the open timer here stopped the tooltip from ever opening unless
+       the pointer stopped dead the instant it arrived — most obvious with a long
+       delayDuration. Also composed with any consumer handler for the same reason
+       the others are: an explicit prop placed after {...rest} would silently win. */
+    const handlePointerMove = composeHandlers<React.PointerEvent<HTMLSpanElement>>(
+      onPointerMove,
+      () => cancelCloseTimer(),
+    );
 
     return (
       <span
