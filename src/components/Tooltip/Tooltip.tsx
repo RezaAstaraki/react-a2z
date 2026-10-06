@@ -93,7 +93,7 @@ export interface TooltipContentProps {
 const DEFAULT_TRIGGER =
   'inline-flex items-center focus:outline-none ' +
   'focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ' +
-  'disabled:cursor-not-allowed disabled:opacity-50';
+  'data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50';
 
 const DEFAULT_CONTENT =
   'pointer-events-none z-50 max-w-xs rounded-md bg-gray-900 px-2.5 py-1.5 ' +
