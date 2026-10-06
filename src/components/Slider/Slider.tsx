@@ -35,6 +35,7 @@ export interface ThumbRenderProps {
   'aria-label'?: string;
   'aria-labelledby'?: string;
   tabIndex: number;
+  'data-disabled'?: boolean;
   onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => void;
   onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => void;
 }
@@ -44,6 +45,8 @@ export interface TrackRenderProps {
   className: string;
   style: React.CSSProperties;
   'data-orientation': 'horizontal' | 'vertical';
+  'data-disabled'?: boolean;
+  onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => void;
 }
 
 export interface FillRenderProps {
@@ -51,6 +54,7 @@ export interface FillRenderProps {
   className: string;
   style: React.CSSProperties;
   'data-orientation': 'horizontal' | 'vertical';
+  'data-disabled'?: boolean;
 }
 
 export interface OutputRenderProps {
@@ -122,25 +126,31 @@ const DEFAULT_ROOT_V = 'flex h-full flex-col items-center gap-2';
 const DEFAULT_LABEL = 'text-sm font-medium text-gray-700';
 const DEFAULT_OUTPUT = 'text-sm text-gray-500';
 
-const DEFAULT_TRACK_H = 'relative h-2 w-full cursor-pointer rounded-full bg-gray-200';
-const DEFAULT_TRACK_V = 'relative h-full w-2 cursor-pointer rounded-full bg-gray-200';
+const DEFAULT_TRACK_H =
+  'relative h-2 w-full cursor-pointer rounded-full bg-gray-200 ' +
+  'data-[disabled]:cursor-not-allowed';
+const DEFAULT_TRACK_V =
+  'relative h-full w-2 cursor-pointer rounded-full bg-gray-200 ' +
+  'data-[disabled]:cursor-not-allowed';
 
-const DEFAULT_FILL_H = 'absolute inset-y-0 rounded-full bg-blue-600';
-const DEFAULT_FILL_V = 'absolute inset-x-0 rounded-full bg-blue-600';
+const DEFAULT_FILL_H =
+  'absolute inset-y-0 rounded-full bg-blue-600 data-[disabled]:bg-gray-300';
+const DEFAULT_FILL_V =
+  'absolute inset-x-0 rounded-full bg-blue-600 data-[disabled]:bg-gray-300';
 
 const DEFAULT_THUMB_H =
   'absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full ' +
   'border-2 border-blue-600 bg-white shadow ' +
   'transition-shadow duration-150 ' +
   'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ' +
-  'disabled:pointer-events-none disabled:opacity-50';
+  'data-[disabled]:pointer-events-none data-[disabled]:border-gray-300 data-[disabled]:bg-gray-50';
 
 const DEFAULT_THUMB_V =
   'absolute left-1/2 h-4 w-4 -translate-x-1/2 translate-y-1/2 rounded-full ' +
   'border-2 border-blue-600 bg-white shadow ' +
   'transition-shadow duration-150 ' +
   'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ' +
-  'disabled:pointer-events-none disabled:opacity-50';
+  'data-[disabled]:pointer-events-none data-[disabled]:border-gray-300 data-[disabled]:bg-gray-50';
 
 /* ------------------------------------------------------------------ */
 /*  Hook: useControllableState                                         */
@@ -421,7 +431,8 @@ interface TrackProps {
 
 const SliderTrack = React.forwardRef<HTMLDivElement, TrackProps>(
   ({ children, className, style, render }, forwardedRef) => {
-    const { trackRef, classNames, styles, orientation } = useSliderContext('Track');
+    const { trackRef, classNames, styles, orientation, min, max, step, disabled, value, setValue, commitValue } =
+      useSliderContext('Track');
 
     const setRef = React.useMemo(
       () => mergeRefs<HTMLDivElement>(forwardedRef, trackRef),
@@ -430,11 +441,66 @@ const SliderTrack = React.forwardRef<HTMLDivElement, TrackProps>(
 
     const isVertical = orientation === 'vertical';
 
+    const handlePointerDown = React.useCallback(
+      (e: React.PointerEvent<HTMLDivElement>) => {
+        if (disabled) return;
+        const t = e.target as HTMLElement;
+        if (typeof t.closest === 'function' && t.closest('[role="slider"]')) return;
+        e.preventDefault();
+        const track = trackRef.current;
+        if (!track) return;
+        const isRange = Array.isArray(value);
+        const vals = isRange ? (value as number[]) : [value as number];
+        const compute = (x: number, y: number): number | number[] => {
+          const r = track.getBoundingClientRect();
+          let ratio: number;
+          if (orientation === 'horizontal') {
+            ratio = r.width === 0 ? 0 : (x - r.left) / r.width;
+          } else {
+            ratio = r.height === 0 ? 0 : 1 - (y - r.top) / r.height;
+          }
+          ratio = Math.max(0, Math.min(1, ratio));
+          const snapped = snapToStep(min + ratio * (max - min), step, min);
+          if (!isRange) return clamp(snapped, min, max);
+          let nearest = 0;
+          let best = Math.abs((vals[0] ?? min) - snapped);
+          for (let i = 1; i < vals.length; i += 1) {
+            const d = Math.abs((vals[i] ?? min) - snapped);
+            if (d < best) { best = d; nearest = i; }
+          }
+          const lo = nearest > 0 ? (vals[nearest - 1] ?? min) : min;
+          const hi = nearest < vals.length - 1 ? (vals[nearest + 1] ?? max) : max;
+          const next = vals.slice();
+          next[nearest] = clamp(snapped, lo, hi);
+          return next;
+        };
+        const emit = (x: number, y: number, commit: boolean) => {
+          const next = compute(x, y);
+          setValue(next);
+          if (commit) commitValue(next);
+        };
+        emit(e.clientX, e.clientY, false);
+        const move = (ev: PointerEvent) => emit(ev.clientX, ev.clientY, false);
+        const up = (ev: PointerEvent) => {
+          window.removeEventListener('pointermove', move);
+          window.removeEventListener('pointerup', up);
+          window.removeEventListener('pointercancel', up);
+          emit(ev.clientX, ev.clientY, true);
+        };
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', up);
+        window.addEventListener('pointercancel', up);
+      },
+      [disabled, min, max, step, orientation, value, setValue, commitValue, trackRef],
+    );
+
     const props: TrackRenderProps = {
       ref: setRef,
       className: cn(isVertical ? DEFAULT_TRACK_V : DEFAULT_TRACK_H, classNames?.track, className),
       style: { ...styles?.track, ...style },
       'data-orientation': orientation,
+      'data-disabled': disabled || undefined,
+      onPointerDown: handlePointerDown,
     };
 
     if (render) return <>{render(props)}</>;
@@ -455,7 +521,7 @@ interface FillProps {
 
 const SliderFill = React.forwardRef<HTMLDivElement, FillProps>(
   ({ className, style, render }, forwardedRef) => {
-    const { value, min, max, orientation, classNames, styles } = useSliderContext('Fill');
+    const { value, min, max, orientation, disabled, classNames, styles } = useSliderContext('Fill');
 
     const values = Array.isArray(value) ? value : [value];
     const span = max - min || 1;
@@ -483,6 +549,7 @@ const SliderFill = React.forwardRef<HTMLDivElement, FillProps>(
         ...style,
       },
       'data-orientation': orientation,
+      'data-disabled': disabled || undefined,
     };
 
     if (render) return <>{render(props)}</>;
@@ -707,6 +774,7 @@ const SliderThumb = React.forwardRef<HTMLDivElement, ThumbProps>(
       ...(effectiveLabel ? { 'aria-label': effectiveLabel } : {}),
       ...(effectiveLabelledBy ? { 'aria-labelledby': effectiveLabelledBy } : {}),
       tabIndex: disabled ? -1 : 0,
+      'data-disabled': disabled || undefined,
       onKeyDown: handleKeyDown,
       onPointerDown: handlePointerDown,
     };
