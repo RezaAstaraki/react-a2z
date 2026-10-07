@@ -11,14 +11,14 @@ Companion docs: `SKILL.md` (library API + house style), `AGENTS.md` (repo rules)
 - The token layer is done and proven: `tokens.css` is the single source of
   values, mapped for v3 by `tailwind.preset.js` and for v4 by the
   `@theme inline` block in `tailwind.css`.
-- **5 of 14 components are migrated**: `Button`, `Input`, `Slider`,
-  `ColorPicker`, `GradientMaker`.
-- **7 still emit raw palette classes**: `Modal`, `Toast`, `Tooltip`, `Md`,
-  `MdEditor`, `CodeBox`, `ClientLogger`. (The verifier counts these as 9
+- **6 of 14 components are migrated**: `Button`, `Input`, `Slider`,
+  `ColorPicker`, `GradientMaker`, `Modal`.
+- **6 still emit raw palette classes**: `Toast`, `Tooltip`, `Md`,
+  `MdEditor`, `CodeBox`, `ClientLogger`. (The verifier counts these as 8
   *files* — `Md` and `CodeBox` each have a second file with palette classes.)
-- **2 are already clean but are NOT in `MIGRATED`**: `Counter` and
-  `PearlButton`. They emit no palette classes, so the verifier neither flags
-  nor checks them. See the note in section 1.
+- `Counter` is clean and now guarded in `MIGRATED`. `PearlButton`'s `.tsx` is
+  clean, but its styling lives in `styles/pearl-button.css`, which the harness
+  cannot scan. See the note in section 1.
 - Slider also dropped its private `useControllableState` / `mergeRefs`
   copies; those shared utils now have no remaining private duplicates.
 
@@ -58,10 +58,6 @@ and sheen values, which have nothing to migrate to, so it would need enough
 exceptions to become noise. Reporting the gap is honest; a scan that cries
 wolf is not. See `scripts/verify-tokens.mjs`.
 
-**Also unlisted:** `Counter` is clean but appears in neither `MIGRATED` nor
-the pending list. Add it to `MIGRATED` so it is actually guarded rather than
-clean by luck.
-
 **Why it came first:** it was a contained change to one script and it made
 every migration below safe. The net used to protect the finished work and
 ignore the in-progress work — backwards.
@@ -71,7 +67,7 @@ ignore the in-progress work — backwards.
 One component at a time. Each: bake token classes, remove its exemption entry,
 and **verify in `test-app-for-lib`** (hard refresh after `npm run rollup`).
 
-- [ ] `Modal`
+- [x] `Modal`
 - [ ] `Toast`
 - [ ] `Tooltip`
 - [x] `Slider`

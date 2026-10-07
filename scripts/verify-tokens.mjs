@@ -175,6 +175,9 @@ const MIGRATED = [
   // Clean, but was in neither list — so a regression would have gone
   // unnoticed. Guarded now.
   'src/components/Counter/Counter.tsx',
+  // Modal migrated to tokens 2026-10-07; GlobalModal was clean but unguarded.
+  'src/components/Modal/CustomModal.tsx',
+  'src/components/Modal/GlobalModal.tsx',
 ];
 
 const componentDir = resolve(root, 'src/components');

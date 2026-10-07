@@ -78,8 +78,8 @@ const PLACEMENT_CLASS: Record<ModalPlacement, string> = {
 };
 
 const BACKDROP_CLASS: Record<ModalBackdrop, string> = {
-  opaque: 'bg-black/50',
-  blur: 'bg-black/40 backdrop-blur-sm',
+  opaque: 'bg-overlay/50',
+  blur: 'bg-overlay/40 backdrop-blur-sm',
   transparent: 'bg-transparent',
 };
 
@@ -263,7 +263,7 @@ export function CustomModal({
           'relative z-[1] flex max-h-[min(calc(100dvh-2rem),920px)] w-full flex-col outline-none',
           isUnstyled
             ? 'overflow-visible'
-            : 'overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg',
+            : 'overflow-hidden rounded-xl border border-border bg-surface-raised shadow-lg',
           SIZE_CLASS[size],
           className,
           contentClassName
@@ -274,7 +274,7 @@ export function CustomModal({
             type="button"
             aria-label="Close"
             onClick={closeThisModal}
-            className="absolute end-3 top-3 z-20 inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30"
+            className="absolute end-3 top-3 z-20 inline-flex h-9 w-9 items-center justify-center rounded-lg text-fg-muted transition-colors hover:bg-neutral-soft hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
           >
             <CloseIcon />
           </button>
@@ -284,7 +284,7 @@ export function CustomModal({
           <div
             className={cn(
               'relative shrink-0 select-none',
-              !isUnstyled && 'border-b border-gray-200 px-6 py-5',
+              !isUnstyled && 'border-b border-border px-6 py-5',
               canDrag && 'cursor-grab touch-none active:cursor-grabbing'
             )}
             onPointerDown={onHeaderPointerDown}
@@ -301,7 +301,7 @@ export function CustomModal({
             ) : (
               <h2
                 id={titleId}
-                className="pe-10 text-lg font-semibold tracking-tight text-gray-900"
+                className="pe-10 text-lg font-semibold tracking-tight text-fg"
               >
                 {title}
               </h2>
@@ -312,7 +312,7 @@ export function CustomModal({
                 type="button"
                 aria-label="Close"
                 onClick={closeThisModal}
-                className="absolute end-3 top-3 z-20 inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30"
+                className="absolute end-3 top-3 z-20 inline-flex h-9 w-9 items-center justify-center rounded-lg text-fg-muted transition-colors hover:bg-neutral-soft hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
               >
                 <CloseIcon />
               </button>
