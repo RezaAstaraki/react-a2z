@@ -6,14 +6,19 @@ is NOT published (`package.json#files` excludes it) — it is internal coordinat
 Companion docs: `SKILL.md` (library API + house style), `AGENTS.md` (repo rules),
 `HANDOFF.md` (session protocol + log of what happened).
 
-## Where things stand (2026-10-06)
+## Where things stand (updated 2026-10-07)
 
 - The token layer is done and proven: `tokens.css` is the single source of
   values, mapped for v3 by `tailwind.preset.js` and for v4 by the
   `@theme inline` block in `tailwind.css`.
-- **5 of 14 components are migrated**: `Button`, `Input`, `Slider`, `ColorPicker`,
-  `GradientMaker`.
-- The other 9 still emit raw Tailwind palette classes and do not re-theme.
+- **5 of 14 components are migrated**: `Button`, `Input`, `Slider`,
+  `ColorPicker`, `GradientMaker`.
+- **7 still emit raw palette classes**: `Modal`, `Toast`, `Tooltip`, `Md`,
+  `MdEditor`, `CodeBox`, `ClientLogger`. (The verifier counts these as 9
+  *files* — `Md` and `CodeBox` each have a second file with palette classes.)
+- **2 are already clean but are NOT in `MIGRATED`**: `Counter` and
+  `PearlButton`. They emit no palette classes, so the verifier neither flags
+  nor checks them. See the note in section 1.
 - Slider also dropped its private `useControllableState` / `mergeRefs`
   copies; those shared utils now have no remaining private duplicates.
 
@@ -29,6 +34,17 @@ anything else regressed.
 
 Still to do: add each component to `MIGRATED` in the same commit as its
 migration.
+
+**Known gap — the verifier only scans `.tsx`.** `PearlButton`'s styling lives
+in `styles/pearl-button.css`, not in utilities, so the harness cannot see it.
+That CSS was migrated to tokens, but nothing guards it: if it regresses the
+harness stays green. Same class of bug this section was written to fix — the
+net guarding the wrong thing. Either extend the scan to `styles/**/*.css` or
+add a manual note to the checklist.
+
+**Also unlisted:** `Counter` is clean but appears in neither `MIGRATED` nor
+the pending list. Add it to `MIGRATED` so it is actually guarded rather than
+clean by luck.
 
 **Why it came first:** it was a contained change to one script and it made
 every migration below safe. The net used to protect the finished work and
@@ -51,10 +67,10 @@ and **verify in `test-app-for-lib`** (hard refresh after `npm run rollup`).
 - [ ] `ClientLogger`
 
 **Slot coverage is partial.** GradientMaker ships eleven `classNames` /
-`styles` slots; the demo now exercises four of them (`classNames.preset`,
-`classNames.preview`, `classNames.copyButton`, `styles.preset`) and they are
-confirmed working. Still unexercised: `root`, `label`, `presets`,
-`customColors`, `swatch`, `angle`, `copyRow`, `copyInput`.
+`styles` slots; the demo exercises **three**: `preset` (via both
+`classNames.preset` and `styles.preset`), `preview` and `copyButton`. Still
+unexercised: `root`, `label`, `presets`, `customColors`, `swatch`, `angle`,
+`copyRow`, `copyInput`.
 
 **Open API question (discussed, not implemented).** GradientMaker is
 uncontrolled-only and always renders the copy row, while ColorPicker has
