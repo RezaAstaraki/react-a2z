@@ -102,7 +102,6 @@
     "styles"
   ],
   "scripts": {
-    "test": "jest",
     "rollup": "rollup -c --bundleConfigAsCjs",
     "dev": "rollup -c --bundleConfigAsCjs --watch"
   },

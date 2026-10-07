@@ -152,6 +152,10 @@ Highlights, because they've cost us real time:
 ## 5. Build + verify quick reference
 
 Build: `npm run rollup`
+Verifiers (no npm alias -- run by path):
+
+    node scripts/verify-tokens.mjs   # token-layer harness + migration progress
+    node scripts/verify-color.mjs    # colour-primitive assertions (24)
 Watch: `npm run dev`
 
 After a build, verify:
@@ -408,3 +412,15 @@ When I paste this file at the start of a session, please:
   `show*` flags. Proposed but NOT implemented: `showCopy`, `defaultValue`,
   `defaultAngle`. A fully controlled `value` needs a `{ colors, angle }`
   shape, so it is a bigger question.
+
+- 2026-10-07 (guide session): a guide-side find produced a library question.
+
+  - A `loading` Button greys out regardless of `color`, because loading sets
+    `isDisabled = disabled || loading`, so the disabled styles win. Found
+    while building the guide: `<Button loading color="success">` renders
+    grey, not green.
+  - Recorded in `ROADMAP.md` §5 as a 2.0.0 decision, both options stated.
+    Note only -- no code change, because it is a design call on a shipped
+    component, not a bug to fix unilaterally.
+  - Also added the same caveat to `SKILL.md`'s Button section, since
+    SKILL.md is canonical and a consumer reading it would not expect this.

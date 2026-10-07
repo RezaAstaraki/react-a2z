@@ -169,6 +169,11 @@ Three layers, in the order they pay off:
 Why Vitest, not Jest: Jest is legacy for new projects, slower, and would
 mean a second transform pipeline. Vitest is Jest-compatible on API.
 
+NOTE (2026-10-07): `package.json` has a `test: jest` script but no jest
+dependency and no test files exist -- `npm test` currently fails on a
+missing binary. It is a dead script, not a working baseline. Removed in
+the same commit as this note; the Vitest work adds the real `test` script.
+
 Do NOT: test in jsdom and call rendering verified (it lies about computed
 styles); write a test per prop (test the contract, interactions, error
 states); add this to both repos at once — start here.

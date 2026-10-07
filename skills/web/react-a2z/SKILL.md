@@ -164,6 +164,9 @@ a separate `export type { … }`.
 - `icon` / `iconPosition` (`left | right | both`), `loading`, `loadingIcon`,
   `fullWidth`, `text`, `children`
 - `classNames` / `styles`: slots `root | text | icon | spinner`
+- `loading` sets `aria-busy` and applies the DISABLED styles, so `color`
+  has no visible effect while loading (`<Button loading color="success">`
+  renders grey). Open 2.0.0 question: see ROADMAP.md §5.
 
 ### Input
 

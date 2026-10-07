@@ -53,6 +53,9 @@ Build: `npm run rollup`. Watch: `npm run dev`. After a build:
    independent of `treeshake.moduleSideEffects` and of
    `hoistTransitiveImports` (the latter is ignored under `preserveModules`).
 
+Verifiers (no npm alias -- run by path): `node scripts/verify-tokens.mjs`
+(token-layer harness + migration progress) and `node scripts/verify-color.mjs`
+(colour-primitive assertions).
 A change here is not visible to `../test-app-for-lib` until `npm run rollup`
 runs **and** its browser is hard-refreshed — HMR does not cross the `file:`
 symlink.
