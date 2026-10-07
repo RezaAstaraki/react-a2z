@@ -140,3 +140,14 @@ This is the headline README promise; it deserves a real test, not trust.
 - Migrating a component that "looks fine" is the dangerous case — palette
   classes render correctly, so only a browser check catches a bad mapping.
 - Shrink the verifier exemption list in the same commit as the migration.
+
+- Update this file on three triggers, not one:
+  (a) **same commit as the work** — ticking a box, moving a component
+  between lists, correcting a count. The `MIGRATED` note above already
+  states this; it applies to every claim here.
+  (b) **its own commit** — planning edits: new items, reordering,
+  deleting finished sections.
+  (c) **immediately** — a stale claim found mid-task. Not at wrap-up.
+  Stale claims are how this file rots; three were found on 2026-10-07
+  alone (the `Counter` paragraph, the `PearlButton` note, the migration
+  order line).
