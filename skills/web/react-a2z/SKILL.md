@@ -42,6 +42,7 @@ UI components, hooks, and utilities for React / Next.js apps.
 | `find` / `git diff` opens pager | Use `git --no-pager <cmd>` or pipe to `cat`. |
 | Bulk `git status` noise after editor writes | Almost always CRLF churn — verify with `git diff --ignore-cr-at-eol --name-only`. |
 | Long heredoc / paste truncates silently | The terminal drops the tail or the terminator, so a half-written script runs — and may still exit 0. Keep heredocs short, write long ones to `/tmp/x.cjs`, and prove the effect with `git diff --stat` rather than trusting the script's own "success" line. |
+| Counting backticks to check a template literal | Parity proves nothing — an extra PAIR keeps the count even. A file with balanced backticks failed to compile because `colors` inside a `` ` ``-delimited string closed it early. Only a real compile (`tsc --noEmit` or `next build`) catches this; a `grep -c` sanity check cannot. |
 
 **Skill file location:**
 - This file: `skills/web/react-a2z/SKILL.md` (in repo, committed).

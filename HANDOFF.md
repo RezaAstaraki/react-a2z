@@ -321,3 +321,46 @@ When I paste this file at the start of a session, please:
     was pushed with that subject. Left alone deliberately — rewording a
     non-tip commit means an interactive rebase 6 deep, which is more risk
     than a bad subject line is worth.
+
+- 2026-10-07 (session 3, continued): ColorPicker + GradientMaker migrated,
+  colour primitives added, both roadmaps created. 5 of 14 components done.
+
+  **`src/utils/color.ts`.** Shared hex/HSL primitives, because ColorPicker was
+  doing ad-hoc string comparison inline and GradientMaker was doing none.
+  24 assertions in `scripts/verify-color.mjs`. One is pinned deliberately:
+  `normalizeHex('bad')` returns `#bbaadd` — b, a and d are all hex digits,
+  so "bad" is valid 3-digit shorthand. Looks like a bug, is not. Accepting a
+  missing `#` is the deliberate trade (users paste `ff0000` without one); the
+  cost is that some English words are valid colours.
+
+  **GradientMaker decisions.**
+
+  - DECISION: the pan animation is REMOVED. Eleven infinite animations on one
+    page, all repainting background-position, and the preset swatches moved
+    while you were trying to read them. Decoration that cannot be turned off
+    does not belong in a component. Consumers can add it back in 3 lines.
+  - DECISION: the built-in gradient presets stay PRIVATE. `presets` replaces
+    them, it does not extend. Upside: retuning a built-in colour later is not
+    a breaking change. Do not export them.
+  - DECISION: the active preset is DERIVED from the current stops, not stored.
+    Edit a colour and every preset deselects — the honest state, since no
+    preset matches any more. Storing the last-clicked name would keep a ring
+    on a preset the gradient no longer corresponds to.
+  - DECISION: persistence ("remember the user's last colours") was considered
+    and REJECTED as an app-level concern, not a library one. It is opt-in and
+    writes nothing by default, but the six edge cases (key collisions, SSR
+    flash, corrupt data, localStorage throwing, controlled mode, write
+    frequency during a slider drag) all belong to the app. Do not re-propose
+    it for these components.
+
+  **`--radius` was missing from the v4 `@theme` block.** Bare `rounded` fell
+  back to Tailwind's built-in 0.25rem while the token layer says 0.5rem, so
+  any component writing bare `rounded` rendered at half the intended radius.
+  Only ColorPicker did, and it was invisible by eye — which is exactly how it
+  survived review. Added `--radius: var(--a2z-radius)`.
+
+  **Open, recorded in ROADMAP.md:** GradientMaker is uncontrolled-only and
+  always renders the copy row, while ColorPicker has `value` / `defaultValue` /
+  `show*` flags. Proposed but NOT implemented: `showCopy`, `defaultValue`,
+  `defaultAngle`. A fully controlled `value` needs a `{ colors, angle }`
+  shape, so it is a bigger question.
