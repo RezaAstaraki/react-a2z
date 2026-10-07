@@ -95,7 +95,7 @@ uncontrolled-only and always renders the copy row, while ColorPicker has
 A fully controlled `value` is a larger question: the gradient is two pieces
 of state (colours + angle), so it would need a `{ colors, angle }` shape.
 
-**Order:** most-used first (Modal, Toast, Tooltip); Slider is the most complex.
+**Order:** most-used first (Toast, Tooltip); CodeBox is blocked on step 3.
 **Warning:** a wrong token mapping fails SILENTLY. Raw palette classes render
 fine, so nothing fails loudly — the browser check is the only real guard.
 
