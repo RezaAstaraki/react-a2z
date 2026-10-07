@@ -26,7 +26,7 @@ const GRADIENT_PRESETS = [
     name: 'Pastel',
     colors: ['#f4e1e2', '#f5e6e3', '#eef3e5', '#d3e0e0', '#e4d3f4'],
   },
-] as const;
+];
 
 const DEFAULT_COLORS = ['#667eea', '#764ba2'];
 const DEFAULT_ANGLE = 90;
@@ -54,6 +54,12 @@ function pickNumber(v: number | number[]): number {
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
+
+/** A named gradient preset. */
+export interface GradientPreset {
+  name: string;
+  colors: string[];
+}
 
 export interface GradientMakerClassNames {
   root?: string;
@@ -86,6 +92,11 @@ export interface GradientMakerStyles {
 export interface GradientMakerProps {
   label?: string;
   onGradientChange?: (gradient: string) => void;
+  /**
+   * Replaces the built-in eleven presets entirely — they are not exported, so
+   * there is nothing to spread. `presets={[]}` hides the section.
+   */
+  presets?: GradientPreset[];
   className?: string;
   classNames?: GradientMakerClassNames;
   styles?: GradientMakerStyles;
@@ -96,7 +107,17 @@ export interface GradientMakerProps {
 /* ------------------------------------------------------------------ */
 
 const GradientMaker = React.forwardRef<HTMLDivElement, GradientMakerProps>(
-  ({ label = 'Gradient', onGradientChange, className, classNames, styles }, forwardedRef) => {
+  (
+    {
+      label = 'Gradient',
+      onGradientChange,
+      presets = GRADIENT_PRESETS,
+      className,
+      classNames,
+      styles,
+    },
+    forwardedRef,
+  ) => {
     const [customColors, setCustomColors] = React.useState<string[]>(DEFAULT_COLORS);
     const [angle, setAngle] = React.useState(DEFAULT_ANGLE);
     const [selectedGradient, setSelectedGradient] = React.useState<string>(() =>
@@ -135,7 +156,7 @@ const GradientMaker = React.forwardRef<HTMLDivElement, GradientMakerProps>(
       emit(customColors, next);
     };
 
-    const applyPreset = (preset: (typeof GRADIENT_PRESETS)[number]) => {
+    const applyPreset = (preset: GradientPreset) => {
       const colors = [...preset.colors];
       setCustomColors(colors);
       setAngle(DEFAULT_ANGLE);
@@ -182,13 +203,14 @@ const GradientMaker = React.forwardRef<HTMLDivElement, GradientMakerProps>(
         />
 
         {/* ---------- Presets ---------- */}
+        {presets.length > 0 && (
         <div
           role="group"
           aria-label="Gradient presets"
           className={cn('grid grid-cols-3 gap-2', classNames?.presets)}
           style={styles?.presets}
         >
-          {GRADIENT_PRESETS.map((preset) => (
+          {presets.map((preset) => (
             <button
               key={preset.name}
               type="button"
@@ -207,6 +229,7 @@ const GradientMaker = React.forwardRef<HTMLDivElement, GradientMakerProps>(
             />
           ))}
         </div>
+        )}
 
         {/* ---------- Custom colors ---------- */}
         <div className={cn('flex flex-col gap-2', classNames?.customColors)} style={styles?.customColors}>

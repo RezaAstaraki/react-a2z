@@ -28,8 +28,17 @@ export type {
   CodeBoxCopyLabels,
 } from './CodeBox/CodeBox';
 export type { PearlButtonProps } from './PearlButton/PearlButton';
-export type { ColorPickerProps } from './ColorPicker/ColorPicker';
-export type { GradientMakerProps } from './ColorPicker/GradientMaker';
+export type {
+  ColorPickerProps,
+  ColorPickerClassNames,
+  ColorPickerStyles,
+} from './ColorPicker/ColorPicker';
+export type {
+  GradientPreset,
+  GradientMakerProps,
+  GradientMakerClassNames,
+  GradientMakerStyles,
+} from './ColorPicker/GradientMaker';
 export type { SliderProps, SliderClassNames, SliderStyles, SliderValueFormatter } from './Slider/Slider';
 export type { TooltipProps, TooltipClassNames, TooltipStyles } from './Tooltip/Tooltip';
 
