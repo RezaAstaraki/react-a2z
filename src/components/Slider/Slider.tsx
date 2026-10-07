@@ -1,7 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { cn } from '../../utils';
+import { cn, mergeRefs } from '../../utils';
+import { useControllableState } from '../../hooks';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -125,76 +126,41 @@ export interface SliderProps {
 const DEFAULT_ROOT_H = 'flex w-full flex-col gap-2';
 const DEFAULT_ROOT_V = 'flex h-full flex-col items-center gap-2';
 
-const DEFAULT_LABEL = 'text-sm font-medium text-gray-700';
-const DEFAULT_OUTPUT = 'text-sm text-gray-500';
+const DEFAULT_LABEL = 'text-sm font-medium text-fg';
+const DEFAULT_OUTPUT = 'text-sm text-fg-muted';
 
 const DEFAULT_TRACK_H =
-  'relative h-2 w-full cursor-pointer rounded-full bg-gray-200 ' +
+  'relative h-2 w-full cursor-pointer rounded-full bg-neutral-200 ' +
   'data-[disabled]:cursor-not-allowed';
 const DEFAULT_TRACK_V =
-  'relative h-full w-2 cursor-pointer rounded-full bg-gray-200 ' +
+  'relative h-full w-2 cursor-pointer rounded-full bg-neutral-200 ' +
   'data-[disabled]:cursor-not-allowed';
 
+// Disabled fill stays a neutral rather than bg-disabled: --a2z-disabled-bg
+// (243) is LIGHTER than the track (229), which would invert the fill/track
+// relationship and make the value look like a gap.
 const DEFAULT_FILL_H =
-  'absolute inset-y-0 rounded-full bg-blue-600 data-[disabled]:bg-gray-300';
+  'absolute inset-y-0 rounded-full bg-primary-600 data-[disabled]:bg-neutral-300';
 const DEFAULT_FILL_V =
-  'absolute inset-x-0 rounded-full bg-blue-600 data-[disabled]:bg-gray-300';
+  'absolute inset-x-0 rounded-full bg-primary-600 data-[disabled]:bg-neutral-300';
 
 const DEFAULT_THUMB_H =
   'absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full ' +
-  'border-2 border-blue-600 bg-white shadow ' +
+  'border-2 border-primary-600 bg-surface shadow ' +
   'transition-shadow duration-150 ' +
-  'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ' +
-  'data-[disabled]:pointer-events-none data-[disabled]:border-gray-300 data-[disabled]:bg-gray-50';
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ' +
+  'data-[disabled]:pointer-events-none data-[disabled]:border-disabled data-[disabled]:bg-disabled';
 
 const DEFAULT_THUMB_V =
   'absolute left-1/2 h-4 w-4 -translate-x-1/2 translate-y-1/2 rounded-full ' +
-  'border-2 border-blue-600 bg-white shadow ' +
+  'border-2 border-primary-600 bg-surface shadow ' +
   'transition-shadow duration-150 ' +
-  'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ' +
-  'data-[disabled]:pointer-events-none data-[disabled]:border-gray-300 data-[disabled]:bg-gray-50';
-
-/* ------------------------------------------------------------------ */
-/*  Hook: useControllableState                                         */
-/* ------------------------------------------------------------------ */
-
-function useControllableState<T>({
-  value: controlledValue,
-  defaultValue,
-  onChange,
-}: {
-  value?: T;
-  defaultValue: T;
-  onChange?: (value: T) => void;
-}): [T, (next: T) => void] {
-  const [uncontrolled, setUncontrolled] = React.useState<T>(defaultValue);
-  const isControlled = controlledValue !== undefined;
-  const value = isControlled ? (controlledValue as T) : uncontrolled;
-
-  const setValue = React.useCallback(
-    (next: T) => {
-      if (!isControlled) setUncontrolled(next);
-      onChange?.(next);
-    },
-    [isControlled, onChange],
-  );
-
-  return [value, setValue];
-}
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ' +
+  'data-[disabled]:pointer-events-none data-[disabled]:border-disabled data-[disabled]:bg-disabled';
 
 /* ------------------------------------------------------------------ */
 /*  Utils                                                              */
 /* ------------------------------------------------------------------ */
-
-function mergeRefs<T>(...refs: Array<React.Ref<T> | undefined>): React.RefCallback<T> {
-  return (node) => {
-    for (const ref of refs) {
-      if (!ref) continue;
-      if (typeof ref === 'function') ref(node);
-      else (ref as React.MutableRefObject<T | null>).current = node;
-    }
-  };
-}
 
 function clamp(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v));

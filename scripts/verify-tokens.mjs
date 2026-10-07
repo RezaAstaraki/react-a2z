@@ -169,6 +169,7 @@ assertIncludes('v3 preset uses the alpha placeholder', preset, '<alpha-value>');
 const MIGRATED = [
   'src/components/Button/Button.tsx',
   'src/components/Input/Input.tsx',
+  'src/components/Slider/Slider.tsx',
 ];
 
 const componentDir = resolve(root, 'src/components');
