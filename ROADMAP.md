@@ -21,6 +21,12 @@ Companion docs: `SKILL.md` (library API + house style), `AGENTS.md` (repo rules)
   cannot scan. See the note in section 1.
 - Slider also dropped its private `useControllableState` / `mergeRefs`
   copies; those shared utils now have no remaining private duplicates.
+- **`displayName` coverage is complete.** All 18 `forwardRef` call sites set
+  it, and the compound components use dotted names (`Slider.Label`,
+  `Tooltip.Trigger`), so DevTools shows a real tree. Verified 2026-10-07 --
+  do not re-investigate. The remaining components (`Md`, `CustomModal`,
+  `GlobalToast`, ...) are named `function` declarations, which JS names
+  automatically.
 
 ## 1. Invert the verifier — DONE (f5ea5f2)
 
@@ -66,6 +72,11 @@ ignore the in-progress work — backwards.
 
 One component at a time. Each: bake token classes, remove its exemption entry,
 and **verify in `test-app-for-lib`** (hard refresh after `npm run rollup`).
+
+Each pass ALSO adds prop-level JSDoc to that component's `XProps` (House
+Style rule 13). The guide generates its prop tables from this source, so a
+migration without docs ships a table with blank rows. Button is the
+template -- do it there first, then carry the shape forward.
 
 - [x] `Modal`
 - [ ] `Toast`

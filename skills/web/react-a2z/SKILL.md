@@ -95,6 +95,12 @@ UI components, hooks, and utilities for React / Next.js apps.
     one statement. This is the #1 source of build errors here.
 12. `ref={mergeRefs(forwardedRef, localRef)}` — `mergeRefs` from `../../utils`
     is shipped. Never write `forwardedRef ?? rootRef`; one silently wins.
+13. **JSDoc lives on the prop, not the type alias.** Every prop in a public
+    `XProps` carries its own `/** ... */`. Alias JSDoc (`ButtonVariant`,
+    `ButtonColor`) stays — it is public API and shows when a consumer hovers
+    the alias itself — but editors do **not** surface alias JSDoc on the
+    prop's hover, so a prop documented only on its alias shows an empty
+    tooltip. Both the generated prop table and VS Code read the prop-level doc.
 
 ## Design tokens
 
