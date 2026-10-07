@@ -36,11 +36,23 @@ Still to do: add each component to `MIGRATED` in the same commit as its
 migration.
 
 **Known gap — the verifier only scans `.tsx`.** `PearlButton`'s styling lives
-in `styles/pearl-button.css`, not in utilities, so the harness cannot see it.
-That CSS was migrated to tokens, but nothing guards it: if it regresses the
-harness stays green. Same class of bug this section was written to fix — the
-net guarding the wrong thing. Either extend the scan to `styles/**/*.css` or
-add a manual note to the checklist.
+in `styles/pearl-button.css`, so the harness cannot see it: if it regresses
+the harness stays green. Same class of bug this section was written to fix —
+the net guarding the wrong thing.
+
+To be accurate about that file: it is **variable-driven**, not migrated to the
+core token layer. Every value goes through a `--a2z-pearl-*` variable, so it is
+fully overridable, but the variables hold pearl-specific literals rather than
+referencing `--a2z-*`. Its translucent overlays (`rgb(255 255 255 / 0.3)` etc.)
+are gloss/sheen effects, not palette colours — there is nothing to migrate
+them to, and they should stay literals.
+
+Open question: should `--a2z-pearl-bg: #080808` reference a core token? It is a
+deliberate near-black for a glossy dark button, and the nearest core value
+(`--a2z-neutral-900`, 17 24 39) is a different colour. A design call, not a
+bug. Do not "fix" it without deciding.
+
+Either extend the scan to `styles/**/*.css` or add a manual checklist note.
 
 **Also unlisted:** `Counter` is clean but appears in neither `MIGRATED` nor
 the pending list. Add it to `MIGRATED` so it is actually guarded rather than
