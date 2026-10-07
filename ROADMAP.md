@@ -50,10 +50,22 @@ and **verify in `test-app-for-lib`** (hard refresh after `npm run rollup`).
 - [ ] `CodeBox` (blocked on step 3)
 - [ ] `ClientLogger`
 
-**Slot coverage is unproven.** GradientMaker ships eleven `classNames` /
-`styles` slots and no demo exercises any of them, so they type-check but their
-behaviour is unknown. Same risk class as the stale Button/Input demos — nothing
-fails loudly. Add a slot-override example to the demo before trusting them.
+**Slot coverage is partial.** GradientMaker ships eleven `classNames` /
+`styles` slots; the demo now exercises four of them (`classNames.preset`,
+`classNames.preview`, `classNames.copyButton`, `styles.preset`) and they are
+confirmed working. Still unexercised: `root`, `label`, `presets`,
+`customColors`, `swatch`, `angle`, `copyRow`, `copyInput`.
+
+**Open API question (discussed, not implemented).** GradientMaker is
+uncontrolled-only and always renders the copy row, while ColorPicker has
+`value` / `defaultValue` and `show*` flags. Proposed, matching ColorPicker:
+
+- `showCopy?: boolean` — hides the whole copy row
+- `defaultValue?: string[]` — seed the stops
+- `defaultAngle?: number` — seed the angle
+
+A fully controlled `value` is a larger question: the gradient is two pieces
+of state (colours + angle), so it would need a `{ colors, angle }` shape.
 
 **Order:** most-used first (Modal, Toast, Tooltip); Slider is the most complex.
 **Warning:** a wrong token mapping fails SILENTLY. Raw palette classes render
