@@ -170,6 +170,7 @@ const MIGRATED = [
   'src/components/Button/Button.tsx',
   'src/components/Input/Input.tsx',
   'src/components/Slider/Slider.tsx',
+  'src/components/ColorPicker/ColorPicker.tsx',
 ];
 
 const componentDir = resolve(root, 'src/components');

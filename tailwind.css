@@ -138,6 +138,10 @@
   --color-disabled-border: rgb(var(--a2z-disabled-border));
 
   /* ---------- radius --------------------------------------------------- */
+  /* Bare `rounded` maps here. Without this line Tailwind falls back to its
+     0.25rem default, so a component writing bare `rounded` silently gets half
+     the token radius — invisible by eye, which is how it survives review. */
+  --radius: var(--a2z-radius);
   --radius-sm: var(--a2z-radius-sm);
   --radius-md: var(--a2z-radius-md);
   --radius-lg: var(--a2z-radius-lg);
