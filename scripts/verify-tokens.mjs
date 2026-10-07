@@ -171,6 +171,7 @@ const MIGRATED = [
   'src/components/Input/Input.tsx',
   'src/components/Slider/Slider.tsx',
   'src/components/ColorPicker/ColorPicker.tsx',
+  'src/components/ColorPicker/GradientMaker.tsx',
 ];
 
 const componentDir = resolve(root, 'src/components');
@@ -178,8 +179,14 @@ const allComponentFiles = readdirSync(componentDir, { recursive: true })
   .filter((f) => typeof f === 'string' && f.endsWith('.tsx'))
   .map((f) => 'src/components/' + f.replace(/\\/g, '/'));
 
+// The list above is Tailwind's built-in palette MINUS the namespaces the token
+// layer owns. `neutral`, `primary`, `success`, `warning`, `danger` and `info`
+// are deliberately absent: the preset and the @theme block map those names to
+// --a2z-* variables, so `bg-neutral-200` IS a token and must not be flagged.
+// Do not add them back.
+//
 // from/to/via catch gradient utilities, which a bg|text|border|ring regex misses.
-const RAINBOW = /\b(bg|text|border|ring|from|to|via)-(blue|red|green|gray|emerald|sky|amber|orange|indigo|purple|slate|zinc|yellow|teal|violet|rose|lime|pink)-[0-9]{2,3}\b/g;
+const RAINBOW = /\b(bg|text|border|ring|from|to|via)-(blue|red|green|gray|emerald|sky|amber|orange|indigo|purple|slate|zinc|yellow|teal|violet|rose|lime|pink|stone|cyan|fuchsia)-[0-9]{2,3}\b|\b(bg|text|border|ring)-(white|black)\b/g;
 
 // A rename would silently drop a file from the assertion; assert they exist.
 for (const rel of MIGRATED) {

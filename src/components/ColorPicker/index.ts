@@ -6,7 +6,11 @@ export type {
   ColorPickerClassNames,
   ColorPickerStyles,
 } from './ColorPicker';
-export type { GradientMakerProps } from './GradientMaker';
+export type {
+  GradientMakerProps,
+  GradientMakerClassNames,
+  GradientMakerStyles,
+} from './GradientMaker';
 
 export { ColorPicker, GradientMaker };
 export default ColorPicker;
