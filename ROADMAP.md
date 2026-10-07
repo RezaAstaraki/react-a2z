@@ -133,6 +133,41 @@ This is the headline README promise; it deserves a real test, not trust.
       `errorMessage`, `inputClassName`, `labelClassName`, `readonly`.
       Remove them when 2.0.0 lands, or restate the promise.
 
+## 6. Test infrastructure — start before the next migration
+
+The verifier (`scripts/verify-tokens.mjs`) and the consumer app's
+`verify-css.mjs` are **static** checks: they prove classes compile and
+reference `--a2z-*`. They cannot prove a component *behaves* or *renders*
+correctly, so every migration still ends with a manual browser check. That
+does not scale to the 8 components left, and it is the bottleneck for
+agent-driven work — an agent cannot hard-refresh and squint.
+
+Three layers, in the order they pay off:
+
+- [ ] **Vitest + React Testing Library** (jsdom). Component contracts:
+      Modal opens/closes, Escape fires `onClose`, `isDismissible={false}`
+      blocks it, `variant="unstyled"` skips chrome. Fast, no browser.
+- [ ] **Vitest Browser Mode** (real browser via Playwright). The layer that
+      matters for token work: `getComputedStyle()` on real DOM, so a test
+      can assert the panel is `rgb(31 41 55)` in dark mode. jsdom returns
+      empty/wrong computed styles, so this cannot be faked there. Directly
+      replaces the manual devtools check.
+- [ ] **Machine-readable output.** Vitest `--reporter=json`, wrapped in a
+      small script that strips ANSI and prints one clean pass/fail summary.
+      Standard reporter output is built for humans and burns agent tokens
+      parsing it. Expose as `npm run test:agent`.
+
+Why Vitest, not Jest: Jest is legacy for new projects, slower, and would
+mean a second transform pipeline. Vitest is Jest-compatible on API.
+
+Do NOT: test in jsdom and call rendering verified (it lies about computed
+styles); write a test per prop (test the contract, interactions, error
+states); add this to both repos at once — start here.
+
+Once in place, a migration's gate becomes `npm run test` +
+`npm run test:browser` + `npm run build`, all green before commit. An
+agent can run all three and report pass/fail without a human looking.
+
 ## Rules that keep this list honest
 
 - A migration is done only when it is verified in the consumer app, not when
