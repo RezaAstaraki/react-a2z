@@ -52,7 +52,11 @@ deliberate near-black for a glossy dark button, and the nearest core value
 (`--a2z-neutral-900`, 17 24 39) is a different colour. A design call, not a
 bug. Do not "fix" it without deciding.
 
-Either extend the scan to `styles/**/*.css` or add a manual checklist note.
+RESOLVED (2026-10-07): the harness now **reports** the files it cannot scan
+rather than attempting a CSS palette check. A CSS scan would flag the gloss
+and sheen values, which have nothing to migrate to, so it would need enough
+exceptions to become noise. Reporting the gap is honest; a scan that cries
+wolf is not. See `scripts/verify-tokens.mjs`.
 
 **Also unlisted:** `Counter` is clean but appears in neither `MIGRATED` nor
 the pending list. Add it to `MIGRATED` so it is actually guarded rather than
