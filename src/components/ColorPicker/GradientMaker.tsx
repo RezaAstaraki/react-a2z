@@ -116,6 +116,13 @@ export interface GradientMakerProps {
    * there is nothing to spread. `presets={[]}` hides the section.
    */
   presets?: GradientPreset[];
+  /**
+   * Whether to render the CSS output row (read-only string + Copy button).
+   * Defaults to true. Set false when the app consumes `onGradientChange` and
+   * the copy affordance would only be noise — the gradient string is still
+   * emitted either way.
+   */
+  showCopy?: boolean;
   className?: string;
   classNames?: GradientMakerClassNames;
   styles?: GradientMakerStyles;
@@ -131,6 +138,7 @@ const GradientMaker = React.forwardRef<HTMLDivElement, GradientMakerProps>(
       label = 'Gradient',
       onGradientChange,
       presets = GRADIENT_PRESETS,
+      showCopy = true,
       className,
       classNames,
       styles,
@@ -303,6 +311,7 @@ const GradientMaker = React.forwardRef<HTMLDivElement, GradientMakerProps>(
         />
 
         {/* ---------- Copy ---------- */}
+        {showCopy && (
         <div className={cn('flex items-center gap-2', classNames?.copyRow)} style={styles?.copyRow}>
           <input
             type="text"
@@ -332,6 +341,7 @@ const GradientMaker = React.forwardRef<HTMLDivElement, GradientMakerProps>(
             {copied ? 'Copied!' : 'Copy'}
           </button>
         </div>
+        )}
       </div>
     );
   },
