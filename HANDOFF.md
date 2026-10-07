@@ -92,7 +92,10 @@ These are hard rules. Follow them every response.
 
 **Clipboard convention (chat mode).** When you need a command's output, give me
 `<cmd> | clip.exe` rather than plain `<cmd>`: the text lands on my Windows
-clipboard and I paste it back in one step. Group multi-command output as
+clipboard and I paste it back in one step. Clip only output meant to be
+pasted back: if you need to *read* a result yourself first — a count, a
+pass/fail — run it unpiped. `clip.exe` prints nothing, so success and
+failure look identical on screen. Group multi-command output as
 `{ a; b; } | clip.exe` — a `;`-chain pipes only the LAST command. Never pipe a
 heredoc *write*; the `>` redirect swallows stdout and the clipboard stays empty,
 so pipe the verification instead. An empty paste means interop is off — fall
