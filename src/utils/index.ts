@@ -10,3 +10,4 @@ export * from './englishDigitsToPersian';
 export * from './sanitizeNumericInput';
 export * from './readFileAsDataUrl';
 export * from './copyToClipboard';
+export * from './color';
