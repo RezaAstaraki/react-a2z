@@ -172,6 +172,9 @@ const MIGRATED = [
   'src/components/Slider/Slider.tsx',
   'src/components/ColorPicker/ColorPicker.tsx',
   'src/components/ColorPicker/GradientMaker.tsx',
+  // Clean, but was in neither list — so a regression would have gone
+  // unnoticed. Guarded now.
+  'src/components/Counter/Counter.tsx',
 ];
 
 const componentDir = resolve(root, 'src/components');
@@ -205,7 +208,25 @@ for (const rel of allComponentFiles) {
 }
 
 console.log(`  i ${MIGRATED.length} migrated, ${pending.length} pending migration`);
+
+
 for (const rel of pending) console.log(`      pending: ${rel}`);
+
+// Scanned files only. Say what is NOT covered rather than implying it is —
+// PearlButton's styling lives in CSS, where the palette regex cannot reach.
+const cssFiles = [];
+(function walk(dir) {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const rel = dir + '/' + entry.name;
+    if (entry.isDirectory()) walk(rel);
+    else if (entry.name.endsWith('.css')) cssFiles.push(rel);
+  }
+})(resolve(root, 'styles'));
+
+if (cssFiles.length > 0) {
+  console.log('  i NOT scanned (CSS, checked by hand):');
+  for (const rel of cssFiles) console.log('      unscanned: ' + rel.replace(root + '/', ''));
+}
 
 /* --------------------------------------------------------------------- done */
 console.log(
