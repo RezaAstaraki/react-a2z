@@ -38,31 +38,45 @@ export type InputStyles = {
 };
 
 export type InputProps = {
+  /** Visible field label. Pass `id` as well, or it is not programmatically associated with the field. */
   label?: string;
+  /** Native placeholder, shown only when the field is empty. */
   placeholder?: string;
   /** Shown as the error message and forces the invalid visual state. */
   error?: string;
   /** @deprecated Use `error`. */
   errorMessage?: string;
+  /** Helper copy below the field. Hidden while `error` is set. */
   helperText?: string;
+  /** Control height and text size. Default `md`. */
   size?: InputSize;
+  /** Disables the field and applies the disabled styles. */
   disabled?: boolean;
   /** @deprecated Use the native `readOnly`. */
   readonly?: boolean;
+  /** Marks the field required for form validation and a11y. */
   required?: boolean;
   /** Forces the invalid visual state without an error message. */
   isInvalid?: boolean;
+  /** Extra classes on the root wrapper. Merged after `classNames.root`, so it wins. */
   className?: string;
   /** @deprecated Use `classNames.input`. */
   inputClassName?: string;
   /** @deprecated Use `classNames.label`. */
   labelClassName?: string;
+  /** Per-slot class overrides: `root | label | wrapper | input | startIcon | endIcon | helper | helperText`. */
   classNames?: InputClassNames;
+  /** Per-slot inline styles, same slots as `classNames`. */
   styles?: InputStyles;
+  /** Adornment inside the field, on the inline-start edge. */
   startIcon?: React.ReactNode;
+  /** Adornment inside the field, on the inline-end edge. */
   endIcon?: React.ReactNode;
+  /** Native input type. Default `text`. */
   type?: string;
+  /** Native max length. */
   maxLength?: number;
+  /** Fires on every input event, like the native `onInput`. */
   onInput?: (e: React.FormEvent<HTMLInputElement>) => void;
   /** Renders a currency-affix label on the inline-start edge. */
   currency?: string;
