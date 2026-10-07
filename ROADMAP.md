@@ -11,8 +11,9 @@ Companion docs: `SKILL.md` (library API + house style), `AGENTS.md` (repo rules)
 - The token layer is done and proven: `tokens.css` is the single source of
   values, mapped for v3 by `tailwind.preset.js` and for v4 by the
   `@theme inline` block in `tailwind.css`.
-- **4 of 14 components are migrated**: `Button`, `Input`, `Slider`, `ColorPicker`.
-- The other 10 still emit raw Tailwind palette classes and do not re-theme.
+- **5 of 14 components are migrated**: `Button`, `Input`, `Slider`, `ColorPicker`,
+  `GradientMaker`.
+- The other 9 still emit raw Tailwind palette classes and do not re-theme.
 - Slider also dropped its private `useControllableState` / `mergeRefs`
   copies; those shared utils now have no remaining private duplicates.
 
@@ -43,11 +44,16 @@ and **verify in `test-app-for-lib`** (hard refresh after `npm run rollup`).
 - [ ] `Tooltip`
 - [x] `Slider`
 - [x] `ColorPicker`
-- [ ] `GradientMaker`
+- [x] `GradientMaker`
 - [ ] `Md`
 - [ ] `MdEditor`
 - [ ] `CodeBox` (blocked on step 3)
 - [ ] `ClientLogger`
+
+**Slot coverage is unproven.** GradientMaker ships eleven `classNames` /
+`styles` slots and no demo exercises any of them, so they type-check but their
+behaviour is unknown. Same risk class as the stale Button/Input demos — nothing
+fails loudly. Add a slot-override example to the demo before trusting them.
 
 **Order:** most-used first (Modal, Toast, Tooltip); Slider is the most complex.
 **Warning:** a wrong token mapping fails SILENTLY. Raw palette classes render
