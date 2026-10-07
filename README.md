@@ -70,6 +70,40 @@ export default function Page() {
 
 Components that need interactivity (`Slider`, `Tooltip`, `ColorPicker`, `Counter`, `MdEditor`, `Modal`, `Toast`) already include `"use client"`, so they work in the App Router without extra wrappers. Presentational components (`Button`, `Input`, `PearlButton`, `Md`) are deliberately hook-free and stay Server Components, so importing them adds nothing to the client bundle — add `"use client"` at your own call site only when you pass them event handlers.
 
+## Components
+
+| Component | Notes |
+|-----------|-------|
+| `Button` | `variant` (shape) x `color` (hue) x `size`, plus icons, loading, `classNames`/`styles` |
+| `Input` | label, helper text, validation, `startIcon`/`endIcon`, currency affix, slot overrides |
+| `Slider` | headless compound (`Slider.Track`, `.Thumb`, ...), range, vertical, render props |
+| `Tooltip` | shorthand or compound API, portal, auto-flip, controlled or uncontrolled |
+| `ColorPicker` | native picker + preset swatches; slot overrides |
+| `GradientMaker` | presets, custom stops, angle, optional copy row (`showCopy={false}`) |
+| `Counter` | increment/decrement, in-view and place variants |
+| `Modal` | `CustomModal` + `GlobalModal` (Zustand), logical 3x3 placement grid |
+| `Toast` | `GlobalToast` + `ToastItem` (Zustand) |
+| `Md` | markdown renderer with syntax highlighting |
+| `MdEditor` | markdown editor with a toolbar and modes |
+| `CodeBox` | read-only code block, reuses Md's highlighter |
+| `PearlButton` | gloss hover + press; ships its own CSS |
+| `ClientLogger` | client-side data logger for debugging |
+
+Hooks and utilities are exported too — `useControllableState`, `useDebounce`,
+`useInView`, `cn`, `createRecipe`, `copyToClipboard`, `normalizeHex` and more.
+
+**Full API, house style and pitfalls** live in
+[`skills/web/react-a2z/SKILL.md`](./skills/web/react-a2z/SKILL.md) in the repo.
+An interactive guide with a live example per prop is in progress.
+
+### Server vs client
+
+`Button`, `Input`, `PearlButton` and `Md` are hook-free **Server Components** —
+importing them adds nothing to the client bundle. `Slider`, `Tooltip`,
+`ColorPicker`, `GradientMaker`, `Counter`, `MdEditor`, `Modal`, `Toast` and
+`ClientLogger` carry `"use client"` and work in the App Router without extra
+wrappers.
+
 ## Theming
 
 Every colour, radius, shadow and font is a CSS custom property, so you can
