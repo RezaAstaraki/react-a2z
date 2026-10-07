@@ -31,22 +31,34 @@ export type ButtonStyles = {
 
 export interface ButtonProps
   extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'color'> {
+  /** Visual treatment. Default `solid`. Pairs with `color`. */
   variant?: ButtonVariant;
+  /** Semantic intent. Default `primary`. Pairs with `variant`. */
   color?: ButtonColor;
+  /** Control height and text size. Default `md`. */
   size?: ButtonSize;
   /** `icon-only` renders `aspect-square` and hides `text`/`children`. */
   shape?: ButtonShape;
   /** @deprecated Use `shape`. Kept accepting the old name for one major. */
   buttonType?: ButtonShape;
+  /** Label text. Ignored when `children` is set, and hidden by `shape="icon-only"`. */
   text?: string;
+  /** Icon element. Positioned by `iconPosition`. */
   icon?: React.ReactNode;
   /** Use `both` to flank the label with the icon on each side. */
   iconPosition?: IconPosition;
+  /**
+   * Shows a spinner and disables the button. Applies the disabled styles, so
+   * `color` has no visible effect until loading finishes.
+   */
   loading?: boolean;
   /** Replaces the default spinner. */
   loadingIcon?: React.ReactNode;
+  /** Stretch to fill the container width. */
   fullWidth?: boolean;
+  /** Per-slot class overrides: `root | text | icon | spinner`. */
   classNames?: ButtonClassNames;
+  /** Per-slot inline styles, same slots as `classNames`. */
   styles?: ButtonStyles;
 }
 
