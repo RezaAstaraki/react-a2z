@@ -182,6 +182,13 @@ Once in place, a migration's gate becomes `npm run test` +
 `npm run test:browser` + `npm run build`, all green before commit. An
 agent can run all three and report pass/fail without a human looking.
 
+SCOPE (2026-10-07): this layer is the LIBRARY's, and the "do not add to
+both repos at once" rule above still means exactly that. The consumer app
+(`../test-app-for-lib`) is getting its own, different layer -- Playwright
+screenshots of guide pages -- recorded in that repo's ROADMAP §7. Different
+question: this layer asserts component *behaviour*; that one asserts a
+*page renders*. Neither substitutes for the other.
+
 ## Rules that keep this list honest
 
 - A migration is done only when it is verified in the consumer app, not when
