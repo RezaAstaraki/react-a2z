@@ -8,6 +8,15 @@ That file is the source of truth for the library API, house style, pitfalls,
 build pipeline, and the shell-gotcha table. THIS file is the source of truth
 for how we *interact* and how to start / verify a session.
 
+**The next task lives in `ROADMAP.md`** — the live work list (migration
+progress, open API questions, publish prep). Read it before starting so you
+pick up the intended work instead of inventing it. Edit it in place as work
+lands.
+
+**`AGENTS.md` holds agent-facing rules** — CRLF handling, the
+build-and-verify checklist, the `external` requirement in `rollup.config.js`,
+and the package.json#exports subpath rules. Read it too.
+
 ---
 
 ## 1. Environment
@@ -153,14 +162,22 @@ that flow through the symlink.
 
 - `src/components/<Name>/` — one folder per component: `<Name>.tsx` + `index.ts`.
 - `src/hooks/` — reusable hooks.
-- `src/utils/` — `cn`, digit converters, form helpers.
+- `src/utils/` — `cn`, `createCn`, `createRecipe`, `mergeRefs`, `color.ts`
+  (hex/HSL/luminance primitives), digit converters, form helpers.
 - `src/index.ts` — top barrel. `src/components/index.ts` — component barrel.
 - `styles/` — non-utility CSS (currently only `pearl-button.css`).
+- `tokens.css` — design tokens, the single source of colour/radius/shadow
+  values. `tailwind.preset.js` maps them for v3; the `@theme inline` block in
+  `tailwind.css` maps them for v4. `components.css` holds prebuilt CSS.
 - `tailwind.css`, `tailwind.preset.js`, `tailwind.config.js` — Tailwind wiring.
+- `scripts/verify-tokens.mjs` — token-layer harness (also reports migration
+  progress). `scripts/verify-color.mjs` — colour primitive assertions.
+- `ROADMAP.md` — the live work list (see preamble).
 - `rollup.config.js` — `preserveModules: true`, `preserveModulesRoot: 'src'`,
   `terser({ compress: { directives: false } })`, `preserveDirectives()`
   plugin re-adds `"use client"` / `"use server"`.
 - `skills/web/react-a2z/SKILL.md` — canonical library doc (see top of file).
+- `AGENTS.md` — agent-facing repo rules (see preamble).
 
 ---
 
@@ -184,11 +201,13 @@ that flow through the symlink.
 When I paste this file at the start of a session, please:
 
 1. Acknowledge you have read the rules in sections 2 and 3.
-2. Ask what we are working on this session.
+2. Read `ROADMAP.md`, then open by proposing its next unchecked item —
+   do not ask "what are we working on" blind.
 3. If I mention a file, ask me to `cat` it — never assume.
 4. Apply rule 1 (one command at a time) from the very first reply.
 5. If the task touches library API / house style / pitfalls, read
-   `skills/web/react-a2z/SKILL.md` first and mirror its conventions.
+   `skills/web/react-a2z/SKILL.md` and `AGENTS.md` first and mirror their
+   conventions.
 
 ---
 
