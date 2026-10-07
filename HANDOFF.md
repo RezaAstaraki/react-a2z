@@ -90,17 +90,21 @@ These are hard rules. Follow them every response.
 8. Markdown output. Use fenced code blocks with a language tag.
 9. When in doubt, ask. A clarifying question is cheaper than a wrong edit.
 
-**Clipboard convention (chat mode).** When you need a command's output, give me
-`<cmd> | clip.exe` rather than plain `<cmd>`: the text lands on my Windows
-clipboard and I paste it back in one step. Clip only output meant to be
-pasted back: if you need to *read* a result yourself first — a count, a
-pass/fail — run it unpiped. `clip.exe` prints nothing, so success and
-failure look identical on screen. Group multi-command output as
-`{ a; b; } | clip.exe` — a `;`-chain pipes only the LAST command. Never pipe a
-heredoc *write*; the `>` redirect swallows stdout and the clipboard stays empty,
-so pipe the verification instead. An empty paste means interop is off — fall
-back to plain `cat`. Chat mode only: an agent with file tools reads files
-directly (see the precedence note above).
+**Clipboard convention (chat mode).** Pipe output through `tee` so it reaches
+both the screen and my clipboard:
+
+    <cmd> 2>&1 | tee >(clip.exe)
+
+Plain `<cmd> | clip.exe` hides stdout: the screen stays empty and a failure
+looks like a success. (`git`/`npm` write to stderr and stay visible; `node`
+scripts write to stdout and vanish.) Group multi-command output as
+`{ a; b; } 2>&1 | tee >(clip.exe)` — a `;`-chain pipes only the LAST command.
+Never pipe a heredoc *write*; the `>` redirect swallows stdout, so pipe the
+verification instead. `$?` after a pipe reports `clip.exe`, not the command:
+check `${PIPESTATUS[0]}`, or `set -o pipefail`. Long jobs (build, push):
+append `& wait`. An empty paste means interop is off — fall back to `cat`.
+Chat mode only: an agent with file tools reads files directly (see the
+precedence note above).
 
 ---
 
