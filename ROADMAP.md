@@ -11,8 +11,10 @@ Companion docs: `SKILL.md` (library API + house style), `AGENTS.md` (repo rules)
 - The token layer is done and proven: `tokens.css` is the single source of
   values, mapped for v3 by `tailwind.preset.js` and for v4 by the
   `@theme inline` block in `tailwind.css`.
-- **2 of 14 components are migrated**: `Button` and `Input`.
-- The other 12 still emit raw Tailwind palette classes and do not re-theme.
+- **3 of 14 components are migrated**: `Button`, `Input`, `Slider`.
+- The other 11 still emit raw Tailwind palette classes and do not re-theme.
+- Slider also dropped its private `useControllableState` / `mergeRefs`
+  copies; those shared utils now have no remaining private duplicates.
 
 ## 1. Invert the verifier — DONE (f5ea5f2)
 
@@ -39,7 +41,7 @@ and **verify in `test-app-for-lib`** (hard refresh after `npm run rollup`).
 - [ ] `Modal`
 - [ ] `Toast`
 - [ ] `Tooltip`
-- [ ] `Slider`
+- [x] `Slider`
 - [ ] `ColorPicker`
 - [ ] `GradientMaker`
 - [ ] `Md`
