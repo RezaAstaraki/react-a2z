@@ -90,6 +90,15 @@ These are hard rules. Follow them every response.
 8. Markdown output. Use fenced code blocks with a language tag.
 9. When in doubt, ask. A clarifying question is cheaper than a wrong edit.
 
+**Clipboard convention (chat mode).** When you need a command's output, give me
+`<cmd> | clip.exe` rather than plain `<cmd>`: the text lands on my Windows
+clipboard and I paste it back in one step. Group multi-command output as
+`{ a; b; } | clip.exe` — a `;`-chain pipes only the LAST command. Never pipe a
+heredoc *write*; the `>` redirect swallows stdout and the clipboard stays empty,
+so pipe the verification instead. An empty paste means interop is off — fall
+back to plain `cat`. Chat mode only: an agent with file tools reads files
+directly (see the precedence note above).
+
 ---
 
 ## 3. How I want you to give me file changes
@@ -199,8 +208,9 @@ that flow through the symlink.
 - Use `git --no-pager log` / `git --no-pager diff` to avoid the pager.
 - If `git status` suddenly shows many files after an editor save, check
   for CRLF churn first: `git --no-pager diff --ignore-cr-at-eol --name-only`.
-- Commit message style seen in history: `fix: ...`, `chore: ...`,
-  `skill(react-a2z): ...`, `add ...`. Match the most recent style.
+- Commit message style: scoped conventional commits — `type(scope): summary`,
+  lowercase imperative. Read `git --no-pager log --oneline -10` for the
+  current shape; do not copy examples from old commits or this file.
 
 ---
 
