@@ -132,6 +132,15 @@ This is the headline README promise; it deserves a real test, not trust.
 - [ ] Track the five deprecations promised "for one major": `buttonType`,
       `errorMessage`, `inputClassName`, `labelClassName`, `readonly`.
       Remove them when 2.0.0 lands, or restate the promise.
+- [ ] **Decide the loading/color behaviour.** A Button with `loading` sets
+      `isDisabled = disabled || loading`, so the disabled styles win and the
+      `color` prop has no visible effect while loading. Found via the guide:
+      `<Button loading color="success" text="Saving" />` renders grey, not
+      green. Two options, both defensible:
+      (a) keep greying out -- loading IS disabled, so this is consistent;
+      (b) keep the color while loading, greying out only on real `disabled`.
+      Currently (a) with no note in the source, so a consumer sees a bug.
+      If (a) wins, document it; if (b), it is a 2.0.0 behaviour change.
 
 ## 6. Test infrastructure — start before the next migration
 
