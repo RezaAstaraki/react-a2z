@@ -17,6 +17,14 @@ lands.
 build-and-verify checklist, the `external` requirement in `rollup.config.js`,
 and the package.json#exports subpath rules. Read it too.
 
+> **Precedence note.** §2 and §3 below describe a workflow for an assistant
+> with **no filesystem access** — one command at a time, edits delivered as
+> `cat > file <<'EOF'` heredocs, the human running everything. If you have
+> direct file tools, those sections do not describe your job: read and edit
+> files yourself. `AGENTS.md` takes precedence over §2/§3. The *technical*
+> constraints inside them still bind — CRLF-aware edits, back up before
+> overwriting, `git add <file>` never `git add .`, `git --no-pager`.
+
 ---
 
 ## 1. Environment
