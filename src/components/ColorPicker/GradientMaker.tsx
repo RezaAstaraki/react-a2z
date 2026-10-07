@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { cn, copyToClipboard } from '../../utils';
+import { cn, copyToClipboard, normalizeHex } from '../../utils';
 import Slider from '../Slider/Slider';
 
 /* ------------------------------------------------------------------ */
@@ -49,6 +49,25 @@ function buildGradient(colors: string[], angle: number): string {
 /** Extract the single number from Slider's `number | number[]` change value. */
 function pickNumber(v: number | number[]): number {
   return Array.isArray(v) ? (v[0] ?? DEFAULT_ANGLE) : v;
+}
+
+/**
+ * Whether two stop lists describe the same gradient.
+ *
+ * Order matters — ['#f00', '#00f'] and ['#00f', '#f00'] are different
+ * gradients, so this is a position-by-position comparison. Colours go through
+ * normalizeHex so '#abc' and '#aabbcc' count as the same colour.
+ */
+function colorsEqual(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+  return a.every((color, i) => {
+    const na = normalizeHex(color);
+    const nb = normalizeHex(b[i]!);
+    // Invalid input falls back to a strict comparison rather than
+    // treating two unparseable strings as equal.
+    if (na === null || nb === null) return color === b[i];
+    return na === nb;
+  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -210,24 +229,31 @@ const GradientMaker = React.forwardRef<HTMLDivElement, GradientMakerProps>(
           className={cn('grid grid-cols-3 gap-2', classNames?.presets)}
           style={styles?.presets}
         >
-          {presets.map((preset) => (
-            <button
-              key={preset.name}
-              type="button"
-              onClick={() => applyPreset(preset)}
-              aria-label={`Apply ${preset.name} preset`}
-              title={preset.name}
-              className={cn(
-                'h-12 rounded border border-border transition-shadow hover:shadow-lg',
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                classNames?.preset,
-              )}
-              style={{
-                background: buildGradient([...preset.colors], DEFAULT_ANGLE),
-                ...styles?.preset,
-              }}
-            />
-          ))}
+          {presets.map((preset) => {
+            // Derived, not stored: editing a colour makes every preset
+            // inactive, which is the honest state — nothing matches.
+            const isActive = colorsEqual(customColors, preset.colors);
+            return (
+              <button
+                key={preset.name}
+                type="button"
+                onClick={() => applyPreset(preset)}
+                aria-label={`Apply ${preset.name} preset`}
+                aria-pressed={isActive}
+                title={preset.name}
+                className={cn(
+                  'h-12 rounded border border-border transition-shadow hover:shadow-lg',
+                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                  isActive && 'ring-2 ring-ring ring-offset-2',
+                  classNames?.preset,
+                )}
+                style={{
+                  background: buildGradient([...preset.colors], DEFAULT_ANGLE),
+                  ...styles?.preset,
+                }}
+              />
+            );
+          })}
         </div>
         )}
 
