@@ -35,9 +35,11 @@ export interface TooltipContentRenderProps {
 }
 
 export interface TooltipProps {
-  /* Controlled + uncontrolled */
+  /** Controlled open state. Omit for uncontrolled. */
   open?: boolean;
+  /** Initial open state when uncontrolled. Defaults to false. */
   defaultOpen?: boolean;
+  /** Called whenever the open state would change. */
   onOpenChange?: (open: boolean) => void;
 
   /**
@@ -47,6 +49,7 @@ export interface TooltipProps {
    */
   content?: React.ReactNode;
 
+  /** Preferred side. Flips on overflow. Defaults to 'top'. */
   placement?: TooltipPlacement;
   /** Distance in px between trigger and content. Defaults to 8. */
   offset?: number;
@@ -54,16 +57,23 @@ export interface TooltipProps {
   delayDuration?: number;
   /** Delay in ms before hiding after pointer leaves. Defaults to 80. */
   closeDelay?: number;
+  /** When true, the tooltip never opens. */
   disabled?: boolean;
+  /** Render the arrow element. Defaults to true. */
   showArrow?: boolean;
   /** Portal target. Defaults to `document.body`. */
   container?: HTMLElement | null;
 
+  /** Class on the root span. Applied after `classNames.root`. */
   className?: string;
+  /** Per-slot classes: root, trigger, content, arrow. */
   classNames?: TooltipClassNames;
+  /** Inline style on the root span. Applied after `styles.root`. */
   style?: React.CSSProperties;
+  /** Per-slot inline styles: root, trigger, content, arrow. */
   styles?: TooltipStyles;
 
+  /** Trigger (shorthand) or compound Trigger + Content. */
   children?: React.ReactNode;
 }
 
