@@ -79,21 +79,30 @@ export interface LabelRenderProps {
 export type SliderValueFormatter = (value: number | number[]) => React.ReactNode;
 
 export interface SliderProps {
+  /** Controlled value. A number for one thumb, or an array for multi-thumb. */
   value?: number | number[];
+  /** Initial value when uncontrolled. Defaults to 50. */
   defaultValue?: number | number[];
+  /** Fires on every change, including mid-drag. */
   onChange?: (value: number | number[]) => void;
+  /** Fires once when a drag or keyboard adjustment ends -- good for commits. */
   onChangeEnd?: (value: number | number[]) => void;
 
+  /** Lower bound. Defaults to 0. */
   min?: number;
+  /** Upper bound. Defaults to 100. */
   max?: number;
+  /** Value increment. Defaults to 1. */
   step?: number;
 
+  /** Layout direction. Defaults to "horizontal". */
   orientation?: 'horizontal' | 'vertical';
+  /** Disables pointer and keyboard interaction, and dims the track and thumb. */
   disabled?: boolean;
 
   /** Optional label rendered above/beside the track. */
   label?: React.ReactNode;
-  /** Optional suffix appended to the formatted value (e.g. "°", "%"). */
+  /** Optional suffix appended to the formatted value (e.g. "%", "px"). */
   suffix?: React.ReactNode;
   /** Custom value formatter. */
   formatValue?: SliderValueFormatter;
@@ -102,22 +111,33 @@ export interface SliderProps {
 
   /** Accessible name forwarded to each thumb. */
   'aria-label'?: string;
+  /** Id of an element that labels each thumb. Auto-wired when `label` is set. */
   'aria-labelledby'?: string;
 
-  /** Top-level render props — forwarded to the default compound children. */
+  /** Fully custom thumb. Spread the received props to keep keyboard, pointer and ARIA behaviour working. */
   renderThumb?: (props: ThumbRenderProps) => React.ReactNode;
+  /** Fully custom track. Spread the received props so drag-to-seek keeps working. */
   renderTrack?: (props: TrackRenderProps) => React.ReactNode;
+  /** Fully custom fill. The received style carries the computed inset and size. */
   renderFill?: (props: FillRenderProps) => React.ReactNode;
+  /** Fully custom output. Receives the raw value and the formatted node. */
   renderOutput?: (props: OutputRenderProps) => React.ReactNode;
+  /** Fully custom label. Receives the raw value and the formatted node. */
   renderLabel?: (props: LabelRenderProps) => React.ReactNode;
 
+  /** Class on the root wrapper, merged after the default layout classes. */
   className?: string;
+  /** Per-slot class overrides: root, label, track, fill, thumb, output. */
   classNames?: SliderClassNames;
+  /** Inline style on the root wrapper. */
   style?: React.CSSProperties;
+  /** Per-slot inline style overrides: root, label, track, fill, thumb, output. */
   styles?: SliderStyles;
 
+  /** Replaces the default children (Label/Track/Fill/Thumb/Output) entirely. */
   children?: React.ReactNode;
 }
+
 
 /* ------------------------------------------------------------------ */
 /*  Default classes                                                    */
