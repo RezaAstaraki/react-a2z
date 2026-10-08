@@ -42,7 +42,9 @@ export interface CodeBoxProps extends Omit<React.HTMLAttributes<HTMLDivElement>,
   highlight?: boolean;
   /** Override the copy button's text, e.g. for localization. */
   labels?: CodeBoxCopyLabels;
+  /** Per-slot class overrides for the seven internal slots. */
   classNames?: CodeBoxClassNames;
+  /** Per-slot inline styles for the seven internal slots. */
   styles?: CodeBoxStyles;
 }
 
