@@ -152,6 +152,26 @@ This is the headline README promise; it deserves a real test, not trust.
       (b) keep the color while loading, greying out only on real `disabled`.
       Currently (a) with no note in the source, so a consumer sees a bug.
       If (a) wins, document it; if (b), it is a 2.0.0 behaviour change.
+- [ ] **Three CustomModal prop defects.** Found via the guide while
+      documenting the modal page; all three are honest in the JSDoc today,
+      but each is a real API problem:
+      (a) `stackable` is declared in `CustomModalProps` but NOT destructured
+          in the component -- it does nothing. The stacking logic lives in
+          `setModalOpen` (`shouldStack = Boolean(top?.stackable)`), which is
+          the only place it is read. `GlobalModal` passes it through and
+          CustomModal drops it. Fix: remove it from `CustomModalProps`, or
+          make it real. Removing is breaking, so 2.0.0.
+      (b) `isDraggable` and `headerDraggable` are the SAME switch --
+          `canDrag = Boolean(headerDraggable || isDraggable)`, and the
+          pointer handler is only ever attached to the header. Two names,
+          one behaviour; `GlobalModal` even aliases them. Fix: keep one,
+          deprecate the other. 2.0.0.
+      (c) `className` and `contentClassName` both land on the PANEL, in
+          that order. The name suggests `contentClassName` styles the body,
+          but that is `bodyClassName`. Fix: rename, or drop one. 2.0.0.
+      Cross-cutting: `classNames` / `styles` merge order is consistent
+      across components by COINCIDENCE, not by a stated rule. Worth writing
+      down (root-last? per-slot?) before the surface grows further.
 
 ## 6. Test infrastructure — start before the next migration
 
