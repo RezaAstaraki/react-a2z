@@ -202,6 +202,13 @@ Form input with `label` + `placeholder`. Uses `useId` for label linkage.
   - `className` on any compound child
 - **Render props:** on the root (`renderThumb`, `renderTrack`, `renderFill`,
   `renderOutput`, `renderLabel`) **and** as `render` on each compound child.
+- **Render-prop `className` is pre-merged.** The `className` handed to
+  `renderThumb` (and the other render props) has already been through `cn()`,
+  so it contains the default classes (`bg-surface`, `border-primary-600`, ...).
+  Appending a raw `" bg-emerald-500"` does NOT override them -- both sit on
+  the element and stylesheet order decides. Use inline `style`, or re-merge
+  through `cn(props.className, "bg-emerald-500")`. The `classNames` prop is
+  NOT affected: it is merged inside the component.
 - **Value formatting:** `label`, `suffix`, `formatValue`, `showOutput`.
 - **Pointer handling:** `setPointerCapture` + `pointerup`/`pointercancel` cleanup.
 - **Range safety:** thumbs can't cross — each is clamped between neighbors.
@@ -535,6 +542,7 @@ react-a2z/
 | Rollup bundles `clsx` / `tailwind-merge` despite `peerDepsExternal()` | Only peer deps are externalized. Add `external: ['clsx', 'tailwind-merge']` to the JS config; the bundled copy is parsed as CJS and the named export fails at load |
 | Tokens declared in `:root` but no utility is generated (v4) | Tailwind v4 only generates utilities from `@theme`. Use `@theme inline` in `tailwind.css` so `--a2z-*` stays the only override path |
 | An unknown prop silently no-ops (`next dev` still returns 200) | `next dev` does not type-check; React 19 passes unknown props through to the DOM as no-ops. Run `next build` or grep the built `d.ts` before trusting a demo |
+| Render-prop `className` arrives pre-merged (contains the default `bg-surface`) | Appending a raw `bg-*` class loses -- both sit on the element and stylesheet order decides. Override with inline `style`, or re-merge through `cn(props.className, "...")`. The `classNames` prop is unaffected: it is merged inside the component by `cn()` |
 
 ## Verification Checklist (for a new agent session)
 
