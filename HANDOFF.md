@@ -447,3 +447,33 @@ When I paste this file at the start of a session, please:
     is a consumer forcing `open` on first paint, which the guard cannot
     cover. Both rows now exist and must stay separate.
   - No component code changed. No migration. Token count stays 6 of 14.
+
+
+- 2026-10-08 (sessions 7-8, library side): three JSDoc passes, one barrel
+  fix, one ROADMAP entry. Consumer app went 9/14 -> 12/14 guide pages.
+
+  - `Counter.tsx` -- 22 props documented (11/33 -> 33/33). Whole-type
+    replacement, because `padding`, `gap`, `borderRadius`,
+    `horizontalPadding`, `fontSize`, `className`, `delay` and
+    `digitClassName` all repeat on internal types and any anchored
+    insertion would misfire. Commit `aa6bcdc`.
+  - `Md.tsx` -- 4 props (2/6 -> 6/6). Commit `2e28618`.
+  - `MdEditor.tsx` -- 16 props (9/25 -> 25/25). Commit `7692621`.
+  - **The barrel fix (`cdbe5b4`).** `parseMarkdown` / `parseInline` were
+    exported from `Md/index.ts` but not from `components/index.ts`, so
+    they were absent from `dist/index.d.ts` while present at runtime.
+    `import { parseMarkdown } from "react-a2z/Md"` RAN but did not
+    TYPECHECK. Found only because the guide page tried to import the
+    symbol. New pitfall row added to SKILL.md.
+  - **ROADMAP section 5** gained the Counter callback-identity entry
+    (`3def133`). The fix -- hold `onStart`/`onEnd` in refs so identity
+    cannot matter -- is a behaviour change with no API change, so it
+    could ship in a patch. Not decided yet.
+  - Two splice bugs found and now recorded in the app HANDOFF section 4:
+    a CRLF file cannot be matched by `indexOf` on a literal `\n`, and a
+    block that IS a whole declaration must not have another terminator
+    appended (`rollup-plugin-dts` fails with TS1128).
+  - `SKILL.md` is now current for Counter and for the barrel pitfall.
+    The remaining stale spot is section 2's migration list, which still
+    says 6 of 14 -- correct as of 2026-10-07, but no migration ran in
+    these two sessions, so it was left alone.

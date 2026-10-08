@@ -363,7 +363,17 @@ Optional import: `react-a2z/PearlButton/styles.css`.
 
 ### Counter
 
-Increment/decrement with `CounterVariant`, `CounterPlace`, `CounterInView`.
+Animated number. `number` counts up as plain text; `digits` renders an
+odometer with one column per place. `inView` starts it on scroll (default
+`true`). Exposes `start` / `reset` / `update` through a ref. Types:
+`CounterVariant`, `CounterPlace`, `CounterInView`, `CounterHandle`.
+
+`onStart` / `onEnd` are IDENTITY-SENSITIVE. An inline arrow is a new
+function every render, which changes `run`'s useCallback identity, which
+re-fires the effect that starts the animation, which calls `onStart()`,
+which setStates -- an update loop ("Maximum update depth exceeded").
+Memoize them with `useCallback`. Open design question in ROADMAP section 5:
+hold them in refs internally so inline arrows Just Work.
 
 ### ClientLogger
 
@@ -548,6 +558,7 @@ react-a2z/
 | `export *` from a barrel with default export       | Default exports don't propagate — export named values explicitly   |
 | `package.json#exports` points at `dist/.../X/index.js` that Rollup never emits | List `src/.../X/index.ts` in `rollup.config.js` `entries`, OR point the subpath at the concrete `X/X.js` file. Making the barrel reachable from `src/index.ts` does NOT help |
 | Barrel `X/index.ts` is a pure re-export and no `X/index.js` is emitted | List `src/.../X/index.ts` in the `entries` array in `rollup.config.js` — barrels are only emitted when they are explicit entry points |
+| A symbol is exported from a SUB-barrel but not the parent barrel | It exists at runtime and is ABSENT from the root `dist/index.d.ts`, so `import { x } from "pkg/Sub"` runs but fails to typecheck (the subpath's `types` field points at the root `.d.ts`). Add it to `src/components/index.ts`. Being reachable via `export *` from `src/index.ts` does NOT put it in the type surface |
 | Window `pointermove`/`pointerup` listeners leak if the component unmounts mid-drag | Fixed in `Slider` (track + thumb): the listeners are owned by a `useEffect` keyed on a `dragging` flag, with the per-drag logic carried in refs so the effect does not re-register while the value changes. Never move registration back into the `pointerdown` handler |
 | `sed -i '/…$/a …'` silently no-ops on CRLF files | Repo is CRLF; `$`-anchored patterns fail. Use `cat > file <<'EOF'` rewrites or `node -e` scripts, never blind `sed` |
 | Leftover `useState` + `useEffect(() => setX(true), [])` "mounted" flag | Remove it — `noUnusedLocals` catches it; SSR-safe code shouldn't need the pattern unless you branch on it |
