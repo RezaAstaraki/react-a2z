@@ -152,15 +152,20 @@ This is the headline README promise; it deserves a real test, not trust.
       (b) keep the color while loading, greying out only on real `disabled`.
       Currently (a) with no note in the source, so a consumer sees a bug.
       If (a) wins, document it; if (b), it is a 2.0.0 behaviour change.
-- [ ] **Three CustomModal prop defects.** Found via the guide while
-      documenting the modal page; all three are honest in the JSDoc today,
-      but each is a real API problem:
-      (a) `stackable` is declared in `CustomModalProps` but NOT destructured
-          in the component -- it does nothing. The stacking logic lives in
-          `setModalOpen` (`shouldStack = Boolean(top?.stackable)`), which is
-          the only place it is read. `GlobalModal` passes it through and
-          CustomModal drops it. Fix: remove it from `CustomModalProps`, or
-          make it real. Removing is breaking, so 2.0.0.
+- [ ] **Three CustomModal prop problems.** Found via the guide while
+      documenting the modal page. They are NOT all the same kind:
+      (a) is a misfiled prop, (b) and (c) are genuine duplicates.
+      (a) `stackable` is MISFILED, not broken. Its purpose is nested
+          modals: when true, the next modal stacks on top instead of
+          replacing the current one. But only the STORE reads it --
+          `setModalOpen` does `shouldStack = Boolean(top?.stackable)`.
+          `CustomModal` never destructures it, so a direct consumer
+          passing it gets nothing. The prop is declared on
+          `CustomModalProps`, where it is inert, when it belongs only on
+          `SetModalOpenPayload`. Fix: move it off the component props
+          type. The component-side JSDoc STAYS as written -- on THAT
+          table, "no effect in CustomModal" is the honest and useful
+          thing to say. 2.0.0 (removing a prop is breaking).
       (b) `isDraggable` and `headerDraggable` are the SAME switch --
           `canDrag = Boolean(headerDraggable || isDraggable)`, and the
           pointer handler is only ever attached to the header. Two names,
