@@ -249,10 +249,24 @@ Example:
   `closeDelay`, `disabled`, `showArrow`, `container` (portal target, default `document.body`).
 - **Positioning:** `createPortal` + `position: fixed`, auto-flips when the preferred
   side overflows, clamps to viewport. Recomputes on scroll/resize.
+- **SSR / hydration:** `open` or `defaultOpen` true on the FIRST render breaks
+  hydration -- React does not render portals on the server, so the server HTML
+  has no tooltip node while the client's does. Gate the first render on a
+  `mounted` flag (false on server and on the first client render, true in an
+  effect), or start closed. The internal `container === null` guard covers the
+  no-DOM case; it cannot cover a consumer forcing `open`.
+- **`container` and CSS transforms:** a `transform`, `filter` or `perspective`
+  on an ancestor makes it the containing block for `position: fixed`
+  descendants. Portaling into such a subtree sends the tooltip to the wrong
+  place; the default `document.body` target is unaffected.
 - **Accessibility:** `role="tooltip"`, `useId` wires trigger `aria-describedby`,
   Escape closes while open, focus opens immediately / blur closes.
 - **Styling:** `className` / `classNames={{ root, trigger, content, arrow }}` /
   `style` / `styles`. Baked-in defaults (`bg-gray-900 text-white text-xs`, blue focus ring).
+- **Root is `display: contents`.** `className` and `style` land on a span that
+  generates no box, so only inheriting properties (`color`, `font-*`) visibly
+  reach the trigger. For anything else use `classNames.trigger` /
+  `classNames.content`.
 - **Render prop:** `render` on `Tooltip.Content` receives
   `{ ref, className, style, placement, side, open, contentId }`.
 - Files: `src/components/Tooltip/Tooltip.tsx`, `src/components/Tooltip/index.ts`.
@@ -543,6 +557,8 @@ react-a2z/
 | Tokens declared in `:root` but no utility is generated (v4) | Tailwind v4 only generates utilities from `@theme`. Use `@theme inline` in `tailwind.css` so `--a2z-*` stays the only override path |
 | An unknown prop silently no-ops (`next dev` still returns 200) | `next dev` does not type-check; React 19 passes unknown props through to the DOM as no-ops. Run `next build` or grep the built `d.ts` before trusting a demo |
 | Render-prop `className` arrives pre-merged (contains the default `bg-surface`) | Appending a raw `bg-*` class loses -- both sit on the element and stylesheet order decides. Override with inline `style`, or re-merge through `cn(props.className, "...")`. The `classNames` prop is unaffected: it is merged inside the component by `cn()` |
+| Tooltip forces `open`/`defaultOpen` on first render -> hydration mismatch | React does not render portals on the server. With `open`/`defaultOpen` true on the first paint, the server HTML has no tooltip node while the client's does. Gate the first render on a `mounted` flag (false on server and first client render, true in an effect), or start closed. The internal `container === null` guard covers the no-DOM case but not a consumer forcing `open` |
+| Tooltip mispositioned when portaled into a `transform` / `filter` / `perspective` subtree | Those properties make the element a containing block for `position: fixed` descendants, so the tooltip resolves viewport-relative coords against that box. Default `document.body` avoids it; if you must target something else, portal into an untransformed ancestor |
 
 ## Verification Checklist (for a new agent session)
 

@@ -6,7 +6,7 @@ is NOT published (`package.json#files` excludes it) — it is internal coordinat
 Companion docs: `SKILL.md` (library API + house style), `AGENTS.md` (repo rules),
 `HANDOFF.md` (session protocol + log of what happened).
 
-## Where things stand (updated 2026-10-07)
+## Where things stand (updated 2026-10-08)
 
 - The token layer is done and proven: `tokens.css` is the single source of
   values, mapped for v3 by `tailwind.preset.js` and for v4 by the

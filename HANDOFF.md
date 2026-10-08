@@ -424,3 +424,26 @@ When I paste this file at the start of a session, please:
     component, not a bug to fix unilaterally.
   - Also added the same caveat to `SKILL.md`'s Button section, since
     SKILL.md is canonical and a consumer reading it would not expect this.
+
+- 2026-10-08 (guide session 6): Tooltip JSDoc pass + CssTooltip decision.
+
+  - 11 prop-level JSDoc lines added to `TooltipProps` (open, defaultOpen,
+    onOpenChange, placement, disabled, showArrow, className, classNames,
+    style, styles, children). Coverage 5/16 -> 16/16. Commit `697335b`.
+    Two corrections landed in the same pass: `className` is merged AFTER
+    `classNames.root` (so className wins), and `style` AFTER `styles.root`
+    (so style wins) -- the source order is the source of truth.
+  - `CssTooltip` DECIDED as a new export, NOT a replacement. Library
+    ROADMAP section 7 has the shape and five open questions. The
+    interactive Tooltip stays a Client component -- same call HeroUI,
+    Radix, shadcn and MUI all make (HeroUI only hides the boundary by
+    injecting the directive at build time).
+  - SKILL.md updated in three places: two SSR / container bullets in the
+    Tooltip section, one on `display: contents` for the root span, and two
+    pitfall-table rows (forced-open hydration, transform containing block).
+  - The existing pitfall row "Tooltip content silently missing on first
+    render because `container` is `null`" is a DIFFERENT failure from the
+    hydration one: that row is the component's internal no-DOM guard; ours
+    is a consumer forcing `open` on first paint, which the guard cannot
+    cover. Both rows now exist and must stay separate.
+  - No component code changed. No migration. Token count stays 6 of 14.
