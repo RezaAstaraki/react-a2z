@@ -333,9 +333,13 @@ function renderBlocks(
 }
 
 export type MdProps = {
+  /** Markdown source. Takes precedence over `children` when both are set. */
   value?: string;
+  /** Markdown source, used only when `value` is absent. */
   children?: string;
+  /** Merged onto the root wrapper via `cn`, so consumer classes win. */
   className?: string;
+  /** Turn a single newline into a `<br />`. Default `true`. */
   breaks?: boolean;
   /** Lightweight syntax coloring for fenced code blocks. Default `true`. */
   highlightCode?: boolean;
