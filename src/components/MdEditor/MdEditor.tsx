@@ -48,19 +48,33 @@ export type MdEditorHandle = {
 };
 
 export type MdEditorProps = {
+  /** Controlled markdown source. Pair with `onChange`; the editor keeps no internal value. */
   value?: string;
+  /** Initial markdown for uncontrolled use. Default `""`. */
   defaultValue?: string;
+  /** Called with the new source on every edit, toolbar action and undo/redo. */
   onChange?: (value: string) => void;
+  /** Shown in the textarea while the source is empty. */
   placeholder?: string;
+  /** Merged onto the root wrapper via `cn`, so consumer classes win. */
   className?: string;
+  /** Merged onto the `<textarea>` slot. */
   textareaClassName?: string;
+  /** Merged onto the preview scroll container (`edit` / `split` / `preview`). */
   previewClassName?: string;
+  /** Body height as a number (px) or any CSS length. Default `360`. Ignored while fullscreen. */
   height?: number | string;
+  /** Controlled mode. Pair with `onModeChange`; the editor keeps no internal mode. */
   mode?: MdEditorMode;
+  /** Initial mode for uncontrolled use. Default `split`. */
   defaultMode?: MdEditorMode;
+  /** Called when the mode toggles, whether by the toolbar or internally. */
   onModeChange?: (mode: MdEditorMode) => void;
+  /** Blocks editing AND every toolbar action; the textarea also gets the native `disabled`. */
   disabled?: boolean;
+  /** Blocks edits and toolbar actions but keeps the value visible and selectable. */
   readOnly?: boolean;
+  /** Passed to the preview's `Md`; a single newline becomes a `<br />`. Default `true`. */
   breaks?: boolean;
   /** Keep editor/preview scroll positions in sync (split mode). Default `true`. */
   scrollSync?: boolean;
@@ -68,7 +82,9 @@ export type MdEditorProps = {
   fullscreen?: boolean;
   /** Controlled fullscreen state. */
   isFullscreen?: boolean;
+  /** Initial fullscreen state for uncontrolled use. Default `false`. */
   defaultFullscreen?: boolean;
+  /** Called when fullscreen toggles, by the toolbar button or Escape. */
   onFullscreenChange?: (fullscreen: boolean) => void;
   /** Indent string for Tab. Default two spaces. */
   indent?: string;
