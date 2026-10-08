@@ -44,8 +44,8 @@ export type { TooltipProps, TooltipClassNames, TooltipStyles } from './Tooltip/T
 
 export * from './Modal';
 export * from './Toast';
-export { Md } from './Md';
-export type { MdProps } from './Md';
+export { Md, parseMarkdown, parseInline } from './Md';
+export type { MdProps, MdBlock, MdInline, ParseMarkdownOptions } from './Md';
 export { MdEditor } from './MdEditor';
 export type { MdEditorProps, MdEditorMode, MdEditorHandle, MdEditorToolId } from './MdEditor';
 export { Counter } from './Counter';
