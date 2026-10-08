@@ -109,7 +109,12 @@ export interface GradientMakerStyles {
 }
 
 export interface GradientMakerProps {
+  /** Heading text above the preview. Default `"Gradient"`. */
   label?: string;
+  /**
+   * Called with the full CSS gradient string on every change: preset
+   * click, colour edit, or angle move. Does NOT fire on mount.
+   */
   onGradientChange?: (gradient: string) => void;
   /**
    * Replaces the built-in eleven presets entirely — they are not exported, so
@@ -123,8 +128,11 @@ export interface GradientMakerProps {
    * emitted either way.
    */
   showCopy?: boolean;
+  /** Merged onto the root, before `classNames.root` -- so `classNames.root` wins on conflict. */
   className?: string;
+  /** Per-slot class overrides for the eleven internal slots. */
   classNames?: GradientMakerClassNames;
+  /** Per-slot inline styles for the eleven internal slots. */
   styles?: GradientMakerStyles;
 }
 
