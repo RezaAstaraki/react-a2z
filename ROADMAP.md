@@ -194,6 +194,29 @@ This is the headline README promise; it deserves a real test, not trust.
       across components by COINCIDENCE, not by a stated rule. Worth writing
       down (root-last? per-slot?) before the surface grows further.
 
+- [ ] **ClientLogger duplicates its prop type.** Found while building the
+      guide's client-logger page. `Wrapper.tsx` declares a named
+      `ClientLoggerProps` and is the file the barrel re-exports, so it
+      is the public surface -- and it is what docgen reads. But
+      `ClientLogger.tsx` declares the SAME five props again, inline on
+      its default export. Byte-identical today, so nothing has broken;
+      the risk is drift. Edit one and forget the other and the guide's
+      prop table silently disagrees with the rendered component -- the
+      section 3 code-string class, one level up. Fix: delete one
+      definition. Smaller diff is to drop the inline literal from
+      `ClientLogger.tsx` and import the type from `Wrapper`. Type-only,
+      so no runtime change and no migration note.
+- [ ] **`showDataConsole` does not print on mount.** Found via the guide.
+      The prop only sets the checkbox's INITIAL state; the `console.log`
+      fires in the checkbox's `onChange`, so
+      `<ClientLogger data={x} showDataConsole />` renders with the box
+      checked and logs nothing until the reader toggles it. Two options:
+      (a) document -- the prop is "start checked", not "log now", and
+      the JSDoc now says exactly that;
+      (b) also `console.log` in a mount effect when the prop is true, so
+      the name matches the behaviour.
+      (b) is a behaviour change with no API change. Decide which way.
+
 ## 6. Test infrastructure — start before the next migration
 
 The verifier (`scripts/verify-tokens.mjs`) and the consumer app's
