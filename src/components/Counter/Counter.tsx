@@ -35,13 +35,21 @@ export type CounterProps = {
   delay?: number;
   /** `number` = count-up text; `digits` = odometer columns. Default `number`. */
   variant?: CounterVariant;
+  /** Digits rendered after the decimal point. Default `0`. */
   decimals?: number;
+  /** Decimal-point character used when `decimals > 0`. Default `.`. */
   decimal?: string;
+  /** Thousands separator used when `useGrouping` is on. Default `,`. */
   separator?: string;
+  /** Text before the value, outside the animated region. Default `""`. */
   prefix?: string;
+  /** Text after the value, outside the animated region. Default `""`. */
   suffix?: string;
+  /** Group the integer part with `separator` every three digits. Default `true`. */
   useGrouping?: boolean;
+  /** Ease the animation with an ease-out-cubic curve; `false` runs linear. Default `true`. */
   useEasing?: boolean;
+  /** Replace the built-in formatting. Receives the animated value and returns the rendered string. `digits` variant ignores it. */
   formattingFn?: (value: number) => string;
   /**
    * Start animation when scrolled into view.
@@ -55,21 +63,35 @@ export type CounterProps = {
   scrollSpyDelay?: number;
   /** @deprecated Prefer `inView.once`. Only animate once. Default `true`. */
   scrollSpyOnce?: boolean;
+  /** Start the animation on mount when not waiting for `inView`. Default `true`. */
   startOnMount?: boolean;
+  /** Resume from the current display value instead of resetting to `start` when re-run via ref. Default `false`. */
   preserveValue?: boolean;
+  /** Merged onto the root span via `cn`, so it wins over the built-in classes. */
   className?: string;
   /** Digit-roll font size in px (`digits` variant). Default `64`. */
   fontSize?: number;
+  /** Vertical padding inside each digit window (`digits` variant). Default `0`. */
   padding?: number;
+  /** Gap between digit columns in px (`digits` variant). Default `8`. */
   gap?: number;
+  /** Corner radius of the digits container in px (`digits` variant). Default `4`. */
   borderRadius?: number;
+  /** Left/right padding inside the digits container in px (`digits` variant). Default `8`. */
   horizontalPadding?: number;
+  /** Explicit place values to render, e.g. `[100, 10, 1]` or `[1, '.', 10 ** -1]`. Auto-detected from the target when omitted. */
   places?: CounterPlace[];
+  /** Height in px of each edge fade in the digits container (`digits` variant). Default `16`. */
   gradientHeight?: number;
+  /** Top colour of the edge fade (`digits` variant). Default `rgb(255 255 255)`. */
   gradientFrom?: string;
+  /** Bottom colour of the edge fade (`digits` variant). Default `transparent`. */
   gradientTo?: string;
+  /** Merged onto each digit column (`digits` variant). */
   digitClassName?: string;
+  /** Fires when an animation starts, before the first frame. */
   onStart?: () => void;
+  /** Fires when an animation reaches its target, or immediately when `duration` is `0`. */
   onEnd?: () => void;
 };
 
