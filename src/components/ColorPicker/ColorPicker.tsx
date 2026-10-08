@@ -23,19 +23,27 @@ export interface ColorPickerStyles {
 }
 
 export interface ColorPickerProps {
+  /** Label above the swatch. Default `"Color"`. */
   label?: string;
   /** Controlled value. */
   value?: string;
-  /** Uncontrolled initial value. */
+  /** Uncontrolled initial value. Default `"#ff0000"`. */
   defaultValue?: string;
+  /** Called with the new hex string when the input or a preset changes. */
   onChange?: (color: string) => void;
+  /** Swatch-row colours. Defaults to eight built-ins; `[]` hides the row. */
   presetColors?: string[];
+  /** Whether to render the preset swatch row. Defaults to true. */
   showPresets?: boolean;
   /** Whether to render the "Selected: #rrggbb" line. Defaults to true. */
   showValue?: boolean;
+  /** Disables the input and every preset swatch. */
   disabled?: boolean;
+  /** Merged onto the root, before `classNames.root` -- so `classNames.root` wins on conflict. */
   className?: string;
+  /** Per-slot class overrides for the six internal slots. */
   classNames?: ColorPickerClassNames;
+  /** Per-slot inline styles for the six internal slots. */
   styles?: ColorPickerStyles;
 }
 
