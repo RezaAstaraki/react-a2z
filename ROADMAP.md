@@ -174,6 +174,22 @@ This is the headline README promise; it deserves a real test, not trust.
       (c) `className` and `contentClassName` both land on the PANEL, in
           that order. The name suggests `contentClassName` styles the body,
           but that is `bodyClassName`. Fix: rename, or drop one. 2.0.0.
+- [ ] **Counter's `onStart` / `onEnd` are identity-sensitive.** Found while
+      building the guide's Counter page: passing an inline arrow
+      (`onStart={() => ...}`) creates a new function every render, which
+      changes the identity of the internal `run` useCallback, which
+      re-fires the `useEffect([run, target])` that starts the animation,
+      which calls `onStart()`, which `setState`s, which re-renders -- an
+      infinite update loop (`Maximum update depth exceeded`).
+      Two options:
+      (a) document only -- the consumer's job to memoize callbacks. The
+          guide example now does this and the comment explains why.
+      (b) hold `onStart` / `onEnd` in refs inside Counter, so `run`
+          depends on nothing the consumer can change per render. This is
+          the standard fix and makes inline arrows Just Work.
+      (b) is a behaviour change with no API change -- arguably a bug
+      fix, not a 2.0.0 item. Decide which way; if (b), it is safe to
+      ship in the next patch and does not need a migration note.
       Cross-cutting: `classNames` / `styles` merge order is consistent
       across components by COINCIDENCE, not by a stated rule. Worth writing
       down (root-last? per-slot?) before the surface grows further.
