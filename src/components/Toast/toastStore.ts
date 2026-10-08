@@ -41,9 +41,11 @@ export type ToastOptions = {
   title?: string
   /** Auto-dismiss ms. `0` or `Infinity` = stay until dismissed. Default `4000`. */
   duration?: number
+  /** Screen corner the toast appears in. Default `top-right`. */
   position?: ToastPosition
   /** Enter / exit animation. Default `slide`. */
   animation?: ToastAnimation
+  /** Show a close button. Default `true`. */
   closable?: boolean
   /** Show countdown progress bar when duration is finite. Default `true`. */
   progress?: boolean
@@ -54,7 +56,9 @@ export type ToastOptions = {
    * Pass a React node for a custom icon, or `false` to hide.
    */
   icon?: ReactNode | false
+  /** Extra classes on the toast body. Merged after the type styles, so it wins. */
   className?: string
+  /** Extra classes on the progress bar fill. Merged after the type styles, so it wins. */
   progressClassName?: string
 }
 
