@@ -114,15 +114,15 @@ export interface SliderProps {
   /** Id of an element that labels each thumb. Auto-wired when `label` is set. */
   'aria-labelledby'?: string;
 
-  /** Fully custom thumb. Spread the received props to keep keyboard, pointer and ARIA behaviour working. */
+  /** Fully custom thumb. Spread the received props to keep keyboard, pointer and ARIA behaviour working. className is pre-merged -- append with cn(), not by concatenation. */
   renderThumb?: (props: ThumbRenderProps) => React.ReactNode;
-  /** Fully custom track. Spread the received props so drag-to-seek keeps working. */
+  /** Fully custom track. Spread the received props so drag-to-seek keeps working. className is pre-merged -- append with cn(), not by concatenation. */
   renderTrack?: (props: TrackRenderProps) => React.ReactNode;
-  /** Fully custom fill. The received style carries the computed inset and size. */
+  /** Fully custom fill. The received style carries the computed inset and size. className is pre-merged -- append with cn(), not by concatenation. */
   renderFill?: (props: FillRenderProps) => React.ReactNode;
-  /** Fully custom output. Receives the raw value and the formatted node. */
+  /** Fully custom output. Receives the raw value and the formatted node. className is pre-merged -- append with cn(), not by concatenation. */
   renderOutput?: (props: OutputRenderProps) => React.ReactNode;
-  /** Fully custom label. Receives the raw value and the formatted node. */
+  /** Fully custom label. Receives the raw value and the formatted node. className is pre-merged -- append with cn(), not by concatenation. */
   renderLabel?: (props: LabelRenderProps) => React.ReactNode;
 
   /** Class on the root wrapper, merged after the default layout classes. */
