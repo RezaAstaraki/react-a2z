@@ -225,6 +225,46 @@ screenshots of guide pages -- recorded in that repo's ROADMAP §7. Different
 question: this layer asserts component *behaviour*; that one asserts a
 *page renders*. Neither substitutes for the other.
 
+## 7. CssTooltip -- a server-renderable tooltip (new component)
+
+DECIDED (2026-10-08): build it, ALONGSIDE the existing Tooltip, not as a
+replacement. The interactive Tooltip stays a Client component -- it needs
+state, effects, a portal and browser measurement, and every comparable
+library (HeroUI, Radix, shadcn, react-tooltip, MUI) ships the same way.
+HeroUI only hides the boundary by injecting the directive at build time.
+A CSS-only tooltip is a DIFFERENT widget, so it is a second export with
+its own API and its own page.
+
+Shape:
+
+- `<CssTooltip content="...">{trigger}</CssTooltip>`, wrapper is a span.
+- Pure CSS: `:hover` and `:focus-visible` on the wrapper reveal the
+  content through a pseudo-element or a child span. No JS, no state, no
+  portal, no measurement. Server-safe by construction.
+- Classes go through the existing token layer, so it re-themes with
+  everything else.
+
+What it gives up, and the docs must say so plainly:
+
+- no flip-on-overflow, no offset, no delayDuration / closeDelay
+- no Escape-to-close, no disabled, no controlled open
+- no classNames / styles slot API, no render escape hatch
+- content is not portaled, so an `overflow: hidden` ancestor clips it
+
+Open questions before building:
+
+- [ ] pseudo-element (`::after` with `content: attr(data-tip)`) versus a
+      real child span. The attr form cannot hold rich content; a child
+      span can, and can still be CSS-only.
+- [ ] does it need a `placement` at all, or just top? Four-side CSS
+      arrows are doable but verbose.
+- [ ] arrow: one pseudo-element, or two.
+- [ ] a11y: a CSS-only tooltip cannot wire `aria-describedby` only while
+      visible. Always-on `aria-describedby` is the usual compromise --
+      worth checking against the interactive component.
+- [ ] own guide page, or a section on the Tooltip page with the trade-off
+      table?
+
 ## Rules that keep this list honest
 
 - A migration is done only when it is verified in the consumer app, not when
