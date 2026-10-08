@@ -20,13 +20,21 @@ import {
 } from './modalStore';
 
 export type CustomModalProps = {
+  /** Whether the modal is open. Renders nothing when false. */
   isOpen: boolean;
+  /** Called when the user closes it -- Escape, backdrop, or close button. */
   onClose: () => void;
+  /** Modal body content. */
   children: ReactNode;
+  /** Heading text, wired to aria-labelledby. */
   title?: string;
+  /** Replaces the default title heading; receives a titleId prop. */
   header?: ReactNode;
+  /** Panel max-width. Default `md`. */
   size?: ModalSize;
+  /** Where the panel sits in the viewport. Default `center`. */
   placement?: ModalPlacement;
+  /** Backdrop treatment behind the panel. Default `blur`. */
   backdrop?: ModalBackdrop;
   /** Extra Tailwind classes merged onto the backdrop layer. */
   backdropClassName?: string;
@@ -35,15 +43,25 @@ export type CustomModalProps = {
    * `unstyled` — blank shell (portal / backdrop / escape); style everything yourself.
    */
   variant?: ModalVariant;
+  /** `inside` scrolls the body, `outside` the page, `hidden` neither. Default `inside`. */
   scrollBehavior?: ModalScrollBehavior;
+  /** Whether Escape and backdrop clicks close it. Default `true`. */
   isDismissible?: boolean;
+  /** Show the close button. Defaults to false for variant `unstyled`. */
   showCloseButton?: boolean;
+  /** Enables drag-by-header. Same switch as isDraggable. Default `false`. */
   headerDraggable?: boolean;
+  /** Enables drag-by-header. Same switch as headerDraggable. Default `false`. */
   isDraggable?: boolean;
+  /** Overlay stacking order. Default `50`. */
   zIndex?: number;
+  /** Classes on the panel, merged before contentClassName. */
   className?: string;
+  /** Classes on the body wrapper -- the element that scrolls. */
   bodyClassName?: string;
+  /** Classes on the panel, merged after className. NOT the body -- use bodyClassName. */
   contentClassName?: string;
+  /** No effect in CustomModal: stacking is decided by the store. Passed through by GlobalModal. */
   stackable?: boolean;
   /** Only the topmost stacked modal should handle Escape. */
   isTop?: boolean;
