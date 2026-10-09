@@ -44,6 +44,28 @@ function cjsPackageJson() {
   };
 }
 
+// Rollup occasionally writes every output file and then fails to exit
+// because some plugin leaves a handle open. Both configs call forceExit()
+// from closeBundle; when the last one fires, we exit explicitly. By that
+// point every file is on disk, so an explicit exit is safe.
+let _closedBundles = 0;
+const _TOTAL_BUNDLES = 2;
+function forceExit() {
+  return {
+    name: 'force-exit',
+    closeBundle() {
+      if (++_closedBundles >= _TOTAL_BUNDLES) {
+        // Delay exit so rollup can flush its final "created ..." summary
+        // line. .unref() means this timer does NOT keep the loop alive: if
+        // rollup exits naturally first, the timer never fires. If a plugin
+        // leaked a handle, the loop is still alive and the timer fires
+        // at 500 ms.
+        setTimeout(() => process.exit(0), 500).unref();
+      }
+    },
+  };
+}
+
 const preservedOutput = {
   preserveModules: true,
   preserveModulesRoot: 'src',
@@ -94,14 +116,15 @@ export default [
       commonjs(),
       preserveDirectives(),
       typescript({ declaration: false, sourceMap: true }),
-      terser({ compress: { directives: false } }),
+      terser({ compress: { directives: false }, maxWorkers: 1 }),
       cjsPackageJson(),
+      forceExit(),
     ],
   },
   {
     input: 'src/index.ts',
     output: [{ file: 'dist/index.d.ts', format: 'esm' }],
-    plugins: [dts.default()],
+    plugins: [dts.default(), forceExit()],
     external: [/\.css$/],
   },
 ];
