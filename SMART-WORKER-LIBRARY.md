@@ -1,5 +1,35 @@
-# HANDOFF — How to work with me on this project
+# SMART-WORKER-LIBRARY — react-a2z
 
+**Role:** constitution + journal for a capable chat AI working in this repo.
+One repo only. The human runs every command; you have no filesystem access.
+
+**Audience.** A large-context chat AI (the "smart worker"). NOT a DSH session —
+a 9B model reads `.dsh/skills/<name>/SKILL.md` and never this file. NOT the
+manager — that is `../LEAD.md`, which holds the cross-repo big picture this file
+deliberately omits.
+
+**How this file is organized (its memory).**
+- Sections 1-8 are the CONSTITUTION: stable rules — environment, the chat
+  protocol, shell gotchas, build/verify. They change only when our way of
+  working changes. They are rules you FOLLOW, not a log.
+- Section 9 is the JOURNAL: append-only. Never rewrite, reorder, or trim an old
+  entry. Add a new dated entry at the end. The journal IS the memory — a fresh
+  session learns the project by reading it, so a fact that is not in it does
+  not exist.
+
+**Why this file exists.** `AGENTS.md` and `SKILL.md` are for agents WITH file
+tools; they say "read and edit files yourself, do not hand over one command at a
+time." That does not describe you. Sections 2-3 here DO apply: one command at a
+time, the human runs it, edits arrive as `cat > file <<'EOF'` heredocs. The
+technical rules bind in both worlds (CRLF-aware edits, back up before
+overwrite, `git add <file>` never `git add .`, `git --no-pager`).
+
+**Reading order for a fresh session.** This preamble -> section 1 environment ->
+sections 2-3 protocol -> the tail of section 9 (latest journal entries) ->
+`ROADMAP.md` for the next task. Ask for anything else with `cat`; never assume
+file contents.
+
+---
 Paste/attach this file at the start of any new chat session so the assistant
 has the full context. Keep it up to date when our working rules change.
 

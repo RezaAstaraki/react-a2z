@@ -1,6 +1,6 @@
 # AGENTS.md — react-a2z
 
-Agent-facing rules for this repo. The human's own docs are `HANDOFF.md` (session
+Agent-facing rules for this repo. The human's own docs are `SMART-WORKER-LIBRARY.md` (session
 workflow, environment, git hygiene) and `skills/web/react-a2z/SKILL.md` — the
 canonical library doc for API, house style, build pipeline,
 `package.json#exports` subpath rules, and pitfalls. Read SKILL.md explicitly: it
@@ -14,9 +14,9 @@ Forward-looking work lives in `ROADMAP.md` at the repo root — the live task
 list. Read it before starting so you pick up the intended next task instead of
 inventing one, and edit it in place as work lands.
 
-## ⚠️ HANDOFF.md §2/§3 are the human's chat protocol — not your instructions
+## ⚠️ SMART-WORKER-LIBRARY.md §2/§3 are the human's chat protocol — not your instructions
 
-`HANDOFF.md` presents §2 ("How I want you to communicate") and §3 ("How I want
+`SMART-WORKER-LIBRARY.md` presents §2 ("How I want you to communicate") and §3 ("How I want
 you to give me file changes") as *"hard rules. Follow them every response."*
 They were written for an assistant with **no filesystem access** that relays one
 shell command at a time for the human to run in WSL.
@@ -72,7 +72,7 @@ symlink.
   `main`, tracking `origin/main`. Auth is a classic PAT (`repo` scope) over
   HTTPS, picked up via `credential.helper = manager`.
 - `package.json` has a `files` allowlist (`dist`, `tailwind.preset.js`,
-  `tailwind.css`, `styles.css`, `styles`), so this file, `HANDOFF.md`, and
+  `tailwind.css`, `styles.css`, `styles`), so this file, `SMART-WORKER-LIBRARY.md`, and
   `skills/` are **not** published to npm.
 
 ## Doc drift — trust the repo, not the doc
@@ -87,7 +87,7 @@ symlink.
 ## Skill routing — invoke with the skill tool BEFORE acting
 
 Skill bodies are terse for a small local model; a larger-context model should
-still load the skill, then also read `HANDOFF.md` and
+still load the skill, then also read `SMART-WORKER-LIBRARY.md` and
 `skills/web/react-a2z/SKILL.md` for full project state.
 
 | If the task is...                         | Load skill first         |

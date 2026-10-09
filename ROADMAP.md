@@ -4,7 +4,7 @@ Living work list. Edit in place, check items off, delete what is done. This file
 is NOT published (`package.json#files` excludes it) — it is internal coordination.
 
 Companion docs: `SKILL.md` (library API + house style), `AGENTS.md` (repo rules),
-`HANDOFF.md` (session protocol + log of what happened).
+`SMART-WORKER-LIBRARY.md` (session protocol + log of what happened).
 
 ## Where things stand (updated 2026-10-08)
 
