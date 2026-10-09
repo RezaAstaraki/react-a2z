@@ -83,3 +83,18 @@ symlink.
   and have been removed.
 - The rule stands: when a doc and the repo disagree, the repo wins — and the
   fix is to correct the doc, not to work around it.
+
+## Skill routing — invoke with the skill tool BEFORE acting
+
+Skill bodies are terse for a small local model; a larger-context model should
+still load the skill, then also read `HANDOFF.md` and
+`skills/web/react-a2z/SKILL.md` for full project state.
+
+| If the task is...                         | Load skill first         |
+|-------------------------------------------|--------------------------|
+| edit/add/change a library component       | react-a2z-library-edit   |
+
+These are **DSH** skills: `.dsh/skills/<name>/SKILL.md`, discovered from this
+repo root. The older Hermes skill at `skills/web/react-a2z/SKILL.md` is
+**not** a DSH skill and nothing auto-loads it — the DSH skill above tells you
+which of its sections to read.
