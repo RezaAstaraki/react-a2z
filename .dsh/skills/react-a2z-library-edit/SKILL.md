@@ -97,6 +97,10 @@ Pass conditions:
 `npm run rollup` runs AND the browser is hard-refreshed — HMR does not cross
 the `file:` symlink.**
 
+> If `npm run rollup` times out but output shows "created ./dist/…",
+> the build SUCCEEDED. Do NOT poll the job. Kill it with job_kill and
+> verify by `ls -la dist/index.d.ts` mtime.
+
 ## Traps that have burned this repo
 
 - `sed -i '/...$/a ...'` silently no-ops on CRLF worktrees. Use full rewrites.
