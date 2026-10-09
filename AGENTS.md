@@ -86,13 +86,15 @@ symlink.
 
 ## Skill routing — invoke with the skill tool BEFORE acting
 
-Skill bodies are terse for a small local model; a larger-context model should
-still load the skill, then also read `SMART-WORKER-LIBRARY.md` and
-`LIBRARY-REFERENCE.md` for full project state.
+Skill bodies are terse for the small local model. Load the skill FIRST,
+before any other tool. The 9B worker needs only the skill. A larger-context
+DSH model may also read `SMART-WORKER-LIBRARY.md` and `LIBRARY-REFERENCE.md`
+for full project state.
 
 | If the task is...                         | Load skill first         |
 |-------------------------------------------|--------------------------|
 | edit/add/change a library component       | react-a2z-library-edit   |
+| debug a broken or silently-wrong result   | react-a2z-debug          |
 
 These are **DSH** skills: `.dsh/skills/<name>/SKILL.md`, discovered from this
 repo root. The `LIBRARY-REFERENCE.md` doc is
