@@ -477,3 +477,51 @@ When I paste this file at the start of a session, please:
     The remaining stale spot is section 2's migration list, which still
     says 6 of 14 -- correct as of 2026-10-07, but no migration ran in
     these two sessions, so it was left alone.
+
+- 2026-10-09 (session 11): DSH infrastructure landed; skill routing
+  confirmed; rollup exit hang worked around.
+
+  - **DSH skill + routing table committed** (`d7cda5b`).
+    `.dsh/skills/react-a2z-library-edit/SKILL.md` describes the edit
+    protocol (canonical-doc anchors, house style, edit sequence,
+    verify). `AGENTS.md` gains a routing table naming which skill to
+    load per task. Both are model-agnostic — a 9B or a cloud model
+    reads the same files.
+
+  - **Skill routing verified working.** DSH session log
+    `session-96342f4c` shows the model calling
+    `skill({name:"react-a2z-library-edit"})` after Glob + Read, before
+    the first Edit. An earlier "falsified" verdict judged a PARTIAL
+    trajectory — invocation lands mid-trajectory, not on turn 1. Do
+    not re-litigate; it works.
+
+  - **Rollup exit hang worked around** (`9d76e1b`). `npm run rollup`
+    occasionally prints every "created" line and then never exits
+    (~1 in 40 runs; reproduced once as exit 124 under `timeout`).
+    Cause not identified. `forceExit` plugin increments a counter on
+    closeBundle; when both configs have closed, it schedules
+    `process.exit(0)` at 500ms with `.unref()`. The delay lets rollup
+    print its final summary; `.unref()` means the timer never keeps
+    the loop alive by itself.
+
+    - This is a WORKAROUND, not a root-cause fix. If the hang
+      returns: bisect plugins with a minimal config, or drop terser.
+    - The `maxWorkers: 1` option in the same commit was a failed
+      hypothesis. Harmless, but it does NOT fix the hang.
+    - File-change correlation is unconfirmed but plausible — user
+      suspects it correlates with edits before the build. Watch for
+      it.
+
+  - **Path correction.** The two repos live under `github/library/`,
+    not `github/`. Every absolute path needs `library/` in the
+    middle. Earlier handoffs wrote the shorter path; two rounds of
+    commands failed on this before a DSH session log's `cwd` field
+    (`C:\Users\reza\tavana\github\library\react-a2z`) settled it.
+    Trust the log.
+
+  - **DSH profile reality.** The DSH GUI (`DeepSeek Harness.exe`)
+    runs `desktop` unconditionally — no profile picker in Settings,
+    no `dsh` CLI on PATH, no other switch found.
+    `~/.dsh/profiles/local-9b/` exists but is inert; the GUI never
+    loads it. All DSH config work goes in desktop going forward.
+    The "don't touch desktop" rule from the DSH handoffs is retired.
