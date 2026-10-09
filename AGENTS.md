@@ -1,10 +1,10 @@
 # AGENTS.md — react-a2z
 
 Agent-facing rules for this repo. The human's own docs are `SMART-WORKER-LIBRARY.md` (session
-workflow, environment, git hygiene) and `skills/web/react-a2z/SKILL.md` — the
+workflow, environment, git hygiene) and `LIBRARY-REFERENCE.md` — the
 canonical library doc for API, house style, build pipeline,
-`package.json#exports` subpath rules, and pitfalls. Read SKILL.md explicitly: it
-is a **Hermes** skill, not a DSH skill, so nothing auto-loads it.
+`package.json#exports` subpath rules, and pitfalls. Read `LIBRARY-REFERENCE.md` explicitly: it
+is a plain reference doc, not a DSH skill, so nothing auto-loads it.
 
 This is the component library, published as `react-a2z`. Its consumer/demo app
 is a sibling repo, `../test-app-for-lib`, which depends on this one as
@@ -88,13 +88,13 @@ symlink.
 
 Skill bodies are terse for a small local model; a larger-context model should
 still load the skill, then also read `SMART-WORKER-LIBRARY.md` and
-`skills/web/react-a2z/SKILL.md` for full project state.
+`LIBRARY-REFERENCE.md` for full project state.
 
 | If the task is...                         | Load skill first         |
 |-------------------------------------------|--------------------------|
 | edit/add/change a library component       | react-a2z-library-edit   |
 
 These are **DSH** skills: `.dsh/skills/<name>/SKILL.md`, discovered from this
-repo root. The older Hermes skill at `skills/web/react-a2z/SKILL.md` is
+repo root. The `LIBRARY-REFERENCE.md` doc is
 **not** a DSH skill and nothing auto-loads it — the DSH skill above tells you
 which of its sections to read.

@@ -93,7 +93,7 @@ Hooks and utilities are exported too — `useControllableState`, `useDebounce`,
 `useInView`, `cn`, `createRecipe`, `copyToClipboard`, `normalizeHex` and more.
 
 **Full API, house style and pitfalls** live in
-[`skills/web/react-a2z/SKILL.md`](./skills/web/react-a2z/SKILL.md) in the repo.
+[`LIBRARY-REFERENCE.md`](./LIBRARY-REFERENCE.md) in the repo.
 An interactive guide with a live example per prop is in progress.
 
 ### Server vs client

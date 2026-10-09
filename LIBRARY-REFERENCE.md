@@ -1,16 +1,3 @@
----
-name: react-a2z
-description: React + TypeScript component library with Tailwind CSS, Rollup bundling, headless compound components, and Next.js App Router support.
-version: 2.0.0
-author: Reza Astaraki
-license: MIT
-platforms: [linux, macos, windows]
-metadata:
-  hermes:
-    tags: [react, components, tailwind, library, headless, rollup]
-    related_skills: [dogfood]
----
-
 # react-a2z
 
 React component library with Tailwind CSS, TypeScript, and Rollup. Ships reusable
@@ -44,9 +31,8 @@ UI components, hooks, and utilities for React / Next.js apps.
 | Long heredoc / paste truncates silently | The terminal drops the tail or the terminator, so a half-written script runs — and may still exit 0. Keep heredocs short, write long ones to `/tmp/x.cjs`, and prove the effect with `git diff --stat` rather than trusting the script's own "success" line. |
 | Counting backticks to check a template literal | Parity proves nothing — an extra PAIR keeps the count even. A file with balanced backticks failed to compile because `colors` inside a `` ` ``-delimited string closed it early. Only a real compile (`tsc --noEmit` or `next build`) catches this; a `grep -c` sanity check cannot. |
 
-**Skill file location:**
-- This file: `skills/web/react-a2z/SKILL.md` (in repo, committed).
-- Unrelated 33-line stub at `~/.hermes/skills/software-development/react-a2z-component-library/SKILL.md` — ignore it, don't confuse them.
+**Reference doc location:**
+- This file: `LIBRARY-REFERENCE.md` (in repo, committed).
 - Forward-looking work: `ROADMAP.md` at the repo root — the live task list
   (migration progress, publish prep, open gaps). Check it before picking work.
 

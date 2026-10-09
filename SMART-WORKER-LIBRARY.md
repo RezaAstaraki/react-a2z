@@ -33,7 +33,7 @@ file contents.
 Paste/attach this file at the start of any new chat session so the assistant
 has the full context. Keep it up to date when our working rules change.
 
-Canonical library doc: `skills/web/react-a2z/SKILL.md` (in repo, committed).
+Canonical library doc: `LIBRARY-REFERENCE.md` (in repo, committed).
 That file is the source of truth for the library API, house style, pitfalls,
 build pipeline, and the shell-gotcha table. THIS file is the source of truth
 for how we *interact* and how to start / verify a session.
@@ -234,7 +234,7 @@ that flow through the symlink.
 - `rollup.config.js` — `preserveModules: true`, `preserveModulesRoot: 'src'`,
   `terser({ compress: { directives: false } })`, `preserveDirectives()`
   plugin re-adds `"use client"` / `"use server"`.
-- `skills/web/react-a2z/SKILL.md` — canonical library doc (see top of file).
+- `LIBRARY-REFERENCE.md` — canonical library doc (see top of file).
 - `AGENTS.md` — agent-facing repo rules (see preamble).
 
 ---
@@ -265,7 +265,7 @@ When I paste this file at the start of a session, please:
 3. If I mention a file, ask me to `cat` it — never assume.
 4. Apply rule 1 (one command at a time) from the very first reply.
 5. If the task touches library API / house style / pitfalls, read
-   `skills/web/react-a2z/SKILL.md` and `AGENTS.md` first and mirror their
+   `LIBRARY-REFERENCE.md` and `AGENTS.md` first and mirror their
    conventions.
 
 ---

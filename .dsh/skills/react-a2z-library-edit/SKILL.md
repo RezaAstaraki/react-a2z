@@ -8,31 +8,31 @@ whenToUse: The task edits files under react-a2z/src/, adds a component, changes 
 
 Protocol for editing or adding a component in the `react-a2z` library.
 
-## Canonical doc — grep these exact headings (never read the 651-line file whole)
+## Canonical doc — grep these exact headings (never read the file whole)
 
-Confirmed anchors in `skills/web/react-a2z/SKILL.md`:
+Confirmed anchors in `LIBRARY-REFERENCE.md`:
 
-    grep -n '^## House Style'      skills/web/react-a2z/SKILL.md   # line 72
-    grep -n '^## Common Pitfalls'  skills/web/react-a2z/SKILL.md   # line 542
+    grep -n '^## House Style'      LIBRARY-REFERENCE.md
+    grep -n '^## Common Pitfalls'  LIBRARY-REFERENCE.md
 
 Other headings, same pattern (each matches exactly one heading):
 
-    grep -n '^## Design tokens'    skills/web/react-a2z/SKILL.md
-    grep -n '^## Barrel'           skills/web/react-a2z/SKILL.md
-    grep -n '^## Build'            skills/web/react-a2z/SKILL.md
-    grep -n '^## package.json'     skills/web/react-a2z/SKILL.md
-    grep -n '^## When Extending'   skills/web/react-a2z/SKILL.md
-    grep -n '^## Consumer Setup'   skills/web/react-a2z/SKILL.md
-    grep -n '^## Components'       skills/web/react-a2z/SKILL.md
-    grep -n '^## File Structure'   skills/web/react-a2z/SKILL.md
+    grep -n '^## Design tokens'    LIBRARY-REFERENCE.md
+    grep -n '^## Barrel'           LIBRARY-REFERENCE.md
+    grep -n '^## Build'            LIBRARY-REFERENCE.md
+    grep -n '^## package.json'     LIBRARY-REFERENCE.md
+    grep -n '^## When Extending'   LIBRARY-REFERENCE.md
+    grep -n '^## Consumer Setup'   LIBRARY-REFERENCE.md
+    grep -n '^## Components'       LIBRARY-REFERENCE.md
+    grep -n '^## File Structure'   LIBRARY-REFERENCE.md
 
-Then slice: `sed -n 'A,Bp' skills/web/react-a2z/SKILL.md`.
+Then slice: `sed -n 'A,Bp' LIBRARY-REFERENCE.md`.
 
 For a single component, use two headings as bounds:
 
-    grep -n '^### Tooltip'     skills/web/react-a2z/SKILL.md
-    grep -n '^### ColorPicker' skills/web/react-a2z/SKILL.md
-    sed -n '<first>,<second-1>p' skills/web/react-a2z/SKILL.md
+    grep -n '^### Tooltip'     LIBRARY-REFERENCE.md
+    grep -n '^### ColorPicker' LIBRARY-REFERENCE.md
+    sed -n '<first>,<second-1>p' LIBRARY-REFERENCE.md
 
 ## Read before predicting
 
