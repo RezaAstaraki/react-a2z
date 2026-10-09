@@ -555,3 +555,40 @@ When I paste this file at the start of a session, please:
     `~/.dsh/profiles/local-9b/` exists but is inert; the GUI never
     loads it. All DSH config work goes in desktop going forward.
     The "don't touch desktop" rule from the DSH handoffs is retired.
+- 2026-10-09 (session 12): memory architecture named; Hermes retired.
+
+  **Three-tier memory.** The docs were renamed so a reader can tell what
+  each is for:
+  - `HANDOFF.md` -> `SMART-WORKER-LIBRARY.md` (this file). A preamble now
+    declares it a CONSTITUTION + JOURNAL for a capable chat AI: sections
+    1-8 are stable rules, section 9 (this journal) is append-only.
+  - The app's `HANDOFF.md` -> `SMART-WORKER-TEST-APP.md`, same shape.
+  - The wrapper's `DSH handoff ... (v8).txt` -> `LEAD.md`: the manager's
+    cross-repo SNAPSHOT, versioned (each revision supersedes the last),
+    never appended. Not a worker file.
+  The rule the tiers encode: the 9B DSH worker reads ONLY
+  `.dsh/skills/<name>/SKILL.md`; the smart worker (a larger chat AI) reads
+  this file; the manager reads LEAD.md. Commits `6270430`, `2e0894a`.
+
+  **Hermes retired.** `skills/web/react-a2z/SKILL.md` -- which LOOKED like
+  a DSH skill but was never one -- became `LIBRARY-REFERENCE.md` at the
+  repo root, `hermes:` frontmatter stripped (lines 1-12), every reference
+  swept. Content unchanged; only the name and platform label are gone.
+  Commit `17cf5c7` (library), `ed76b76` (app).
+  Why: DSH discovery reads only `.dsh/skills/<name>/SKILL.md` and does NOT
+  discover a nested `SKILL.md`, so the old path sat in the DSH namespace,
+  read as a skill, and was invisible to DSH -- a name that lied. Do not
+  recreate a `skills/` tree.
+
+  **LESSON -- the double-run trap.** A command ran twice and corrupted
+  LIBRARY-REFERENCE.md mid-edit. Two failures compounded:
+  (a) A line-addressed delete (`sed '36d'`) is NOT idempotent: on the
+      second run the file was a line shorter, so `36d` ate a DIFFERENT
+      line. Content-anchored substitutions are safe to repeat (pattern
+      gone = no-op); line-numbered edits are single-shot.
+  (b) `cp file file.bak` on top of a command DESTROYS the undo on a re-run
+      -- it backs up the already-broken file. Recovery worked only because
+      the rename was staged in git, not committed.
+  RULES: before re-running a destructive edit, confirm it did not already
+  succeed (`grep` for the change). Never re-run a line-addressed edit. Put
+  the `cp` inside the guard, not unconditionally on top.
