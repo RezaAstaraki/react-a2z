@@ -96,6 +96,16 @@
       "import": "./dist/esm/components/Checkbox/Checkbox.js",
       "require": "./dist/cjs/components/Checkbox/Checkbox.js"
     },
+    "./MultiSelect": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/components/MultiSelect/MultiSelect.js",
+      "require": "./dist/cjs/components/MultiSelect/MultiSelect.js"
+    },
+    "./AutocompleteInput": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/components/AutocompleteInput/AutocompleteInput.js",
+      "require": "./dist/cjs/components/AutocompleteInput/AutocompleteInput.js"
+    },
     "./Switch": {
       "types": "./dist/index.d.ts",
       "import": "./dist/esm/components/Switch/Switch.js",
