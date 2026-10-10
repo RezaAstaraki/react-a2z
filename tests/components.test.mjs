@@ -266,6 +266,52 @@ test("Select preserves disabled options, native groups and multiple defaults", (
   assert.match(grouped, /<optgroup label="Europe">/);
 });
 
+test("Select uses an associated styled trigger and retains the native form control", () => {
+  const html = render(library.Select, {
+    id: "plan",
+    label: "Plan",
+    name: "plan",
+    required: true,
+    defaultValue: "pro",
+    description: "Choose a plan",
+    "aria-describedby": "external",
+    options: [
+      { value: "starter", label: "Starter" },
+      { value: "pro", label: "Professional" },
+    ],
+    classNames: {
+      wrapper: "custom-wrapper",
+      value: "custom-value",
+      indicator: "custom-arrow",
+    },
+  });
+  assert.match(html, /for="plan"/);
+  assert.match(html, /role="combobox" id="plan"/);
+  assert.match(html, /aria-expanded="false"/);
+  assert.match(html, /aria-required="true"/);
+  assert.match(html, /aria-describedby="external plan-message"/);
+  assert.match(
+    html,
+    /id="plan-native"[^>]*aria-hidden="true"[^>]*tabindex="-1"[^>]*required=""/,
+  );
+  assert.match(html, /name="plan"/);
+  assert.match(html, /<option value="pro" selected="">Professional/);
+  for (const slot of ["custom-wrapper", "custom-value", "custom-arrow"])
+    assert.ok(html.includes(slot));
+});
+
+test("native Select replaces the browser arrow and reserves space for the customizable indicator", () => {
+  const html = render(library.Select, {
+    native: true,
+    options: [{ value: "one", label: "One" }],
+  });
+  assert.ok(!html.includes('role="combobox"'));
+  assert.match(html, /appearance-none pe-10/);
+  assert.match(html, /data-slot="select-indicator"/);
+  const hiddenArrow = render(library.Select, { native: true, indicator: null });
+  assert.ok(!hiddenArrow.includes('data-slot="select-indicator"'));
+});
+
 test("Tabs link their active tab and panel and skip an invalid initial selection", () => {
   const html = render(library.Tabs, {
     id: "tabs",
