@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import * as library from "react-a2z";
+import { highlightCode } from "../dist/esm/components/Md/highlightCode.js";
 
 const require = createRequire(import.meta.url);
 const render = (component, props, ...children) =>
@@ -21,6 +22,101 @@ const additions = [
   "Progress",
   "Skeleton",
 ];
+
+const highlightedTokens = (code, language) =>
+  highlightCode(code, language).map((node) => ({
+    text: node.props.children,
+    className: node.props.className,
+  }));
+
+test("TSX attribute strings stop at their closing quotes across adjacent components", () => {
+  const code = `<Checkbox label="Select all projects" indeterminate />
+<Checkbox label="Managed by your team" disabled defaultChecked />
+<Checkbox
+  label="Accept the terms"
+  required
+  error="Please accept before continuing."
+/>`;
+  const tokens = highlightedTokens(code, "tsx");
+  assert.equal(tokens.map((token) => token.text).join(""), code);
+  assert.deepEqual(
+    tokens
+      .filter((token) => token.className === "text-emerald-300")
+      .map((token) => token.text),
+    [
+      '"Select all projects"',
+      '"Managed by your team"',
+      '"Accept the terms"',
+      '"Please accept before continuing."',
+    ],
+  );
+  for (const attribute of [
+    "indeterminate",
+    "disabled",
+    "defaultChecked",
+    "required",
+  ])
+    assert.equal(
+      tokens.find((token) => token.text === attribute)?.className,
+      undefined,
+    );
+});
+
+test("punctuation cannot swallow strings, template literals or JSX comments", () => {
+  const code =
+    'const a="one";const b=\'two\';const c=`three`;{/* comment "quoted" */}\nreturn <span>{a}</span>;';
+  const tokens = highlightedTokens(code, "tsx");
+  assert.equal(tokens.map((token) => token.text).join(""), code);
+  assert.deepEqual(
+    tokens
+      .filter((token) => token.className === "text-emerald-300")
+      .map((token) => token.text),
+    ['"one"', "'two'", "`three`"],
+  );
+  assert.equal(
+    tokens.find((token) => token.text === '/* comment "quoted" */')?.className,
+    "text-gray-400 italic",
+  );
+  assert.equal(
+    tokens.find((token) => token.text === "return")?.className,
+    "text-sky-300",
+  );
+});
+
+test("highlighting preserves escaped quotes and Unicode source text", () => {
+  const code = 'const label="Say \\"hello\\" — سلام 🌱";\nconst café = "☕";';
+  const tokens = highlightedTokens(code, "typescript");
+  assert.equal(tokens.map((token) => token.text).join(""), code);
+  assert.deepEqual(
+    tokens
+      .filter((token) => token.className === "text-emerald-300")
+      .map((token) => token.text),
+    ['"Say \\"hello\\" — سلام 🌱"', '"☕"'],
+  );
+});
+
+test("hash colors and selectors are not mistaken for comments outside Python and shell", () => {
+  for (const language of ["css", "tsx", "json"]) {
+    const code = '#card { color: #fff; content: "label"; }';
+    const tokens = highlightedTokens(code, language);
+    assert.equal(tokens.map((token) => token.text).join(""), code);
+    assert.equal(
+      tokens.some((token) => token.className === "text-gray-400 italic"),
+      false,
+    );
+    assert.ok(
+      tokens.some(
+        (token) =>
+          token.text === '"label"' && token.className === "text-emerald-300",
+      ),
+    );
+  }
+  for (const language of ["python", "py", "bash", "shell"])
+    assert.equal(
+      highlightedTokens('# comment "quoted"', language)[0].className,
+      "text-gray-400 italic",
+    );
+});
 
 test("root and component subpaths expose the new components in ESM and CommonJS", async () => {
   const common = require("react-a2z");
