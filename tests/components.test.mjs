@@ -207,7 +207,18 @@ test("Accordion single mode opens one section even with multiple initial values"
     ],
   });
   assert.equal((html.match(/aria-expanded="true"/g) ?? []).length, 1);
-  assert.equal((html.match(/hidden=""/g) ?? []).length, 1);
+  assert.equal(
+    (html.match(/aria-hidden="true" data-a2z-accordion-panel/g) ?? []).length,
+    1,
+  );
+  assert.equal((html.match(/data-state="closed"/g) ?? []).length, 1);
+  assert.doesNotMatch(
+    render(library.Accordion, {
+      animated: false,
+      items: [{ value: "one", title: "One", content: "First" }],
+    }),
+    /data-animated="true"/,
+  );
 });
 
 test("Progress clamps values, handles invalid bounds, and omits unknown aria-valuenow", () => {

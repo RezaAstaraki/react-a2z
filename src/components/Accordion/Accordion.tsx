@@ -25,6 +25,8 @@ export interface AccordionProps
   onValueChange?: (value: string[]) => void;
   /** Allow several open sections. Otherwise only the first value is used. */
   multiple?: boolean;
+  /** Animate expansion and collapse. Respects reduced-motion preferences. */
+  animated?: boolean;
   /** Per-slot class overrides. */
   classNames?: { item?: string; trigger?: string; panel?: string };
 }
@@ -36,6 +38,7 @@ export const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(
       defaultValue = [],
       onValueChange,
       multiple = false,
+      animated = true,
       classNames,
       className,
       id,
@@ -122,8 +125,9 @@ export const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
+                    data-animated={animated || undefined}
                     className={cn(
-                      "size-4 shrink-0 transition-transform motion-reduce:transition-none",
+                      "a2z-accordion-chevron size-4 shrink-0",
                       expanded && "rotate-180",
                     )}
                   >
@@ -135,13 +139,35 @@ export const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(
                 id={`${key}-panel`}
                 role="region"
                 aria-labelledby={`${key}-trigger`}
-                hidden={!expanded}
-                className={cn(
-                  "px-5 pb-5 text-sm leading-relaxed text-fg-muted",
-                  classNames?.panel,
-                )}
+                aria-hidden={!expanded || undefined}
+                data-a2z-accordion-panel=""
+                data-state={expanded ? "open" : "closed"}
+                data-animated={animated || undefined}
+                className="a2z-accordion-panel"
+                ref={(panel) => {
+                  if (!panel) return;
+                  // Closed content stays mounted for the closing animation, but
+                  // cannot receive focus or appear in the accessibility tree.
+                  if (
+                    !expanded &&
+                    panel.contains(panel.ownerDocument.activeElement)
+                  )
+                    panel.ownerDocument
+                      .getElementById(`${key}-trigger`)
+                      ?.focus();
+                  panel.toggleAttribute("inert", !expanded);
+                }}
               >
-                {item.content}
+                <div className="min-h-0 overflow-hidden">
+                  <div
+                    className={cn(
+                      "px-5 pb-5 text-sm leading-relaxed text-fg-muted",
+                      classNames?.panel,
+                    )}
+                  >
+                    {item.content}
+                  </div>
+                </div>
               </div>
             </div>
           );

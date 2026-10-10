@@ -43,7 +43,35 @@
     transform: none;
   }
 }
+/* Grid tracks follow the content's natural height in both directions. */
+.a2z-accordion-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+}
+.a2z-accordion-panel[data-state="open"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+}
+.a2z-accordion-panel[data-animated="true"] {
+  transition:
+    grid-template-rows 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 200ms ease-out,
+    visibility 0s linear 280ms;
+}
+.a2z-accordion-panel[data-animated="true"][data-state="open"] {
+  transition-delay: 0s;
+}
+.a2z-accordion-chevron[data-animated="true"] {
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
 @media (prefers-reduced-motion: reduce) {
+  .a2z-accordion-panel[data-animated="true"],
+  .a2z-accordion-chevron[data-animated="true"] {
+    transition: none;
+  }
   .a2z-tabs-list[data-indicator-ready] > .a2z-tabs-indicator {
     transition: none;
   }
