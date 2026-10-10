@@ -90,7 +90,57 @@
     "./tokens.css": "./tokens.css",
     "./components.css": "./components.css",
     "./styles.css": "./styles.css",
-    "./PearlButton/styles.css": "./styles/pearl-button.css"
+    "./PearlButton/styles.css": "./styles/pearl-button.css",
+    "./Checkbox": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/components/Checkbox/Checkbox.js",
+      "require": "./dist/cjs/components/Checkbox/Checkbox.js"
+    },
+    "./Switch": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/components/Switch/Switch.js",
+      "require": "./dist/cjs/components/Switch/Switch.js"
+    },
+    "./Select": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/components/Select/Select.js",
+      "require": "./dist/cjs/components/Select/Select.js"
+    },
+    "./Textarea": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/components/Textarea/Textarea.js",
+      "require": "./dist/cjs/components/Textarea/Textarea.js"
+    },
+    "./Tabs": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/components/Tabs/Tabs.js",
+      "require": "./dist/cjs/components/Tabs/Tabs.js"
+    },
+    "./Accordion": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/components/Accordion/Accordion.js",
+      "require": "./dist/cjs/components/Accordion/Accordion.js"
+    },
+    "./Badge": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/components/Badge/Badge.js",
+      "require": "./dist/cjs/components/Badge/Badge.js"
+    },
+    "./Card": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/components/Card/Card.js",
+      "require": "./dist/cjs/components/Card/Card.js"
+    },
+    "./Progress": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/components/Progress/Progress.js",
+      "require": "./dist/cjs/components/Progress/Progress.js"
+    },
+    "./Skeleton": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm/components/Skeleton/Skeleton.js",
+      "require": "./dist/cjs/components/Skeleton/Skeleton.js"
+    }
   },
   "files": [
     "dist",
@@ -103,7 +153,10 @@
   ],
   "scripts": {
     "rollup": "rollup -c --bundleConfigAsCjs",
-    "dev": "rollup -c --bundleConfigAsCjs --watch"
+    "dev": "rollup -c --bundleConfigAsCjs --watch",
+    "build": "npm run typecheck && npm run rollup",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build && node tests/components.test.mjs"
   },
   "repository": {
     "type": "git",

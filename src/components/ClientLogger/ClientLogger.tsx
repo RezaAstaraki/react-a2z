@@ -60,6 +60,8 @@ export default function ClientLogger({
                 </label>
               </div>
               <button
+                  type="button"
+                  aria-label="Close logger"
                 className="close-button"
                 onClick={() => setShow(false)}
                 style={{

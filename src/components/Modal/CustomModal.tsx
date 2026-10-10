@@ -19,6 +19,39 @@ import {
   ModalVariant,
 } from './modalStore';
 
+const openPanels: Array<{
+  panel: HTMLDivElement;
+  settings: React.MutableRefObject<{
+    isTop: boolean;
+    zIndex: number;
+    isDismissible: boolean;
+    onClose: () => void;
+  }>;
+}> = [];
+let previousBodyOverflow = '';
+let stackReturnFocus: HTMLElement | null = null;
+const focusableSelector =
+  'a[href], button, input, select, textarea, [tabindex], [contenteditable="true"]';
+function focusableElements(panel: HTMLElement) {
+  return Array.from(panel.querySelectorAll<HTMLElement>(focusableSelector)).filter(
+    (element) =>
+      element.tabIndex >= 0 &&
+      !element.matches(':disabled, [hidden], [aria-hidden="true"]') &&
+      element.getClientRects().length > 0
+  );
+}
+function topPanel() {
+  let top: (typeof openPanels)[number] | undefined;
+  for (const entry of openPanels) {
+    if (
+      entry.settings.current.isTop &&
+      (!top || entry.settings.current.zIndex >= top.settings.current.zIndex)
+    )
+      top = entry;
+  }
+  return top;
+}
+
 export type CustomModalProps = {
   /** Whether the modal is open. Renders nothing when false. */
   isOpen: boolean;
@@ -28,6 +61,10 @@ export type CustomModalProps = {
   children: ReactNode;
   /** Heading text, wired to aria-labelledby. */
   title?: string;
+  /** Accessible name for dialogs with no visible title. */
+  'aria-label'?: string;
+  /** Id of descriptive content inside the dialog. */
+  'aria-describedby'?: string;
   /** Replaces the default title heading; receives a titleId prop. */
   header?: ReactNode;
   /** Panel max-width. Default `md`. */
@@ -141,9 +178,13 @@ export function CustomModal({
   bodyClassName,
   contentClassName,
   isTop = true,
+  'aria-label': ariaLabel,
+  'aria-describedby': describedBy,
 }: CustomModalProps) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
+  const settings = useRef({ isTop, zIndex, isDismissible, onClose });
+  settings.current = { isTop, zIndex, isDismissible, onClose };
   const dragStart = useRef<{
     x: number;
     y: number;
@@ -175,21 +216,69 @@ export function CustomModal({
   };
 
   useEffect(() => {
-    if (!isOpen || !isTop) return;
-
+    const panel = panelRef.current;
+    if (!isOpen || !panel) return;
+    const previousFocus =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const entry = { panel, settings };
+    if (openPanels.length === 0) {
+      stackReturnFocus = previousFocus;
+      previousBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+    }
+    openPanels.push(entry);
+    const focusFirst = () => (focusableElements(panel)[0] ?? panel).focus();
+    if (topPanel() === entry) {
+      const autofocus = panel.querySelector<HTMLElement>('[autofocus]');
+      (autofocus ?? focusableElements(panel)[0] ?? panel).focus();
+    }
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isDismissible) {
-        event.stopPropagation();
+      if (topPanel() !== entry || event.defaultPrevented) return;
+      if (event.key === 'Escape' && settings.current.isDismissible) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
         setDragOffset({ x: 0, y: 0 });
-        onClose();
+        settings.current.onClose();
+      } else if (event.key === 'Tab') {
+        const elements = focusableElements(panel);
+        const first = elements[0];
+        const last = elements[elements.length - 1];
+        const focused = document.activeElement;
+        if (
+          !first ||
+          (event.shiftKey
+            ? focused === first || focused === panel || !panel.contains(focused)
+            : focused === last || !panel.contains(focused))
+        ) {
+          event.preventDefault();
+          (event.shiftKey ? (last ?? panel) : (first ?? panel)).focus();
+        }
       }
     };
-
-    window.addEventListener('keydown', onKeyDown);
-    return () => {
-      window.removeEventListener('keydown', onKeyDown);
+    const onFocusIn = (event: FocusEvent) => {
+      if (topPanel() === entry && !panel.contains(event.target as Node)) focusFirst();
     };
-  }, [isOpen, isDismissible, onClose, isTop]);
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('focusin', onFocusIn);
+    return () => {
+      const wasTop = topPanel() === entry;
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('focusin', onFocusIn);
+      openPanels.splice(openPanels.indexOf(entry), 1);
+      if (openPanels.length === 0) {
+        document.body.style.overflow = previousBodyOverflow;
+        if (stackReturnFocus?.isConnected) stackReturnFocus.focus();
+        stackReturnFocus = null;
+      } else if (wasTop) {
+        const next = topPanel()?.panel;
+        const restore =
+          previousFocus?.isConnected && (!next || next.contains(previousFocus))
+            ? previousFocus
+            : next;
+        restore?.focus();
+      }
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen || !canDrag) return;
@@ -249,21 +338,13 @@ export function CustomModal({
           type="button"
           aria-label="Close"
           tabIndex={-1}
-          className={cn(
-            'absolute inset-0',
-            BACKDROP_CLASS[backdrop],
-            backdropClassName
-          )}
+          className={cn('absolute inset-0', BACKDROP_CLASS[backdrop], backdropClassName)}
           onClick={requestClose}
         />
       ) : (
         <div
           aria-hidden
-          className={cn(
-            'absolute inset-0',
-            BACKDROP_CLASS[backdrop],
-            backdropClassName
-          )}
+          className={cn('absolute inset-0', BACKDROP_CLASS[backdrop], backdropClassName)}
         />
       )}
 
@@ -272,7 +353,9 @@ export function CustomModal({
         data-a2z-modal-panel=""
         role="dialog"
         aria-modal="true"
-        aria-labelledby={hasHeader ? titleId : undefined}
+        aria-labelledby={hasHeader ? (header ? `${titleId}-header` : titleId) : undefined}
+        aria-label={ariaLabel ?? (!hasHeader ? 'Dialog' : undefined)}
+        aria-describedby={describedBy}
         tabIndex={-1}
         style={{
           transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)`,
@@ -308,19 +391,15 @@ export function CustomModal({
             onPointerDown={onHeaderPointerDown}
           >
             {header ? (
-              React.isValidElement(header) ? (
-                React.cloneElement(
-                  header as React.ReactElement<{ titleId?: string }>,
-                  { titleId }
-                )
-              ) : (
-                header
-              )
+              <div id={`${titleId}-header`}>
+                {React.isValidElement(header)
+                  ? React.cloneElement(header as React.ReactElement<{ titleId?: string }>, {
+                      titleId,
+                    })
+                  : header}
+              </div>
             ) : (
-              <h2
-                id={titleId}
-                className="pe-10 text-lg font-semibold tracking-tight text-fg"
-              >
+              <h2 id={titleId} className="pe-10 text-lg font-semibold tracking-tight text-fg">
                 {title}
               </h2>
             )}
@@ -338,14 +417,7 @@ export function CustomModal({
           </div>
         ) : null}
 
-        <div
-          className={cn(
-            'min-h-0',
-            !isUnstyled && 'p-6',
-            bodyScrollClass,
-            bodyClassName
-          )}
-        >
+        <div className={cn('min-h-0', !isUnstyled && 'p-6', bodyScrollClass, bodyClassName)}>
           {children}
         </div>
       </div>

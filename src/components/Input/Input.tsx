@@ -9,8 +9,8 @@ export type InputSize = 'sm' | 'md' | 'lg';
  *
  * `Input` is deliberately hook-free (it stays a Server Component), so it cannot
  * call `useId` to wire `<label htmlFor>` for you. Pass `id` to get the label
- * association and `aria-describedby`; without it the visual label is not
- * programmatically associated with the field.
+ * association and `aria-describedby`. Without it an enclosing label provides
+ * the association, and aria-description provides the helper/error text.
  */
 export type InputClassNames = {
   root?: string;
@@ -38,7 +38,7 @@ export type InputStyles = {
 };
 
 export type InputProps = {
-  /** Visible field label. Pass `id` as well, or it is not programmatically associated with the field. */
+  /** Visible field label. Uses an enclosing label when id is omitted. */
   label?: string;
   /** Native placeholder, shown only when the field is empty. */
   placeholder?: string;
@@ -121,9 +121,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     currency,
     id,
     readOnly,
+    'aria-describedby': describedBy,
+    'aria-description': ariaDescription,
+    'aria-invalid': ariaInvalid,
     ...props
   },
-  ref,
+  ref
 ) {
   // An explicit `id` is what makes the label association and described-by
   // reference possible without a client-side hook.
@@ -146,11 +149,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       : 'border-border focus-visible:border-primary-500 focus-visible:ring-primary-500',
     'disabled:cursor-not-allowed disabled:bg-disabled disabled:text-disabled-fg disabled:border-disabled',
     isReadOnly && 'cursor-default bg-surface-sunken',
+    sizeTokens.input,
     startIcon || currency ? 'ps-10' : undefined,
     endIcon && 'pe-10',
-    sizeTokens.input,
     classNames?.input,
-    inputClassName,
+    inputClassName
   );
 
   const labelClasses = cn(
@@ -160,65 +163,86 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     hasError && 'text-danger-600',
     sizeTokens.label,
     classNames?.label,
-    labelClassName,
+    labelClassName
   );
 
   const helperTextClasses = cn(
     'text-start',
     sizeTokens.helper,
     hasError ? 'text-danger-600' : disabled ? 'text-fg-subtle' : 'text-fg-muted',
-    classNames?.helperText,
+    classNames?.helperText
   );
 
   const adornmentBase =
     'pointer-events-none absolute top-1/2 -translate-y-1/2 flex items-center text-fg-subtle';
 
+  const Root = label && !id ? 'label' : 'div';
+  const Label = id ? 'label' : 'span';
+
   return (
     <div className={cn('w-full', classNames?.root, className)} style={styles?.root}>
-      {label && (
-        <label htmlFor={id} className={labelClasses} style={styles?.label}>
-          {label}
-        </label>
-      )}
-
-      <div className={cn('relative', classNames?.wrapper)} style={styles?.wrapper}>
-        {startIcon && (
-          <div className={cn(adornmentBase, 'start-3', classNames?.startIcon)} style={styles?.startIcon}>
-            {startIcon}
-          </div>
+      <Root className="block">
+        {label && (
+          <Label htmlFor={id} className={labelClasses} style={styles?.label}>
+            {label}
+          </Label>
         )}
 
-        <input
-          ref={ref}
-          id={id}
-          type={type}
-          placeholder={placeholder}
-          disabled={disabled}
-          readOnly={isReadOnly}
-          maxLength={maxLength}
-          onInput={onInput}
-          required={required}
-          aria-required={required || undefined}
-          aria-invalid={hasError || undefined}
-          aria-describedby={hasMessage ? messageId : undefined}
-          className={inputClasses}
-          style={styles?.input}
-          {...props}
-        />
+        <span className={cn('relative block', classNames?.wrapper)} style={styles?.wrapper}>
+          {startIcon && (
+            <span
+              aria-hidden="true"
+              className={cn(adornmentBase, 'start-3', classNames?.startIcon)}
+              style={styles?.startIcon}
+            >
+              {startIcon}
+            </span>
+          )}
 
-        {currency && !startIcon && (
-          <div className={cn(adornmentBase, 'start-3 text-sm', classNames?.startIcon)} style={styles?.startIcon}>
-            {currency}
-          </div>
-        )}
+          <input
+            ref={ref}
+            id={id}
+            type={type}
+            placeholder={placeholder}
+            disabled={disabled}
+            readOnly={isReadOnly}
+            maxLength={maxLength}
+            onInput={onInput}
+            required={required}
+            aria-required={required || undefined}
+            aria-invalid={hasError || ariaInvalid || undefined}
+            aria-describedby={
+              [describedBy, hasMessage && messageId].filter(Boolean).join(' ') || undefined
+            }
+            aria-description={
+              ariaDescription ?? (!id && hasMessage ? displayError || helperText : undefined)
+            }
+            className={inputClasses}
+            style={styles?.input}
+            {...props}
+          />
 
-        {endIcon && (
-          <div className={cn(adornmentBase, 'end-3', classNames?.endIcon)} style={styles?.endIcon}>
-            {endIcon}
-          </div>
-        )}
-      </div>
+          {currency && !startIcon && (
+            <span
+              aria-hidden="true"
+              className={cn(adornmentBase, 'start-3 text-sm', classNames?.startIcon)}
+              style={styles?.startIcon}
+            >
+              {currency}
+            </span>
+          )}
 
+          {endIcon && (
+            <span
+              aria-hidden="true"
+              className={cn(adornmentBase, 'end-3', classNames?.endIcon)}
+              style={styles?.endIcon}
+            >
+              {endIcon}
+            </span>
+          )}
+        </span>
+      </Root>
       {hasMessage && (
         <div className={cn('mt-1', classNames?.helper)} style={styles?.helper} id={messageId}>
           {displayError && (
