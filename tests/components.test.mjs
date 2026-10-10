@@ -190,6 +190,12 @@ test("Tabs link their active tab and panel and skip an invalid initial selection
     /id="tabs-panel-profile"[^>]*aria-labelledby="tabs-tab-profile"[^>]*tabindex="0"/,
   );
   assert.match(html, /id="tabs-panel-disabled"[^>]*hidden=""/);
+  const still = render(library.Tabs, {
+    label: "Static tabs",
+    animated: false,
+    items: [{ value: "one", label: "One", content: "First" }],
+  });
+  assert.doesNotMatch(still, /data-a2z-tabs-indicator|data-animated="true"/);
 });
 
 test("Accordion single mode opens one section even with multiple initial values", () => {

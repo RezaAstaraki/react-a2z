@@ -14,3 +14,40 @@
    ========================================================================== */
 
 @import "./styles/pearl-button.css";
+
+/* Tabs keep one highlight behind their labels and move it to the selected tab. */
+.a2z-tabs-indicator {
+  visibility: hidden;
+}
+.a2z-tabs-list[data-indicator-ready] > .a2z-tabs-indicator {
+  visibility: visible;
+  transition:
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.a2z-tabs-list:not([data-indicator-ready]) > .a2z-tabs-selected {
+  background: rgb(var(--a2z-surface));
+  box-shadow: var(--a2z-shadow-sm);
+}
+[data-a2z-tabs-panel][data-animated="true"]:not([hidden]) {
+  animation: a2z-tabs-panel-in 220ms ease-out both;
+}
+@keyframes a2z-tabs-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .a2z-tabs-list[data-indicator-ready] > .a2z-tabs-indicator {
+    transition: none;
+  }
+  [data-a2z-tabs-panel][data-animated="true"]:not([hidden]) {
+    animation: none;
+  }
+}

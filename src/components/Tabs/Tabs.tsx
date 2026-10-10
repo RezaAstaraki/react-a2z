@@ -4,6 +4,9 @@ import * as React from "react";
 import { cn } from "../../utils";
 import { useControllableState } from "../../hooks/useControllableState";
 
+const useLayoutEffect =
+  typeof window === "undefined" ? React.useEffect : React.useLayoutEffect;
+
 export type TabItem = {
   value: string;
   label: React.ReactNode;
@@ -29,8 +32,15 @@ export interface TabsProps
   orientation?: "horizontal" | "vertical";
   /** Automatic selects on arrow keys; manual requires Enter or Space. */
   activationMode?: "automatic" | "manual";
+  /** Animate the selection highlight and panel entrance. Honors reduced motion. */
+  animated?: boolean;
   /** Per-slot class overrides. */
-  classNames?: { list?: string; tab?: string; panel?: string };
+  classNames?: {
+    list?: string;
+    tab?: string;
+    panel?: string;
+    indicator?: string;
+  };
 }
 export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(function Tabs(
   {
@@ -41,6 +51,7 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(function Tabs(
     onValueChange,
     orientation = "horizontal",
     activationMode = "automatic",
+    animated = true,
     classNames,
     className,
     id,
@@ -50,6 +61,8 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(function Tabs(
 ) {
   const generatedId = React.useId();
   const rootId = id ?? generatedId;
+  const listRef = React.useRef<HTMLDivElement>(null);
+  const indicatorRef = React.useRef<HTMLSpanElement>(null);
   const firstEnabled = items.find((item) => !item.disabled)?.value ?? "";
   const [selection, setSelection] = useControllableState({
     value,
@@ -63,6 +76,42 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(function Tabs(
     : firstEnabled;
   const tabId = (key: string) => `${rootId}-tab-${encodeURIComponent(key)}`;
   const panelId = (key: string) => `${rootId}-panel-${encodeURIComponent(key)}`;
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    const indicator = indicatorRef.current;
+    if (!list) return;
+    if (!animated || !indicator) {
+      delete list.dataset.indicatorReady;
+      return;
+    }
+    const updateIndicator = () => {
+      const tab = list.querySelector<HTMLButtonElement>(
+        '[role="tab"][aria-selected="true"]',
+      );
+      if (!tab) {
+        delete list.dataset.indicatorReady;
+        return;
+      }
+      indicator.style.width = `${tab.offsetWidth}px`;
+      indicator.style.height = `${tab.offsetHeight}px`;
+      indicator.style.transform = `translate(${tab.offsetLeft}px, ${tab.offsetTop}px)`;
+      list.dataset.indicatorReady = "true";
+    };
+    updateIndicator();
+    const observer =
+      typeof ResizeObserver === "undefined"
+        ? undefined
+        : new ResizeObserver(updateIndicator);
+    observer?.observe(list);
+    list
+      .querySelectorAll('[role="tab"]')
+      .forEach((tab) => observer?.observe(tab));
+    window.addEventListener("resize", updateIndicator);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", updateIndicator);
+    };
+  }, [activeValue, animated, orientation, items]);
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     const target = (event.target as HTMLElement).closest<HTMLButtonElement>(
       '[role="tab"]',
@@ -114,18 +163,31 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(function Tabs(
       )}
     >
       <div
+        ref={listRef}
+        data-a2z-tabs-list=""
         role="tablist"
         aria-label={label}
         aria-orientation={orientation}
         onKeyDown={onKeyDown}
         className={cn(
-          "flex gap-1 rounded-lg bg-neutral-soft p-1",
+          "a2z-tabs-list relative isolate flex gap-1 rounded-lg bg-neutral-soft p-1",
           orientation === "vertical"
             ? "shrink-0 flex-col"
             : "w-fit max-w-full overflow-x-auto",
           classNames?.list,
         )}
       >
+        {animated && (
+          <span
+            ref={indicatorRef}
+            aria-hidden="true"
+            data-a2z-tabs-indicator=""
+            className={cn(
+              "a2z-tabs-indicator pointer-events-none absolute left-0 top-0 rounded-md bg-surface shadow-sm",
+              classNames?.indicator,
+            )}
+          />
+        )}
         {items.map((item) => (
           <button
             key={item.value}
@@ -139,9 +201,12 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(function Tabs(
             tabIndex={item.value === activeValue ? 0 : -1}
             onClick={() => setSelection(item.value)}
             className={cn(
-              "whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none",
+              "relative z-[1] shrink-0 whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none",
               item.value === activeValue
-                ? "bg-surface text-fg shadow-sm"
+                ? cn(
+                    "text-fg",
+                    animated ? "a2z-tabs-selected" : "bg-surface shadow-sm",
+                  )
                 : "text-fg-muted hover:text-fg",
               classNames?.tab,
             )}
@@ -154,6 +219,8 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(function Tabs(
         <div
           key={item.value}
           role="tabpanel"
+          data-a2z-tabs-panel=""
+          data-animated={animated || undefined}
           id={panelId(item.value)}
           aria-labelledby={tabId(item.value)}
           hidden={item.value !== activeValue}
