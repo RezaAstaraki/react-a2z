@@ -61,6 +61,8 @@ export interface TooltipProps {
   disabled?: boolean;
   /** Render the arrow element. Defaults to true. */
   showArrow?: boolean;
+  /** Keep open content pinned to the viewport when its trigger is out of view. Defaults to false. */
+  sticky?: boolean;
   /** Portal target. Defaults to `document.body`. */
   container?: HTMLElement | null;
 
@@ -167,6 +169,32 @@ const OPPOSITE: Record<TooltipPlacement, TooltipPlacement> = {
   right: 'left',
 };
 
+// Portaled content escapes overflow clipping, so check the trigger against both
+// the viewport and its scrolling/clipping ancestors before displaying it.
+function isTriggerInView(trigger: HTMLElement): boolean {
+  const rect = trigger.getBoundingClientRect();
+  const viewport = window.visualViewport;
+  let left = viewport?.offsetLeft ?? 0;
+  let top = viewport?.offsetTop ?? 0;
+  let right = left + (viewport?.width ?? document.documentElement.clientWidth);
+  let bottom = top + (viewport?.height ?? document.documentElement.clientHeight);
+  for (let parent = trigger.parentElement; parent; parent = parent.parentElement) {
+    const style = getComputedStyle(parent);
+    const bounds = parent.getBoundingClientRect();
+    if (/(auto|scroll|hidden|clip)/.test(style.overflowX)) {
+      left = Math.max(left, bounds.left + parent.clientLeft);
+      right = Math.min(right, bounds.left + parent.clientLeft + parent.clientWidth);
+    }
+    if (/(auto|scroll|hidden|clip)/.test(style.overflowY)) {
+      top = Math.max(top, bounds.top + parent.clientTop);
+      bottom = Math.min(bottom, bounds.top + parent.clientTop + parent.clientHeight);
+    }
+  }
+  return right > left && bottom > top && rect.width > 0 && rect.height > 0 &&
+    rect.right > left && rect.left < right &&
+    rect.bottom > top && rect.top < bottom;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Context                                                            */
 /* ------------------------------------------------------------------ */
@@ -219,6 +247,7 @@ const TooltipRoot = React.forwardRef<HTMLSpanElement, TooltipProps>(
       closeDelay = 80,
       disabled = false,
       showArrow = true,
+      sticky = false,
       container,
       className,
       classNames,
@@ -236,6 +265,38 @@ const TooltipRoot = React.forwardRef<HTMLSpanElement, TooltipProps>(
 
     const triggerRef = React.useRef<HTMLSpanElement>(null);
     const contentRef = React.useRef<HTMLDivElement>(null);
+
+    const [triggerInView, setTriggerInView] = React.useState(false);
+    React.useLayoutEffect(() => {
+      if (!open || disabled || sticky) return;
+      const trigger = triggerRef.current;
+      if (!trigger) return;
+      const update = () => setTriggerInView(isTriggerInView(trigger));
+      update();
+      // Keep observing while hidden so controlled/defaultOpen tooltips can
+      // reappear on re-entry without changing the consumer's requested state.
+      const intersection = typeof IntersectionObserver !== 'undefined'
+        ? new IntersectionObserver(update) : null;
+      intersection?.observe(trigger);
+      const resize = typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(update) : null;
+      for (let node: HTMLElement | null = trigger; node; node = node.parentElement) {
+        resize?.observe(node);
+      }
+      window.addEventListener('scroll', update, true);
+      window.addEventListener('resize', update);
+      window.visualViewport?.addEventListener('scroll', update);
+      window.visualViewport?.addEventListener('resize', update);
+      return () => {
+        intersection?.disconnect();
+        resize?.disconnect();
+        window.removeEventListener('scroll', update, true);
+        window.removeEventListener('resize', update);
+        window.visualViewport?.removeEventListener('scroll', update);
+        window.visualViewport?.removeEventListener('resize', update);
+      };
+    }, [open, disabled, sticky]);
+    const visible = open && !disabled && (sticky || triggerInView);
 
     const openTimer = React.useRef<number | null>(null);
     const closeTimer = React.useRef<number | null>(null);
@@ -315,7 +376,7 @@ const TooltipRoot = React.forwardRef<HTMLSpanElement, TooltipProps>(
     }, [container]);
 
     const ctx: TooltipContextValue = {
-      open,
+      open: visible,
       disabled,
       placement,
       offset,
@@ -356,7 +417,7 @@ const TooltipRoot = React.forwardRef<HTMLSpanElement, TooltipProps>(
           ref={setRootRef}
           className={cn('contents', classNames?.root, className)}
           style={{ ...styles?.root, ...style }}
-          data-state={open ? 'open' : 'closed'}
+          data-state={visible ? 'open' : 'closed'}
           data-disabled={disabled || undefined}
           data-slot="tooltip-root"
         >
