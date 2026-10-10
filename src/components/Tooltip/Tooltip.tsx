@@ -110,7 +110,9 @@ const DEFAULT_CONTENT =
   'text-xs font-medium leading-snug text-white shadow-md ' +
   'transition-opacity duration-100';
 
-const DEFAULT_ARROW = 'pointer-events-none absolute h-2 w-2 rotate-45 bg-gray-900';
+// Rotation lives in arrowStyle alongside its centering transform. Tailwind v4
+// uses a separate CSS rotate property, which would add another 45 degrees.
+const DEFAULT_ARROW = 'pointer-events-none absolute h-2 w-2 bg-gray-900';
 
 /* ------------------------------------------------------------------ */
 /*  Hooks / utils                                                      */

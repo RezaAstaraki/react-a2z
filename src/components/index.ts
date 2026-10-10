@@ -39,8 +39,14 @@ export type {
   GradientMakerClassNames,
   GradientMakerStyles,
 } from './ColorPicker/GradientMaker';
-export type { SliderProps, SliderClassNames, SliderStyles, SliderValueFormatter } from './Slider/Slider';
-export type { TooltipProps, TooltipClassNames, TooltipStyles } from './Tooltip/Tooltip';
+export type {
+  SliderProps, SliderClassNames, SliderStyles, SliderValueFormatter,
+  ThumbRenderProps, TrackRenderProps, FillRenderProps, OutputRenderProps, LabelRenderProps,
+} from './Slider/Slider';
+export type {
+  TooltipProps, TooltipClassNames, TooltipStyles, TooltipPlacement,
+  TooltipTriggerProps, TooltipContentProps, TooltipContentRenderProps,
+} from './Tooltip/Tooltip';
 
 export * from './Modal';
 export * from './Toast';
