@@ -1,102 +1,53 @@
-# AGENTS.md — react-a2z
+# AGENTS.md - react-a2z
 
-Agent-facing rules for this repo. The human's own docs are `SMART-WORKER-LIBRARY.md` (session
-workflow, environment, git hygiene) and `LIBRARY-REFERENCE.md` — the
-canonical library doc for API, house style, build pipeline,
-`package.json#exports` subpath rules, and pitfalls. Read `LIBRARY-REFERENCE.md` explicitly: it
-is a plain reference doc, not a DSH skill, so nothing auto-loads it.
+This is the React component library. Its sibling consumer is ../test-app-for-lib,
+linked through file:../react-a2z. Commands assume this repo root.
 
-This is the component library, published as `react-a2z`. Its consumer/demo app
-is a sibling repo, `../test-app-for-lib`, which depends on this one as
-`file:../react-a2z`.
+## Route the task first
 
-Forward-looking work lives in `ROADMAP.md` at the repo root — the live task
-list. Read it before starting so you pick up the intended next task instead of
-inventing one, and edit it in place as work lands.
+For DSH, load the matching skill before task-specific reads or edits:
+- Add/change a component, hook or utility: react-a2z-library-edit.
+- Investigate a broken or misleading result: react-a2z-debug.
 
-## ⚠️ SMART-WORKER-LIBRARY.md §2/§3 are the human's chat protocol — not your instructions
+Entrypoints: .dsh/skills/<name>/SKILL.md.
+For agents without DSH's skill tool, read that file directly.
+Read only relevant sections of LIBRARY-REFERENCE.md for API, house style,
+tokens and exports. Actual source wins when documentation disagrees.
+Consult relevant ROADMAP.md items; the user's explicit task takes priority.
 
-`SMART-WORKER-LIBRARY.md` presents §2 ("How I want you to communicate") and §3 ("How I want
-you to give me file changes") as *"hard rules. Follow them every response."*
-They were written for an assistant with **no filesystem access** that relays one
-shell command at a time for the human to run in WSL.
+## Keep context focused
 
-If you have direct file tools, those two sections do not describe your job. Do
-not hand over one command at a time, do not ask the human to `cat` a file, and
-do not deliver edits as `cat > file <<'EOF'` heredocs. Read and edit files
-yourself.
+DSH workers do not load SMART-WORKER-LIBRARY.md, manager notebooks or docs/history/
+by default. Those are for web chat and session evidence, not worker startup.
+Local environment notes are in ../test-app-for-lib/.dsh/lead/ENVIRONMENT.md.
+Do not hard-code another machine's username or change runtime profiles during
+an ordinary component task.
 
-Still binding is the technical reality those sections encode:
+## Editing
 
-- CRLF-aware edits; never blind `sed -i '/…$/a …'` (silently no-ops on CRLF).
-  Prefer full rewrites, or a script file over `node -e` containing quotes.
-- Back up before overwriting; delete leftover `*.bak` before committing — they
-  show in `git status` by design.
-- Stage only intended files (`git add <file>`), never `git add .`.
-- Use `git --no-pager` to avoid the pager.
+Preserve CRLF/LF; avoid blind line-addressed sed edits.
+Back up before overwriting without replacing an older backup.
+Stage intended files explicitly if committing; never git add .
+Use git --no-pager. Keep backup files out of commits.
+Read and edit directly when file tools are available; the web-chat command-relay
+protocol in SMART-WORKER-LIBRARY.md sections 2-3 does not apply.
 
 ## Build and verify
 
-Build: `npm run rollup`. Watch: `npm run dev`. After a build:
+Build: npm run rollup. Watch: npm run dev.
+After a change:
+- Check build diagnostics, including component TS2322/TS2345 errors.
+- Confirm affected public values and types appear in dist/index.d.ts.
+- Confirm package.json exports resolve to emitted files, including barrel entries.
+- Run node scripts/verify-tokens.mjs for token changes and
+  node scripts/verify-color.mjs for colour-primitive changes.
 
-1. No `TS2322` / `TS2345` from `src/components/**`.
-2. `dist/index.d.ts` carries every component + type name.
-3. Every `package.json#exports` subpath resolves to an emitted file:
+Exports check (from repo root):
+    node -e "const p=require('./package.json'),fs=require('fs'); for (const [k,v] of Object.entries(p.exports)) { if (typeof v!=='object') continue; if (!fs.existsSync(v.import)) console.log('MISSING', k, v.import); }"
 
-       node -e "const p=require('./package.json'),fs=require('fs'); for (const [k,v] of Object.entries(p.exports)) { if (typeof v!=='object') continue; if (!fs.existsSync(v.import)) console.log('MISSING', k, v.import); }"
-
-   No output = all subpaths resolve.
-4. Barrels (`./Modal`, `./Toast`, `./ColorPicker`, `./Md`, `./MdEditor`,
-   `./Counter`, `./hooks`) are emitted only because they are explicit entry
-   points in `rollup.config.js`. If a subpath regresses, check that its
-   `src/.../X/index.ts` is still in that `entries` array. Note this is
-   independent of `treeshake.moduleSideEffects` and of
-   `hoistTransitiveImports` (the latter is ignored under `preserveModules`).
-
-Verifiers (no npm alias -- run by path): `node scripts/verify-tokens.mjs`
-(token-layer harness + migration progress) and `node scripts/verify-color.mjs`
-(colour-primitive assertions).
-A change here is not visible to `../test-app-for-lib` until `npm run rollup`
-runs **and** its browser is hard-refreshed — HMR does not cross the `file:`
-symlink.
-
-## Environment
-
-- Windows host + WSL. Commands in this repo work in either shell. The consumer
-  app is stricter: its `next dev` must run on Windows, because its
-  `node_modules` holds win32 native binaries (`lightningcss`,
-  `@tailwindcss/oxide`).
-- Never copy `node_modules` between machines. Always `npm install` on the target
-  platform.
-- Remote: `origin` → `https://github.com/RezaAstaraki/react-a2z.git`. Branch
-  `main`, tracking `origin/main`. Auth is a classic PAT (`repo` scope) over
-  HTTPS, picked up via `credential.helper = manager`.
-- `package.json` has a `files` allowlist (`dist`, `tailwind.preset.js`,
-  `tailwind.css`, `styles.css`, `styles`), so this file, `SMART-WORKER-LIBRARY.md`, and
-  `skills/` are **not** published to npm.
-
-## Doc drift — trust the repo, not the doc
-
-- Reconciled 2026-10-06. The bullets previously here (commit identity, a WSL
-  absolute path in SKILL.md, a "not yet fixed" Slider row, a malformed
-  SKILL.md region, and an empty `src/components/textArea/`) were all stale
-  and have been removed.
-- The rule stands: when a doc and the repo disagree, the repo wins — and the
-  fix is to correct the doc, not to work around it.
-
-## Skill routing — invoke with the skill tool BEFORE acting
-
-Skill bodies are terse for the small local model. Load the skill FIRST,
-before any other tool. The 9B worker needs only the skill. A larger-context
-DSH model may also read `SMART-WORKER-LIBRARY.md` and `LIBRARY-REFERENCE.md`
-for full project state.
-
-| If the task is...                         | Load skill first         |
-|-------------------------------------------|--------------------------|
-| edit/add/change a library component       | react-a2z-library-edit   |
-| debug a broken or silently-wrong result   | react-a2z-debug          |
-
-These are **DSH** skills: `.dsh/skills/<name>/SKILL.md`, discovered from this
-repo root. The `LIBRARY-REFERENCE.md` doc is
-**not** a DSH skill and nothing auto-loads it — the DSH skill above tells you
-which of its sections to read.
+No output means the checked import paths exist, provided the command ran successfully.
+For a barrel subpath, its index.ts must be an explicit entry in rollup.config.js.
+A library change reaches the guide after rebuilding dist and hard-refreshing its browser.
+Save full build logs and return bounded excerpts. A timeout or environment failure is not
+proof that validation passed; check emitted artifacts and remaining gates.
+Report each required check as passed, failed or blocked.

@@ -3,42 +3,12 @@
 React component library with Tailwind CSS, TypeScript, and Rollup. Ships reusable
 UI components, hooks, and utilities for React / Next.js apps.
 
-## Session Protocol (how to work with this user in this repo)
+## Working instructions
 
-**Environment:**
-- Windows host + WSL. Launch WSL from the repo root, so cwd is already the
-  repo root — never bake an absolute path into a command.
-- Editor (VS Code) may write CRLF. Repo has `.gitattributes` with `* text=auto` —
-  blobs are LF, worktree may be CRLF. Do **not** try to normalize the worktree.
-- Push uses a classic PAT (`repo` scope) over HTTPS.
-
-**Interaction model:**
-- The user runs every shell command himself. Give **ONE command block at a time**,
-  he pastes the output, THEN you proceed. Never batch probes.
-- Lead with the exact copy-paste block. No prose first.
-- When giving code: name the file, and offer a verification command in the same
-  message (`wc -l`, `cat`, `grep -c`).
-
-**Shell gotchas (all have burned us):**
-
-| Trap | Fix |
-|------|-----|
-| `sed -i '/foo$/a bar'` silently no-ops | Worktree may be CRLF; `$`-anchored patterns fail. Prefer `cat > file <<'EOF'` rewrites or a `node` script written to `/tmp/*.js`. |
-| `node -e '…'` when the JS contains `'` | Write the script to `/tmp/x.js` via heredoc, then `node /tmp/x.js`. |
-| Bare `!` in bash | History expansion. Put it in a script file, or use `[ -f x ]` tests. |
-| `find` / `git diff` opens pager | Use `git --no-pager <cmd>` or pipe to `cat`. |
-| Bulk `git status` noise after editor writes | Almost always CRLF churn — verify with `git diff --ignore-cr-at-eol --name-only`. |
-| Long heredoc / paste truncates silently | The terminal drops the tail or the terminator, so a half-written script runs — and may still exit 0. Keep heredocs short, write long ones to `/tmp/x.cjs`, and prove the effect with `git diff --stat` rather than trusting the script's own "success" line. |
-| Counting backticks to check a template literal | Parity proves nothing — an extra PAIR keeps the count even. A file with balanced backticks failed to compile because `colors` inside a `` ` ``-delimited string closed it early. Only a real compile (`tsc --noEmit` or `next build`) catches this; a `grep -c` sanity check cannot. |
-
-**Reference doc location:**
-- This file: `LIBRARY-REFERENCE.md` (in repo, committed).
-- Forward-looking work: `ROADMAP.md` at the repo root — the live task list
-  (migration progress, publish prep, open gaps). Check it before picking work.
-
-**Commit hygiene:**
-- Identity: `RezaAstaraki <reza.astaraky@gmail.com>`.
-- Stage only intended files (`git add <file>`), never `git add .`.
+This document owns technical guidance: API, house style, tokens, exports and build.
+Agent workflow is in AGENTS.md. Web-chat interaction is in SMART-WORKER-LIBRARY.md.
+Machine-specific notes are in ../test-app-for-lib/.dsh/lead/ENVIRONMENT.md.
+Consult only relevant sections; current source takes precedence over historical notes.
 
 ## Overview
 
