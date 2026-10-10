@@ -7,6 +7,7 @@ export type FieldSize = "sm" | "md" | "lg";
 export type FieldClassNames = {
   root?: string;
   label?: string;
+  requiredIndicator?: string;
   control?: string;
   description?: string;
 };
@@ -44,11 +45,13 @@ export function FieldLabel({
   label,
   required,
   className,
+  requiredClassName,
 }: {
   id: string;
   label?: React.ReactNode;
   required?: boolean;
   className?: string;
+  requiredClassName?: string;
 }) {
   return label ? (
     <label
@@ -57,7 +60,10 @@ export function FieldLabel({
     >
       {label}
       {required && (
-        <span aria-hidden="true" className="ms-1 text-danger-600">
+        <span
+          aria-hidden="true"
+          className={cn("ms-1 text-danger-600", requiredClassName)}
+        >
           *
         </span>
       )}

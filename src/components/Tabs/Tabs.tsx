@@ -13,6 +13,13 @@ export type TabItem = {
   content: React.ReactNode;
   disabled?: boolean;
 };
+export type TabsClassNames = {
+  root?: string;
+  list?: string;
+  tab?: string;
+  panel?: string;
+  indicator?: string;
+};
 export interface TabsProps
   extends Omit<
     React.HTMLAttributes<HTMLDivElement>,
@@ -35,12 +42,7 @@ export interface TabsProps
   /** Animate the selection highlight and panel entrance. Honors reduced motion. */
   animated?: boolean;
   /** Per-slot class overrides. */
-  classNames?: {
-    list?: string;
-    tab?: string;
-    panel?: string;
-    indicator?: string;
-  };
+  classNames?: TabsClassNames;
 }
 export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(function Tabs(
   {
@@ -159,6 +161,7 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(function Tabs(
       id={rootId}
       className={cn(
         orientation === "vertical" && "flex items-start gap-6",
+        classNames?.root,
         className,
       )}
     >
@@ -201,7 +204,7 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(function Tabs(
             tabIndex={item.value === activeValue ? 0 : -1}
             onClick={() => setSelection(item.value)}
             className={cn(
-              "relative z-[1] shrink-0 whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none",
+              "relative z-[1] shrink-0 cursor-pointer whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none",
               item.value === activeValue
                 ? cn(
                     "text-fg",

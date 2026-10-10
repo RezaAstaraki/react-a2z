@@ -22,7 +22,7 @@ export interface CodeBoxCopyButtonProps
 type CopyStatus = 'idle' | 'copied' | 'error';
 
 const DEFAULT_CLASSES =
-  'inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-gray-400 ' +
+  'inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-gray-400 ' +
   'transition-colors hover:bg-gray-800 hover:text-gray-100 ' +
   'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ' +
   'focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900 ' +

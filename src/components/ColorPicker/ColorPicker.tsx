@@ -141,7 +141,7 @@ const ColorPicker = React.forwardRef<HTMLInputElement, ColorPickerProps>(
                   aria-label={`Select color ${c}`}
                   aria-pressed={isSelected}
                   className={cn(
-                    'h-6 w-6 rounded-full border border-border-strong transition-shadow',
+                    'h-6 w-6 cursor-pointer rounded-full border border-border-strong transition-shadow',
                     'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                     'disabled:cursor-not-allowed disabled:opacity-50',
                     isSelected && 'ring-2 ring-ring ring-offset-1',

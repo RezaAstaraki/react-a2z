@@ -271,7 +271,7 @@ function renderBlocks(
                           ? (event) => options.onTaskToggle?.(taskIndex, event.target.checked)
                           : undefined
                       }
-                      className="size-4 shrink-0"
+                      className={cn("size-4 shrink-0", options.onTaskToggle ? "cursor-pointer" : "cursor-default")}
                     />
                   )}
                   <div className="min-w-0 flex-1 leading-7 [&_p]:my-0">

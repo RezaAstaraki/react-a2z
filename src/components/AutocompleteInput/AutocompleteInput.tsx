@@ -121,8 +121,9 @@ export const AutocompleteInput = React.forwardRef<
         label={label}
         required={required}
         className={classNames?.label}
+        requiredClassName={classNames?.requiredIndicator}
       />
-      <div className="relative">
+      <div className={cn("relative", classNames?.wrapper)}>
         <input
           {...props}
           ref={setRef}
@@ -142,6 +143,7 @@ export const AutocompleteInput = React.forwardRef<
           aria-describedby={field.describedBy}
           className={cn(
             fieldControl,
+            "cursor-text",
             fieldSizes[size],
             fieldState(invalid),
             "pe-10",
@@ -177,7 +179,10 @@ export const AutocompleteInput = React.forwardRef<
             type="button"
             disabled={disabled}
             aria-label="Clear input"
-            className="absolute end-3 top-1/2 -translate-y-1/2 rounded px-1 text-fg-muted focus-visible:outline-2"
+            className={cn(
+              "absolute end-3 top-1/2 -translate-y-1/2 cursor-pointer rounded px-1 text-fg-muted hover:text-fg focus-visible:outline-2 disabled:cursor-not-allowed",
+              classNames?.clearButton,
+            )}
             onClick={() => {
               setText("");
               combo.setActiveValue(null);

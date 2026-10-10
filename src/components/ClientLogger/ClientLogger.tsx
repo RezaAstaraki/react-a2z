@@ -37,9 +37,10 @@ export default function ClientLogger({
             <div className="flex justify-between items-center mb-3">
               <h1 className="font-bold">Client Logger{label && ` - ${label}`}</h1>
               <div className="flex gap-3">
-                <label>
+                <label className="cursor-pointer">
                   <input
                     type="checkbox"
+                    className="cursor-pointer"
                     checked={showData}
                     onChange={(e) => {
                       setShowData(e.target.checked);
@@ -47,9 +48,10 @@ export default function ClientLogger({
                   />
                   Show Data in UI
                 </label>
-                <label>
+                <label className="cursor-pointer">
                   <input
                     type="checkbox"
+                    className="cursor-pointer"
                     checked={showDataC}
                     onChange={(e) => {
                       setShowDataC(e.target.checked);
@@ -62,7 +64,7 @@ export default function ClientLogger({
               <button
                   type="button"
                   aria-label="Close logger"
-                className="close-button"
+                className="close-button cursor-pointer"
                 onClick={() => setShow(false)}
                 style={{
                   cursor: 'pointer',

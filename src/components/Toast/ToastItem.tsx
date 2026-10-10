@@ -215,7 +215,7 @@ export function ToastItem({ toast: entry, position }: ToastItemProps) {
         <button
           type="button"
           onClick={() => dismissToast(entry.id)}
-          className="shrink-0 rounded p-0.5 text-current opacity-60 transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
+          className="shrink-0 cursor-pointer rounded p-0.5 text-current opacity-60 transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
           aria-label="Dismiss"
         >
           <CloseIcon />

@@ -1,0 +1,15 @@
+---
+description: Fully customizable React components with rich defaults and correct interaction cursors
+alwaysApply: true
+---
+
+# Component design
+
+- Every package component must provide beautiful, polished defaults using the library's design tokens.
+- Expose typed `classNames` slots for every styled visual part, including nested icons, labels, messages, popovers, chips, and action buttons. Single-element components expose a `root` slot.
+- Merge defaults first, then slot overrides, then the element's `className`, using `cn`. Consumers must be able to restyle the entire component while keeping its behavior and accessibility.
+- Preserve existing customization props as compatible aliases when expanding the slot API. Export the public slot types and document them with typed examples.
+- Use `cursor-pointer` on enabled buttons, tabs, selectable options, links, checkbox controls, and selection triggers. Use `cursor-not-allowed` on disabled controls and `cursor-text` on editable text fields. Keep cursor classes overridable through the relevant slot.
+- Include clear hover, selected, disabled, error, and keyboard-focus treatments. Respect reduced motion.
+- Verify customization and computed cursors in the test app, including disabled states. Do not use app-wide CSS to hide missing cursor defaults in the package.
+

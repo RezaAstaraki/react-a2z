@@ -338,7 +338,7 @@ export function CustomModal({
           type="button"
           aria-label="Close"
           tabIndex={-1}
-          className={cn('absolute inset-0', BACKDROP_CLASS[backdrop], backdropClassName)}
+          className={cn('absolute inset-0 cursor-pointer', BACKDROP_CLASS[backdrop], backdropClassName)}
           onClick={requestClose}
         />
       ) : (
@@ -375,7 +375,7 @@ export function CustomModal({
             type="button"
             aria-label="Close"
             onClick={closeThisModal}
-            className="absolute end-3 top-3 z-20 inline-flex h-9 w-9 items-center justify-center rounded-lg text-fg-muted transition-colors hover:bg-neutral-soft hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+            className="absolute end-3 top-3 z-20 inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-fg-muted transition-colors hover:bg-neutral-soft hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
           >
             <CloseIcon />
           </button>
@@ -409,7 +409,7 @@ export function CustomModal({
                 type="button"
                 aria-label="Close"
                 onClick={closeThisModal}
-                className="absolute end-3 top-3 z-20 inline-flex h-9 w-9 items-center justify-center rounded-lg text-fg-muted transition-colors hover:bg-neutral-soft hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+                className="absolute end-3 top-3 z-20 inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-fg-muted transition-colors hover:bg-neutral-soft hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
               >
                 <CloseIcon />
               </button>

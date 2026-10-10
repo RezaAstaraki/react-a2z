@@ -8,6 +8,7 @@ export type BadgeColor =
   | "warning"
   | "danger"
   | "info";
+export type BadgeClassNames = { root?: string; dot?: string; content?: string };
 export interface BadgeProps
   extends Omit<React.HTMLAttributes<HTMLSpanElement>, "color"> {
   /** Semantic color. */
@@ -18,6 +19,8 @@ export interface BadgeProps
   size?: "sm" | "md";
   /** Decorative status dot. Always provide text as well. */
   dot?: boolean;
+  /** Per-slot classes for the badge, dot and content. */
+  classNames?: BadgeClassNames;
 }
 const colors: Record<
   BadgeColor,
@@ -61,6 +64,7 @@ export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
       variant = "soft",
       size = "md",
       dot = false,
+      classNames,
       className,
       children,
       ...props
@@ -76,16 +80,20 @@ export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
           size === "sm" ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-1 text-xs",
           variant === "outline" && "border bg-transparent",
           colors[color][variant],
+          classNames?.root,
           className,
         )}
       >
         {dot && (
           <span
             aria-hidden="true"
-            className="size-1.5 shrink-0 rounded-full bg-current"
+            className={cn(
+              "size-1.5 shrink-0 rounded-full bg-current",
+              classNames?.dot,
+            )}
           />
         )}
-        {children}
+        <span className={classNames?.content}>{children}</span>
       </span>
     );
   },

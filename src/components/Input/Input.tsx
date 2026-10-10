@@ -140,7 +140,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   const sizeTokens = SIZES[size];
 
   const inputClasses = cn(
-    'w-full transition-colors duration-200 ease-a2z focus:outline-none',
+    'w-full cursor-text transition-colors duration-200 ease-a2z focus:outline-none',
     'rounded-lg border bg-surface text-fg placeholder:text-fg-subtle',
     'focus-visible:ring-1 focus-visible:ring-offset-0',
     // Invalid last so it wins over the resting border colour.

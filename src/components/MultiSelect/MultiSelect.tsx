@@ -146,8 +146,9 @@ export const MultiSelect = React.forwardRef<HTMLInputElement, MultiSelectProps>(
           label={label}
           required={required}
           className={classNames?.label}
+          requiredClassName={classNames?.requiredIndicator}
         />
-        <div className="relative">
+        <div className={cn("relative", classNames?.wrapper)}>
           <div
             className={cn(
               "flex w-full flex-wrap items-center gap-2 rounded-lg border bg-surface text-fg transition-colors focus-within:ring-2",
@@ -171,13 +172,18 @@ export const MultiSelect = React.forwardRef<HTMLInputElement, MultiSelectProps>(
                     classNames?.chip,
                   )}
                 >
-                  <span className="truncate">{optionLabel}</span>
+                  <span className={cn("truncate", classNames?.chipLabel)}>
+                    {optionLabel}
+                  </span>
                   {!readOnly && (
                     <button
                       type="button"
                       disabled={disabled}
                       aria-label={`Remove ${optionLabel}`}
-                      className="rounded px-1 focus-visible:outline-2 focus-visible:outline-offset-1"
+                      className={cn(
+                        "cursor-pointer rounded px-1 hover:bg-primary-soft-hover focus-visible:outline-2 focus-visible:outline-offset-1 disabled:cursor-not-allowed",
+                        classNames?.removeButton,
+                      )}
                       onClick={() => {
                         setSelection(
                           selected.filter((current) => current !== item),
@@ -212,7 +218,7 @@ export const MultiSelect = React.forwardRef<HTMLInputElement, MultiSelectProps>(
               value={query}
               placeholder={selected.length ? "Add more…" : placeholder}
               className={cn(
-                "min-w-0 flex-1 basis-24 bg-transparent text-fg placeholder:text-fg-subtle outline-none disabled:cursor-not-allowed",
+                "min-w-0 flex-1 basis-24 cursor-text bg-transparent text-fg placeholder:text-fg-subtle outline-none disabled:cursor-not-allowed",
                 classNames?.input,
               )}
               onChange={(event) => {
@@ -247,7 +253,10 @@ export const MultiSelect = React.forwardRef<HTMLInputElement, MultiSelectProps>(
                 type="button"
                 disabled={disabled}
                 aria-label="Clear selections"
-                className="rounded px-1 text-fg-muted focus-visible:outline-2"
+                className={cn(
+                  "cursor-pointer rounded px-1 text-fg-muted hover:text-fg focus-visible:outline-2 disabled:cursor-not-allowed",
+                  classNames?.clearButton,
+                )}
                 onClick={() => {
                   setSelection([]);
                   changeQuery("");
@@ -263,7 +272,10 @@ export const MultiSelect = React.forwardRef<HTMLInputElement, MultiSelectProps>(
               aria-label={combo.open ? "Close options" : "Open options"}
               aria-expanded={combo.open}
               aria-controls={combo.open ? listId : undefined}
-              className="rounded px-1 text-fg-muted focus-visible:outline-2"
+              className={cn(
+                "cursor-pointer rounded px-1 text-fg-muted hover:text-fg focus-visible:outline-2 disabled:cursor-not-allowed",
+                classNames?.toggleButton,
+              )}
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => {
                 if (combo.open) combo.close();
@@ -273,7 +285,9 @@ export const MultiSelect = React.forwardRef<HTMLInputElement, MultiSelectProps>(
                 }
               }}
             >
-              <span aria-hidden="true">⌄</span>
+              <span aria-hidden="true" className={classNames?.toggleIcon}>
+                ⌄
+              </span>
             </button>
           </div>
           <ComboOptions
@@ -310,7 +324,7 @@ export const MultiSelect = React.forwardRef<HTMLInputElement, MultiSelectProps>(
             </option>
           ))}
         </select>
-        <span role="status" className="sr-only">
+        <span role="status" className={cn("sr-only", classNames?.status)}>
           {selected.length} selected
           {Number.isFinite(limit) ? `, maximum ${limit}` : ""}
         </span>

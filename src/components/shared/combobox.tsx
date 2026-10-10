@@ -15,11 +15,25 @@ export type ComboboxOption = {
 export type ComboboxClassNames = {
   root?: string;
   label?: string;
+  requiredIndicator?: string;
+  wrapper?: string;
   control?: string;
   input?: string;
   listbox?: string;
+  popover?: string;
   option?: string;
+  optionContent?: string;
+  optionLabel?: string;
+  optionDescription?: string;
+  optionIndicator?: string;
   chip?: string;
+  chipLabel?: string;
+  removeButton?: string;
+  clearButton?: string;
+  toggleButton?: string;
+  toggleIcon?: string;
+  empty?: string;
+  status?: string;
   description?: string;
 };
 
@@ -197,7 +211,13 @@ export function ComboOptions({
 }) {
   if (!combo.open) return null;
   return (
-    <div className="absolute start-0 top-full z-50 mt-1 w-full rounded-lg border border-border bg-surface text-fg shadow-lg">
+    <div
+      className={cn(
+        "absolute start-0 top-full z-50 mt-1 w-full rounded-lg border border-border bg-surface text-fg shadow-lg",
+        classNames?.popover,
+      )}
+      data-slot="combobox-popover"
+    >
       <ul
         ref={combo.listRef}
         id={listId}
@@ -213,6 +233,9 @@ export function ComboOptions({
             role="option"
             aria-selected={selected.includes(option.value)}
             aria-disabled={option.disabled || undefined}
+            data-highlighted={combo.active?.value === option.value || undefined}
+            data-selected={selected.includes(option.value) || undefined}
+            data-disabled={option.disabled || undefined}
             onPointerMove={() => {
               if (!option.disabled) combo.setActiveValue(option.value);
             }}
@@ -228,22 +251,34 @@ export function ComboOptions({
               classNames?.option,
             )}
           >
-            <span>
-              <span className="block">{option.label}</span>
+            <span className={classNames?.optionContent}>
+              <span className={cn("block", classNames?.optionLabel)}>
+                {option.label}
+              </span>
               {option.description && (
-                <span className="block text-xs text-fg-muted">
+                <span
+                  className={cn(
+                    "block text-xs text-fg-muted",
+                    classNames?.optionDescription,
+                  )}
+                >
                   {option.description}
                 </span>
               )}
             </span>
             {selected.includes(option.value) && (
-              <span aria-hidden="true">✓</span>
+              <span aria-hidden="true" className={classNames?.optionIndicator}>
+                ✓
+              </span>
             )}
           </li>
         ))}
       </ul>
       {options.length === 0 && (
-        <div role="status" className="px-4 py-3 text-sm text-fg-muted">
+        <div
+          role="status"
+          className={cn("px-4 py-3 text-sm text-fg-muted", classNames?.empty)}
+        >
           {emptyContent}
         </div>
       )}

@@ -260,7 +260,7 @@ function IconButton({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        'rounded px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50',
+        'cursor-pointer rounded px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50',
         active && 'bg-gray-200 text-gray-900',
       )}
     >

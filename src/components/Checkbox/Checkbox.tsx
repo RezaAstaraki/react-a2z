@@ -4,6 +4,14 @@ import * as React from "react";
 import { cn, mergeRefs } from "../../utils";
 import { useField, FieldMessage } from "../shared/field";
 
+export type CheckboxClassNames = {
+  root?: string;
+  wrapper?: string;
+  control?: string;
+  label?: string;
+  description?: string;
+};
+
 export interface CheckboxProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "size"> {
   /** Visible label associated with the native checkbox. */
@@ -18,6 +26,8 @@ export interface CheckboxProps
   onCheckedChange?: (checked: boolean) => void;
   /** Override the native control's classes. className styles the wrapper. */
   controlClassName?: string;
+  /** Per-slot overrides for every visual part. */
+  classNames?: CheckboxClassNames;
 }
 
 export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
@@ -29,6 +39,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
       indeterminate = false,
       onCheckedChange,
       controlClassName,
+      classNames,
       className,
       id,
       disabled,
@@ -44,12 +55,20 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
       if (inputRef.current) inputRef.current.indeterminate = indeterminate;
     }, [indeterminate]);
     return (
-      <div className={cn("text-sm", disabled && "opacity-60", className)}>
+      <div
+        className={cn(
+          "text-sm",
+          disabled && "opacity-60",
+          classNames?.root,
+          className,
+        )}
+      >
         <label
           htmlFor={field.controlId}
           className={cn(
             "inline-flex items-start gap-3",
             disabled ? "cursor-not-allowed" : "cursor-pointer",
+            classNames?.wrapper,
           )}
         >
           <input
@@ -62,6 +81,8 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
             aria-describedby={field.describedBy}
             className={cn(
               "mt-0.5 size-4 shrink-0 rounded border-border accent-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2",
+              disabled ? "cursor-not-allowed" : "cursor-pointer",
+              classNames?.control,
               controlClassName,
             )}
             onChange={(event) => {
@@ -69,13 +90,15 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
               onCheckedChange?.(event.target.checked);
             }}
           />
-          {label && <span className="text-fg">{label}</span>}
+          {label && (
+            <span className={cn("text-fg", classNames?.label)}>{label}</span>
+          )}
         </label>
         <FieldMessage
           id={field.messageId}
           error={error}
           description={description}
-          className="ms-7"
+          className={cn("ms-7", classNames?.description)}
         />
       </div>
     );

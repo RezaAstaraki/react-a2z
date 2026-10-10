@@ -10,6 +10,17 @@ export type AccordionItem = {
   content: React.ReactNode;
   disabled?: boolean;
 };
+export type AccordionClassNames = {
+  root?: string;
+  item?: string;
+  heading?: string;
+  trigger?: string;
+  title?: string;
+  icon?: string;
+  panelWrapper?: string;
+  contentWrapper?: string;
+  panel?: string;
+};
 export interface AccordionProps
   extends Omit<
     React.HTMLAttributes<HTMLDivElement>,
@@ -28,7 +39,7 @@ export interface AccordionProps
   /** Animate expansion and collapse. Respects reduced-motion preferences. */
   animated?: boolean;
   /** Per-slot class overrides. */
-  classNames?: { item?: string; trigger?: string; panel?: string };
+  classNames?: AccordionClassNames;
 }
 export const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(
   function Accordion(
@@ -81,6 +92,7 @@ export const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(
         data-a2z-accordion=""
         className={cn(
           "overflow-hidden rounded-xl border border-border bg-surface",
+          classNames?.root,
           className,
         )}
       >
@@ -95,7 +107,7 @@ export const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(
                 classNames?.item,
               )}
             >
-              <h3>
+              <h3 className={classNames?.heading}>
                 <button
                   type="button"
                   id={`${key}-trigger`}
@@ -114,11 +126,11 @@ export const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(
                     )
                   }
                   className={cn(
-                    "flex w-full items-center justify-between gap-4 px-5 py-4 text-start text-sm font-medium text-fg transition-colors hover:bg-neutral-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-40",
+                    "flex w-full cursor-pointer items-center justify-between gap-4 px-5 py-4 text-start text-sm font-medium text-fg transition-colors hover:bg-neutral-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-40",
                     classNames?.trigger,
                   )}
                 >
-                  {item.title}
+                  <span className={classNames?.title}>{item.title}</span>
                   <svg
                     aria-hidden="true"
                     viewBox="0 0 24 24"
@@ -129,6 +141,7 @@ export const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(
                     className={cn(
                       "a2z-accordion-chevron size-4 shrink-0",
                       expanded && "rotate-180",
+                      classNames?.icon,
                     )}
                   >
                     <path d="m6 9 6 6 6-6" />
@@ -143,7 +156,7 @@ export const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(
                 data-a2z-accordion-panel=""
                 data-state={expanded ? "open" : "closed"}
                 data-animated={animated || undefined}
-                className="a2z-accordion-panel"
+                className={cn("a2z-accordion-panel", classNames?.panelWrapper)}
                 ref={(panel) => {
                   if (!panel) return;
                   // Closed content stays mounted for the closing animation, but
@@ -158,7 +171,12 @@ export const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(
                   panel.toggleAttribute("inert", !expanded);
                 }}
               >
-                <div className="min-h-0 overflow-hidden">
+                <div
+                  className={cn(
+                    "min-h-0 overflow-hidden",
+                    classNames?.contentWrapper,
+                  )}
+                >
                   <div
                     className={cn(
                       "px-5 pb-5 text-sm leading-relaxed text-fg-muted",

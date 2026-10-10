@@ -63,6 +63,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           label={label}
           required={required}
           className={classNames?.label}
+          requiredClassName={classNames?.requiredIndicator}
         />
         <textarea
           {...props}
@@ -74,6 +75,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           aria-describedby={field.describedBy}
           className={cn(
             fieldControl,
+            "cursor-text",
             fieldSizes[size],
             fieldState(
               Boolean(

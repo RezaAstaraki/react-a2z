@@ -63,6 +63,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           label={label}
           required={required}
           className={classNames?.label}
+          requiredClassName={classNames?.requiredIndicator}
         />
         <select
           {...props}
@@ -74,6 +75,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           aria-describedby={field.describedBy}
           className={cn(
             fieldControl,
+            "cursor-pointer",
             fieldSizes[size],
             fieldState(
               Boolean(

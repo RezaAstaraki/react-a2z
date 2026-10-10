@@ -352,3 +352,121 @@ test("Skeleton stays decorative and respects reduced motion", () => {
     /animate-pulse/,
   );
 });
+
+test("slot classes override defaults while root className and legacy aliases retain priority", () => {
+  const checkbox = render(library.Checkbox, {
+    label: "Choice",
+    description: "Details",
+    classNames: {
+      root: "root-slot",
+      wrapper: "wrapper-slot",
+      control: "cursor-crosshair",
+      label: "label-slot",
+      description: "description-slot",
+    },
+    controlClassName: "cursor-help",
+  });
+  for (const slot of [
+    "root-slot",
+    "wrapper-slot",
+    "label-slot",
+    "description-slot",
+  ])
+    assert.match(checkbox, new RegExp(slot));
+  assert.match(checkbox, /cursor-help/);
+  assert.doesNotMatch(checkbox, /cursor-crosshair|classNames=/);
+  const toggle = render(library.Switch, {
+    label: "Preference",
+    classNames: {
+      track: "bg-violet-100",
+      thumb: "thumb-slot",
+      controlWrapper: "control-wrapper-slot",
+    },
+    trackClassName: "bg-amber-100",
+  });
+  assert.match(toggle, /bg-amber-100/);
+  assert.doesNotMatch(toggle, /bg-violet-100/);
+  assert.match(toggle, /thumb-slot/);
+  assert.match(toggle, /control-wrapper-slot/);
+  const skeleton = render(library.Skeleton, {
+    classNames: { root: "rounded-none bg-violet-100" },
+    className: "rounded-full",
+  });
+  assert.match(skeleton, /rounded-full/);
+  assert.doesNotMatch(skeleton, /rounded-none|rounded-lg|classNames=/);
+});
+
+test("display and compound component slots can restyle every rendered part", () => {
+  const badge = render(
+    library.Badge,
+    {
+      dot: true,
+      classNames: {
+        root: "badge-root",
+        dot: "badge-dot",
+        content: "badge-content",
+      },
+    },
+    "Status",
+  );
+  for (const slot of ["badge-root", "badge-dot", "badge-content"])
+    assert.match(badge, new RegExp(slot));
+  const progress = render(library.Progress, {
+    label: "Upload",
+    value: 50,
+    showLabel: true,
+    classNames: {
+      root: "progress-root",
+      labelRow: "label-row",
+      label: "progress-label",
+      value: "progress-value",
+      track: "progress-track",
+      indicator: "bg-violet-600",
+    },
+    indicatorClassName: "bg-amber-600",
+  });
+  for (const slot of [
+    "progress-root",
+    "label-row",
+    "progress-label",
+    "progress-value",
+    "progress-track",
+    "bg-amber-600",
+  ])
+    assert.match(progress, new RegExp(slot));
+  assert.doesNotMatch(progress, /bg-violet-600|bg-primary-600/);
+  const accordion = render(library.Accordion, {
+    items: [{ value: "one", title: "First", content: "Content" }],
+    classNames: {
+      root: "accordion-root",
+      heading: "heading-slot",
+      title: "title-slot",
+      icon: "icon-slot",
+      panelWrapper: "panel-wrapper",
+      contentWrapper: "content-wrapper",
+    },
+  });
+  for (const slot of [
+    "accordion-root",
+    "heading-slot",
+    "title-slot",
+    "icon-slot",
+    "panel-wrapper",
+    "content-wrapper",
+  ])
+    assert.match(accordion, new RegExp(slot));
+  for (const component of [
+    library.Card,
+    library.CardHeader,
+    library.CardBody,
+    library.CardFooter,
+  ]) {
+    const html = render(component, {
+      classNames: { root: "section-root" },
+      className: "custom-section",
+    });
+    assert.match(html, /section-root/);
+    assert.match(html, /custom-section/);
+    assert.doesNotMatch(html, /classNames=/);
+  }
+});

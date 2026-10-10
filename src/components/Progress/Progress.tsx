@@ -1,6 +1,15 @@
 import * as React from "react";
 import { cn } from "../../utils";
 
+export type ProgressClassNames = {
+  root?: string;
+  labelRow?: string;
+  label?: string;
+  value?: string;
+  track?: string;
+  indicator?: string;
+};
+
 export interface ProgressProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
   /** Accessible name. Required even when the visual label is hidden. */
@@ -17,6 +26,8 @@ export interface ProgressProps
   size?: "sm" | "md" | "lg";
   /** Fill classes. className styles the wrapper. */
   indicatorClassName?: string;
+  /** Per-slot classes for the labels, track and fill. */
+  classNames?: ProgressClassNames;
 }
 const colors = {
   primary: "bg-primary-600",
@@ -36,6 +47,7 @@ export const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
       size = "md",
       className,
       indicatorClassName,
+      classNames,
       ...props
     },
     ref,
@@ -50,7 +62,7 @@ export const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
       <div
         {...props}
         ref={ref}
-        className={cn("w-full", className)}
+        className={cn("w-full", classNames?.root, className)}
         role="progressbar"
         aria-label={label}
         aria-valuemin={0}
@@ -59,9 +71,14 @@ export const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
         aria-valuetext={current === undefined ? "Loading" : undefined}
       >
         {showLabel && (
-          <div className="mb-2 flex justify-between gap-3 text-sm text-fg">
-            <span>{label}</span>
-            <span className="text-fg-muted">
+          <div
+            className={cn(
+              "mb-2 flex justify-between gap-3 text-sm text-fg",
+              classNames?.labelRow,
+            )}
+          >
+            <span className={classNames?.label}>{label}</span>
+            <span className={cn("text-fg-muted", classNames?.value)}>
               {percent === undefined ? "Loading…" : `${Math.round(percent)}%`}
             </span>
           </div>
@@ -70,6 +87,7 @@ export const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
           className={cn(
             "overflow-hidden rounded-full bg-neutral-soft",
             sizes[size],
+            classNames?.track,
           )}
         >
           <div
@@ -78,6 +96,7 @@ export const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
               colors[color],
               current === undefined &&
                 "w-full animate-pulse motion-reduce:animate-none",
+              classNames?.indicator,
               indicatorClassName,
             )}
             style={{ width: percent === undefined ? undefined : `${percent}%` }}

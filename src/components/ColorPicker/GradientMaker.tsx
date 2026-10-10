@@ -258,7 +258,7 @@ const GradientMaker = React.forwardRef<HTMLDivElement, GradientMakerProps>(
                 aria-pressed={isActive}
                 title={preset.name}
                 className={cn(
-                  'h-12 rounded border border-border transition-shadow hover:shadow-lg',
+                  'h-12 cursor-pointer rounded border border-border transition-shadow hover:shadow-lg',
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                   isActive && 'ring-2 ring-ring ring-offset-2',
                   classNames?.preset,
@@ -338,7 +338,7 @@ const GradientMaker = React.forwardRef<HTMLDivElement, GradientMakerProps>(
             onClick={handleCopy}
             disabled={!selectedGradient}
             className={cn(
-              'rounded-md px-4 py-2 text-sm text-primary-fg transition-colors',
+              'cursor-pointer rounded-md px-4 py-2 text-sm text-primary-fg transition-colors',
               'bg-primary-600 hover:bg-primary-700',
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
               'disabled:cursor-not-allowed disabled:opacity-50',
