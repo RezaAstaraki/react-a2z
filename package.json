@@ -162,6 +162,8 @@
     "styles"
   ],
   "scripts": {
+    "registry:build": "node scripts/build-registry.mjs",
+    "cli:test": "node scripts/test-cli.mjs",
     "rollup": "rollup -c --bundleConfigAsCjs",
     "dev": "rollup -c --bundleConfigAsCjs --watch",
     "build": "npm run typecheck && npm run rollup",

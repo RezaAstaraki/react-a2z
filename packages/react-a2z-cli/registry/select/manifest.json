@@ -1,0 +1,38 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "select",
+  "type": "registry:component",
+  "title": "React A2Z Select",
+  "description": "Accessible styled select with native form semantics and an optional custom popup.",
+  "dependencies": [
+    "clsx@^2.1.1",
+    "tailwind-merge@^3.0.1"
+  ],
+  "files": [
+    {
+      "source": "select.tsx.template",
+      "target": "src/components/ui/select.tsx",
+      "type": "registry:component"
+    },
+    {
+      "source": "field.tsx.template",
+      "target": "src/components/ui/field.tsx",
+      "type": "registry:component"
+    },
+    {
+      "source": "cn.ts",
+      "target": "src/lib/react-a2z/cn.ts",
+      "type": "registry:lib"
+    },
+    {
+      "source": "extend-merge.ts",
+      "target": "src/lib/react-a2z/extend-merge.ts",
+      "type": "registry:lib"
+    },
+    {
+      "source": "react-a2z.css",
+      "target": "src/styles/react-a2z.css",
+      "type": "registry:style"
+    }
+  ]
+}
