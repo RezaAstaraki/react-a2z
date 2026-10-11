@@ -1,6 +1,6 @@
 {
   "name": "react-a2z",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "React component library with beautiful, fully re-themable defaults. Tailwind CSS design tokens, TypeScript, Next.js App Router ready.",
   "type": "module",
   "main": "dist/cjs/index.js",
