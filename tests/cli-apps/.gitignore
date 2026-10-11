@@ -1,0 +1,11 @@
+node_modules/
+.next/
+dist/
+build/
+.artifacts/
+.checks/
+reports/
+*.tsbuildinfo
+*.a2z-backup*
+*.log
+!apps/cra-src-tw3/.env

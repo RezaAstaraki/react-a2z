@@ -1,0 +1,29 @@
+{
+  "name": "@a2z-tests/vite-js-root-tw4",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "dev": "vite --host 127.0.0.1 --port 3109 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 3109 --strictPort"
+  },
+  "dependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.0.1"
+  },
+  "devDependencies": {
+    "tailwindcss": "4.3.3",
+    "typescript": "^5.9.3",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/node": "^22.0.0",
+    "postcss": "^8.5.6",
+    "@tailwindcss/postcss": "4.3.3",
+    "vite": "8.3.4",
+    "@vitejs/plugin-react": "6.1.2"
+  }
+}

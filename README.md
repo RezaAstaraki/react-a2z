@@ -2,6 +2,11 @@
 
 React component library with Tailwind CSS styling, TypeScript support, and Next.js App Router compatibility.
 
+Versioning and maintainer release checks are documented in
+[RELEASING.md](./RELEASING.md).
+Run `npm run release:check` before a library release; normal `npm publish` also
+runs the compatibility gate automatically.
+
 ## Install
 
 ```bash
@@ -10,6 +15,29 @@ npm install react-a2z
 
 Peer dependencies: `react` and `react-dom` (>=18), `tailwindcss` (>=3.4 or v4),
 and `zustand` (>=5, required by `Modal` and `Toast`).
+
+## Editable component source (CLI)
+
+Use the separate `react-a2z-cli` package to copy component source into your project:
+
+```bash
+npx react-a2z-cli@latest init
+npx react-a2z-cli@latest add select
+```
+
+The installer currently supports **Select** and requires Node.js 18+ and a React
+project with Tailwind CSS v3.4.1+ or v4 configured. It detects the installed version
+and writes the matching setup, editable source, shared utilities,
+styles, and `a2z.json`; import the component from your local files. You do not need
+the `react-a2z` runtime package for this workflow. See the
+[CLI guide](./packages/react-a2z-cli/README.md) for options and publishing steps.
+
+Maintainers can test the packed local CLI in twelve consumer scenarios under
+[tests/cli-apps](./tests/cli-apps/README.md). After `npm ci` in this repository,
+run `npm run cli:apps:prepare` once, then `npm run cli:apps:check` after CLI or
+registry changes. The full check installs the current candidate into disposable
+apps, verifies CLI behavior, and typechecks/builds every scenario while preserving
+the interactive starter apps.
 
 ## Tailwind v4 setup (recommended)
 

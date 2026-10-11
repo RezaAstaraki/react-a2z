@@ -1,0 +1,7 @@
+{
+  "components": "components/ui",
+  "utils": "lib/react-a2z",
+  "styles": "styles/react-a2z.css",
+  "css": "index.css",
+  "tailwindVersion": 4
+}

@@ -1,0 +1,8 @@
+{
+  "components": "src/components/ui",
+  "utils": "src/lib/react-a2z",
+  "styles": "src/styles/react-a2z.css",
+  "css": "src/styles/globals.css",
+  "tailwindVersion": 3,
+  "tailwindConfig": "tailwind.config.cjs"
+}

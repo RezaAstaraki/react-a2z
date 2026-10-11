@@ -1,0 +1,11 @@
+{
+  "package": "react-a2z",
+  "fromVersion": "1.1.0",
+  "toVersion": "1.1.1",
+  "bump": "patch",
+  "candidateFingerprint": "COPY THE FINGERPRINT PRINTED BY npm run release:compare",
+  "reason": "DESCRIBE THE CHANGE AND WHY EXISTING CONSUMERS REMAIN COMPATIBLE",
+  "compatibilityReviewed": false,
+  "breakingChanges": [],
+  "migration": ""
+}

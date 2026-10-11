@@ -135,18 +135,30 @@ test("root and component subpaths expose the new components in ESM and CommonJS"
     assert.ok(library[name]);
 });
 
-test("every declared JavaScript export exists in the package build", () => {
+test("every declared package export exists in the package build", () => {
   const packageJson = JSON.parse(
     readFileSync(new URL("../package.json", import.meta.url), "utf8"),
   );
   for (const [name, entry] of Object.entries(packageJson.exports)) {
-    if (typeof entry !== "object") continue;
-    for (const target of Object.values(entry))
+    const targets = (value) =>
+      typeof value === "string"
+        ? [value]
+        : Object.values(value).flatMap(targets);
+    for (const target of targets(entry))
       assert.doesNotThrow(
         () => readFileSync(new URL(`../${target}`, import.meta.url)),
         `${name}: ${target}`,
       );
   }
+});
+
+test("Tailwind preset and helpers agree between ESM and CommonJS", async () => {
+  const esm = await import("react-a2z/tailwind");
+  const cjs = require("react-a2z/tailwind");
+  assert.deepEqual(cjs.default, esm.default);
+  assert.deepEqual(cjs.contentPaths, esm.contentPaths);
+  assert.deepEqual(cjs.tokenStylesheets, esm.tokenStylesheets);
+  assert.equal(cjs.tailwindV4Stylesheet, esm.tailwindV4Stylesheet);
 });
 
 test("interactive subpaths preserve the Next.js client boundary", () => {

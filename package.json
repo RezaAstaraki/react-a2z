@@ -16,138 +16,223 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
     },
     "./Button": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/Button/Button.js",
       "require": "./dist/cjs/components/Button/Button.js"
     },
     "./Input": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/Input/Input.js",
       "require": "./dist/cjs/components/Input/Input.js"
     },
     "./CodeBox": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/CodeBox/CodeBox.js",
       "require": "./dist/cjs/components/CodeBox/CodeBox.js"
     },
     "./Modal": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/Modal/index.js",
       "require": "./dist/cjs/components/Modal/index.js"
     },
     "./Toast": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/Toast/index.js",
       "require": "./dist/cjs/components/Toast/index.js"
     },
     "./PearlButton": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/PearlButton/PearlButton.js",
       "require": "./dist/cjs/components/PearlButton/PearlButton.js"
     },
     "./ColorPicker": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/ColorPicker/index.js",
       "require": "./dist/cjs/components/ColorPicker/index.js"
     },
     "./Md": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/Md/index.js",
       "require": "./dist/cjs/components/Md/index.js"
     },
     "./MdEditor": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/MdEditor/index.js",
       "require": "./dist/cjs/components/MdEditor/index.js"
     },
     "./Counter": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/Counter/index.js",
       "require": "./dist/cjs/components/Counter/index.js"
     },
     "./Slider": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/Slider/Slider.js",
       "require": "./dist/cjs/components/Slider/Slider.js"
     },
     "./Tooltip": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/Tooltip/Tooltip.js",
       "require": "./dist/cjs/components/Tooltip/Tooltip.js"
     },
     "./hooks": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/hooks/index.js",
       "require": "./dist/cjs/hooks/index.js"
     },
-    "./tailwind": "./tailwind.preset.js",
+    "./tailwind": {
+      "types": {
+        "import": "./tailwind.preset.d.ts",
+        "require": "./dist/cjs/tailwind.preset.d.cts"
+      },
+      "import": "./tailwind.preset.js",
+      "require": "./dist/cjs/tailwind.preset.cjs"
+    },
     "./tailwind.css": "./tailwind.css",
     "./tokens.css": "./tokens.css",
     "./components.css": "./components.css",
     "./styles.css": "./styles.css",
     "./PearlButton/styles.css": "./styles/pearl-button.css",
     "./Checkbox": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/Checkbox/Checkbox.js",
       "require": "./dist/cjs/components/Checkbox/Checkbox.js"
     },
     "./MultiSelect": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/MultiSelect/MultiSelect.js",
       "require": "./dist/cjs/components/MultiSelect/MultiSelect.js"
     },
     "./AutocompleteInput": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/AutocompleteInput/AutocompleteInput.js",
       "require": "./dist/cjs/components/AutocompleteInput/AutocompleteInput.js"
     },
     "./Switch": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/Switch/Switch.js",
       "require": "./dist/cjs/components/Switch/Switch.js"
     },
     "./Select": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/Select/Select.js",
       "require": "./dist/cjs/components/Select/Select.js"
     },
     "./Textarea": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/Textarea/Textarea.js",
       "require": "./dist/cjs/components/Textarea/Textarea.js"
     },
     "./Tabs": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/Tabs/Tabs.js",
       "require": "./dist/cjs/components/Tabs/Tabs.js"
     },
     "./Accordion": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/Accordion/Accordion.js",
       "require": "./dist/cjs/components/Accordion/Accordion.js"
     },
     "./Badge": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/Badge/Badge.js",
       "require": "./dist/cjs/components/Badge/Badge.js"
     },
     "./Card": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/Card/Card.js",
       "require": "./dist/cjs/components/Card/Card.js"
     },
     "./Progress": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/Progress/Progress.js",
       "require": "./dist/cjs/components/Progress/Progress.js"
     },
     "./Skeleton": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/esm/components/Skeleton/Skeleton.js",
       "require": "./dist/cjs/components/Skeleton/Skeleton.js"
     }
@@ -155,6 +240,7 @@
   "files": [
     "dist",
     "tailwind.preset.js",
+    "tailwind.preset.d.ts",
     "tailwind.css",
     "tokens.css",
     "components.css",
@@ -163,10 +249,18 @@
   ],
   "scripts": {
     "registry:build": "node scripts/build-registry.mjs",
-    "cli:test": "node scripts/test-cli.mjs",
+    "cli:test": "npm run registry:build && node scripts/test-cli.mjs && node scripts/test-cli-styles.mjs",
+    "cli:check": "npm pack ./packages/react-a2z-cli --dry-run",
+    "cli:apps:prepare": "npm --prefix tests/cli-apps run bootstrap",
+    "cli:apps:check": "npm --prefix tests/cli-apps run check",
+    "release:cli": "cd packages/react-a2z-cli && npm publish --access public",
+    "release:baseline": "node scripts/release-baseline.mjs",
+    "release:check": "node --test tests/release-policy.test.mjs && npm test && node scripts/check-release.mjs",
+    "release:compare": "node scripts/check-release.mjs",
+    "prepublishOnly": "npm run release:check && node scripts/check-release.mjs --publish",
     "rollup": "rollup -c --bundleConfigAsCjs",
     "dev": "rollup -c --bundleConfigAsCjs --watch",
-    "build": "npm run typecheck && npm run rollup",
+    "build": "npm run typecheck && npm run rollup && node scripts/build-cjs-types.mjs",
     "typecheck": "tsc --noEmit",
     "test": "npm run build && node tests/components.test.mjs"
   },
@@ -196,20 +290,26 @@
     "zustand": ">=5.0.0"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "0.18.5",
+    "@babel/parser": "7.29.9",
+    "@microsoft/api-extractor": "7.59.4",
     "@rollup/plugin-commonjs": "^25.0.3",
     "@rollup/plugin-node-resolve": "^15.1.0",
     "@rollup/plugin-terser": "^0.4.3",
     "@rollup/plugin-typescript": "^11.1.2",
+    "@tailwindcss/postcss": "4.3.3",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.15",
     "postcss": "^8.5.1",
     "prettier": "^3.5.0",
     "prettier-plugin-tailwindcss": "^0.6.11",
+    "publint": "0.3.25",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "rollup": "^3.26.3",
     "rollup-plugin-dts": "^5.3.0",
     "rollup-plugin-peer-deps-external": "^2.2.4",
+    "semver": "7.8.5",
     "tailwindcss": "^3.4.17",
     "tslib": "^2.6.0",
     "typescript": "^5.1.6",

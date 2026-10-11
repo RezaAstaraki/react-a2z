@@ -1,0 +1,3 @@
+const path = require("node:path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+module.exports = { entry: "./src/main.tsx", output: { path: path.resolve(__dirname, "dist"), filename: "app.js", clean: true }, resolve: { extensions: [".tsx", ".ts", ".js"] }, module: { rules: [{ test: /\.tsx?$/, exclude: /node_modules/, use: { loader: "ts-loader", options: { transpileOnly: true } } }, { test: /\.css$/, use: ["style-loader", "css-loader", "postcss-loader"] }] }, plugins: [new HtmlWebpackPlugin({ template: "index.html" })], devServer: { host: "127.0.0.1", port: 3111, historyApiFallback: true } };

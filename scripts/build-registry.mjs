@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import preset from "../tailwind.preset.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const output = resolve(root, "packages/react-a2z-cli/registry/select");
@@ -47,6 +48,10 @@ const files = {
   "cn.ts": cn,
   "extend-merge.ts": extendMerge,
   "react-a2z.css": `${tokens.trim()}\n\n${tailwind.slice(themeStart).trim()}\n`,
+  "react-a2z.v3.css": `${tokens.trim()}\n`,
+  "tailwind.preset.cjs": `// Generated from React A2Z's token mapping.\nmodule.exports = ${JSON.stringify(preset, null, 2)};\n`,
+  "tailwind.preset.d.cts":
+    'declare const preset: Omit<import("tailwindcss").Config, "content">;\nexport = preset;\n',
 };
 for (const [name, content] of Object.entries(files))
   await writeFile(resolve(output, name), content, "utf8");
@@ -58,6 +63,10 @@ const manifest = {
   description:
     "Accessible styled select with native form semantics and an optional custom popup.",
   dependencies: ["clsx@^2.1.1", "tailwind-merge@^3.0.1"],
+  dependenciesByTailwind: {
+    3: ["clsx@^2.1.1", "tailwind-merge@^2.6.0"],
+    4: ["clsx@^2.1.1", "tailwind-merge@^3.0.1"],
+  },
   files: [
     {
       source: "select.tsx.template",

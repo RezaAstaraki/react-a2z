@@ -1,0 +1,36 @@
+{
+  "name": "react-a2z-cli-starters",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/next-*",
+    "apps/vite-*",
+    "apps/react-webpack-*"
+  ],
+  "scripts": {
+    "scaffold": "node scripts/scaffold.mjs",
+    "candidate": "node scripts/candidate.mjs",
+    "setup": "node scripts/setup.mjs",
+    "bootstrap": "npm run scaffold && npm run candidate && npm install --no-audit --no-fund && npm run install:legacy && npm run setup",
+    "check": "npm run candidate && npm install --no-audit --no-fund && npm run install:legacy && npm run verify -- --build",
+    "install:legacy": "node scripts/install-legacy.mjs",
+    "verify": "node scripts/verify.mjs",
+    "build:all": "node scripts/run.mjs build",
+    "typecheck:all": "node scripts/run.mjs typecheck",
+    "dev": "node scripts/dev.mjs",
+    "preview:all": "node scripts/preview-all.mjs",
+    "preview:stop": "node scripts/preview-stop.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "react": "19.3.0",
+    "react-a2z-cli": "file:.artifacts/react-a2z-cli-fd6a98d15a3992f6.tgz",
+    "react-dom": "19.3.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "react-a2z-cli-starters": "file:"
+  }
+}
