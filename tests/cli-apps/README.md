@@ -61,7 +61,7 @@ below. The full command automates CLI behavior and compilation checks.
 This larger suite runs when you invoke it; it is not added to publishing hooks.
 Run it before releasing CLI or registry changes. Existing CLI prepack and main
 library prepublish gates remain active. For main library changes also run its
-`npm test`, then follow `../../RELEASING.md` to choose and validate a version
+`npm test`, then follow the [release guide](../../RELEASING.md) to choose and validate a version
 bump. This suite does not decide semver or publish anything.
 
 `build:all` and `typecheck:all` check every interactive app, continue after failures, and write
@@ -70,8 +70,12 @@ passing these checks does not decide the correct semver bump.
 
 The eleven modern apps share npm workspaces. CRA has its own install and lockfile
 because its TypeScript 4 peer requirement conflicts with the modern TypeScript 5
-toolchain. This keeps both dependency trees valid. For clean reinstalls, run
-`npm ci` here and `npm ci` inside `apps/cra-src-tw3` after packing the candidate.
+toolchain. This keeps both dependency trees valid. Use `cli:apps:prepare` on a
+fresh checkout: ignored candidate tarballs must be created before installing
+the suite. After packing, `npm ci` here works only when the candidate reference
+still matches the lockfile; when its content hash changes, use `npm install`
+to update the lockfile (the prepare/check commands do this). CRA can be
+reinstalled independently with `npm ci` inside `apps/cra-src-tw3`.
 
 ## Run an app
 
@@ -85,8 +89,16 @@ option, selected-plan feedback, disabled control, validation state, and custom
 slot classes. These are focused installation smoke demos; the complete component
 playground remains in `../../../test-app-for-lib`.
 
-After building, `npm run preview:all` serves all twelve production builds on
-the same ports. Stop it with Ctrl+C before starting a dev server on those ports.
+To preview the committed interactive apps, build them separately:
+
+```sh
+npm run build:all
+npm run preview:all
+```
+
+`cli:apps:check` builds disposable apps and removes them; it does not produce
+the interactive apps' preview output. `preview:all` serves all twelve production
+builds on the same ports. Stop it with Ctrl+C before starting a dev server on those ports.
 For a background preview, `npm run preview:stop` checks its recorded process
 identity and stops this suite's preview servers before you run a dev app.
 
@@ -136,6 +148,11 @@ Commit source, app configs, `a2z.json`, generated component/helper/style fixture
 scripts, this guide, and both modern/CRA lockfiles. The CRA `.env` contains only
 its public local port, host, and browser settings. Dependencies, `.artifacts`,
 temporary `.checks`, build output, backups, logs, and reports are ignored.
+
+Packing a changed CLI also updates this suite's `package.json` file dependency
+to the candidate's content hash, and installing updates `package-lock.json`.
+Review and commit these references with the related CLI changes. The tarball
+itself stays ignored; a fresh checkout recreates it with `cli:apps:prepare`.
 
 To add coverage, add a scenario in `scripts/scenarios.mjs` and extend
 `scripts/scaffold.mjs` if the framework needs a new adapter. Then run

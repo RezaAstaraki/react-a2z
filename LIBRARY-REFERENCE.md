@@ -5,10 +5,10 @@ UI components, hooks, and utilities for React / Next.js apps.
 
 ## Working instructions
 
-This document owns technical guidance: API, house style, tokens, exports and build.
-Agent workflow is in AGENTS.md. Web-chat interaction is in SMART-WORKER-LIBRARY.md.
-Machine-specific notes are in ../test-app-for-lib/.dsh/lead/ENVIRONMENT.md.
-Consult only relevant sections; current source takes precedence over historical notes.
+This document describes the API, tokens, exports, and build. Current source takes
+precedence over historical notes. Codex project guidance is in
+[AGENTS.override.md](./AGENTS.override.md), which identifies the approved design
+and demo rules and excludes the legacy agent instructions.
 
 ## Overview
 
@@ -17,10 +17,14 @@ Consult only relevant sections; current source takes precedence over historical 
   when it genuinely needs hooks, state, browser APIs, or a portal (preserved
   through Rollup by `preserveDirectives()` in `rollup.config.js`). Never stamp
   it on a presentational component — that forces the component and its subtree
-  into the client bundle, and no build check will catch the mistake.
-  Currently client: `Slider`, `Tooltip`, `ColorPicker`, `Counter`, `MdEditor`,
-  `ClientLogger`, `Modal`, `Toast`. Currently Server Components: `Button`,
-  `Input`, `PearlButton`, `Md`.
+  into the client bundle. Tests assert directives for selected exports;
+  review the intended boundary when adding or changing a component.
+  Currently client: `Slider`, `Tooltip`, `ColorPicker`, `GradientMaker`,
+  `Counter`, `MdEditor`, `ClientLogger`, `Modal`, `Toast`, `Checkbox`, `Switch`,
+  `Select`, `MultiSelect`, `AutocompleteInput`, `Textarea`, `Tabs`, `Accordion`.
+  Without a client directive: `Button`, `Input`, `PearlButton`, `Md`, `Badge`,
+  `Card`, `Progress`, `Skeleton`. `CodeBox` has an internal client copy button.
+  These components still enter the client bundle when imported from a client boundary.
 - **Bundling:** `preserveModules: true` → per-file ESM + CJS output.
 - **Peers:** `react`, `react-dom`, `tailwindcss`, `zustand`.
 - **Runtime deps:** only `clsx` + `tailwind-merge`, merged by `cn`.
@@ -86,10 +90,11 @@ utility, so `--a2z-*` stays the only override path.
 This is why the README can promise no-rebuild re-theming: a consumer
 overrides a variable and every utility that references it updates.
 
-**Verify the layer with** `node scripts/verify-tokens.mjs` — checks that every
-export subpath resolves, that `cn` merges token classes last-one-wins, that the
-slot-aware recipe resolves per-slot and compound variants, and that no
-component emits a raw palette colour.
+**Current validation:** `npm test` builds the library and checks exports,
+client directives, selected rendered component contracts, and slot override
+priority. `npm run cli:test` checks CLI-generated styling with real Tailwind v3
+and v4. See [RELEASING.md](./RELEASING.md) for packed-artifact compatibility checks;
+these checks do not replace browser interaction and computed-style review.
 
 ## Barrel / Re-export Rules
 
@@ -142,6 +147,57 @@ Form input with `label` + `placeholder`. Uses `useId` for label linkage.
 - Deprecated, still accepted for one major: `inputClassName` ->
   `classNames.input`, `labelClassName` -> `classNames.label`,
   `readonly` -> `readOnly`, `errorMessage` -> `error`
+
+### Additional form controls
+
+- **Checkbox:** native `checked` / `defaultChecked`, `onCheckedChange`,
+  `indeterminate`, `label`, `description`, `error`, and `classNames`.
+- **Switch:** native `checked` / `defaultChecked`, `onCheckedChange`, `label`,
+  `description`, and `classNames` including `track` and `thumb`.
+- **Textarea:** native textarea attributes, `label`, `description`, `error`,
+  `size`, `resize`, `onValueChange`, and shared `FieldClassNames`.
+- **Select:** `options` contain `{ value, label, disabled?, description? }`.
+  Supports native `value` / `defaultValue`, `onValueChange`, field props,
+  `classNames`, `open` / `defaultOpen` / `onOpenChange`, `indicator`,
+  `renderValue`, and `renderOption`. Styled mode portals its menu and retains a
+  native select for forms/ref access. `native`, `multiple`, or native children
+  select the native picker; styled-menu options do not control that picker.
+- **MultiSelect:** `options`, `value` / `defaultValue` as string arrays,
+  `onValueChange`, `maxSelected`, `clearable`, `onQueryChange`, and shared
+  `ComboboxClassNames` for options, chips, buttons, and field elements.
+- **AutocompleteInput:** `options`, string `value` / `defaultValue`,
+  `onValueChange`, `onOptionSelect`, `minQueryLength`, `clearable`, and
+  `ComboboxClassNames`. Free text is allowed; selecting a suggestion inserts
+  its label, while `onOptionSelect` receives its identifier and full option.
+
+All these components forward refs to their native controls. The separate
+[CLI](./packages/react-a2z-cli/README.md) currently offers editable copies of
+Select and its shared field utilities; the remaining components are library exports.
+
+### Tabs and Accordion
+
+- **Tabs:** required `items` (`value`, `label`, `content`, optional `disabled`)
+  and accessible `label`; `value` / `defaultValue` / `onValueChange`,
+  `orientation`, `activationMode`, `animated`, and `TabsClassNames`.
+  Automatic activation selects on arrow keys; manual activation requires
+  Enter or Space. Disabled tabs are skipped.
+- **Accordion:** required `items` (`value`, `title`, `content`, optional
+  `disabled`); array `value` / `defaultValue` / `onValueChange`, `multiple`,
+  `animated`, and `AccordionClassNames`. Single mode uses only the first open
+  value. Both components respect reduced-motion preferences.
+
+### Badge, Card, Progress, and Skeleton
+
+- **Badge:** semantic `color`, `variant` (`soft | solid | outline`),
+  `size` (`sm | md`), decorative `dot`, and `BadgeClassNames`.
+- **Card:** `variant` (`bordered | elevated | flat`) and `classNames.root`.
+  `CardHeader`, `CardBody`, and `CardFooter` are separately exported sections,
+  each accepting native div attributes and its own `classNames.root`.
+- **Progress:** required accessible `label`, optional `value` (omit for
+  indeterminate), `max`, `showLabel`, `color`, `size`, and `ProgressClassNames`.
+  Finite values are clamped to bounds; invalid bounds fall back to 100.
+- **Skeleton:** `variant` (`text | rounded | circle`), `animated`, and
+  `classNames.root`. Decorative (`aria-hidden`); reduced motion disables pulse.
 
 ### Slider (headless compound component)
 
@@ -367,10 +423,11 @@ Client-side logger (`Wrapper` component for debugging).
   `cn()` guarantees consumer classes always win over defaults.
 - New and migrated components use **design tokens** — `bg-primary-600`,
   `text-fg-muted` — never stock Tailwind palette colours. See **Design
-  tokens** above. **Migration is in progress:** `Button` and `Input` are
-  converted; `Slider`, `Tooltip`, `ColorPicker`, `GradientMaker`, `Md`,
-  `MdEditor`, `CodeBox`, `Modal`, `Toast` and `ClientLogger` still emit raw
-  palette classes and have not been re-themed. Convert a component only when
+  tokens** above. **Migration is in progress:** `Button`, `Input`, `Slider`,
+  `ColorPicker`, `GradientMaker`, `Modal`, and the additional controls and
+  display components above use tokens. `Counter` is guarded by the token scan.
+  `Tooltip`, `Md`, `MdEditor`, `CodeBox`, `Toast`, and `ClientLogger` still have
+  raw palette classes. Convert a component only when
   you can verify it in `test-app-for-lib` — the palette classes look fine,
   so nothing fails loudly if the token mapping is wrong.
 - `tailwind.preset.js` maps the tokens to Tailwind names **for v3**.
@@ -379,11 +436,13 @@ Client-side logger (`Wrapper` component for debugging).
 
 ## Build
 
-- `npm run rollup` — production build
+- `npm run build` — typecheck, Rollup production output, and CommonJS declarations/preset
+- `npm run rollup` — Rollup output only; does not generate the CommonJS type files
 - `npm run dev` — watch mode
 - `rollup.config.js` — `preserveModules: true`, `preserveModulesRoot: 'src'`,
   `terser({ compress: { directives: false } })` so `"use client"` survives.
-- Two outputs: `dist/cjs`, `dist/esm`, plus flattened `dist/index.d.ts`.
+- Two JavaScript outputs: `dist/cjs`, `dist/esm`, plus flattened ESM
+  `dist/index.d.ts` and CommonJS `dist/index.d.cts` declarations.
 - `preserveDirectives()` plugin re-adds `"use client"` / `"use server"` to each
   chunk because Rollup strips them.
 - `external: ['clsx', 'tailwind-merge']` — **required**. `peerDepsExternal()`
@@ -404,10 +463,15 @@ and of `hoistTransitiveImports` (the latter is ignored under `preserveModules`).
 **Correct shape (matches `./Button`, `./Input`, `./PearlButton`, `./Slider`, `./Tooltip`):**
 
 ```json
-"./Tooltip": {
-  "types":   "./dist/index.d.ts",
-  "import":  "./dist/esm/components/Tooltip/Tooltip.js",
-  "require": "./dist/cjs/components/Tooltip/Tooltip.js"
+{
+  "./Tooltip": {
+    "types": {
+      "import": "./dist/index.d.ts",
+      "require": "./dist/index.d.cts"
+    },
+    "import": "./dist/esm/components/Tooltip/Tooltip.js",
+    "require": "./dist/cjs/components/Tooltip/Tooltip.js"
+  }
 }
 ```
 
@@ -417,11 +481,31 @@ and of `hoistTransitiveImports` (the latter is ignored under `preserveModules`).
 `rollup.config.js` (the `entries` array). When you add a subpath export that
 targets `X/index.js`, add `src/.../X/index.ts` to that array as well.
 
-**Verification (run after every build):**
+**Verification:**
 
 ```bash
-node -e "const p=require('./package.json'),fs=require('fs'); for (const [k,v] of Object.entries(p.exports)) { if (typeof v!=='object') continue; const ok=fs.existsSync(v.import); console.log(k.padEnd(16), ok?'OK':'MISSING', v.import); }"
+npm test
+npm run release:check
 ```
+
+`npm test` performs a fresh full build and checks declared exports and selected
+component contracts. `release:check` also validates the packed package, types,
+and published baseline; changed content requires a reviewed version/plan as
+described in [RELEASING.md](./RELEASING.md).
+
+## CLI registry and consumer checks
+
+`npm run registry:build` copies the current Select source and its dependencies
+into `packages/react-a2z-cli/registry`. `npm run cli:test` rebuilds this registry
+and checks installer behavior and Tailwind v3/v4 output. The CLI's `prepack` hook
+runs those checks automatically for packing/publishing. A globally linked CLI
+needs its registry rebuilt after source changes.
+
+Run `npm run cli:apps:prepare` once, then `npm run cli:apps:check` to test the
+packed local CLI in twelve fresh React consumers, including Next, Vite, webpack,
+and legacy CRA. This checks CLI-generated source; it does not test library
+imports. The [starter app guide](./tests/cli-apps/README.md) covers manual demos,
+fixture updates, reports, and preview commands.
 
 ## Consumer Setup
 
@@ -430,7 +514,6 @@ node -e "const p=require('./package.json'),fs=require('fs'); for (const [k,v] of
 ```css
 /* globals.css */
 @import 'tailwindcss';
-@source "./src/**/*.{js,ts,jsx,tsx}";
 @import 'react-a2z/tailwind.css';
 ```
 
@@ -481,12 +564,19 @@ react-a2z/
 │   │   ├── Slider/               # headless compound component
 │   │   ├── Toast/
 │   │   ├── Tooltip/              # portal, compound, two APIs
+│   │   ├── Select/               # styled/native picker; also copied by CLI
+│   │   ├── shared/               # field + combobox primitives
+│   │   ├── ...                   # additional form, panel, and display components
 │   │   └── index.ts
 │   ├── hooks/
 │   ├── utils/                    # cn, digit converters, form helpers
 │   └── index.ts
 ├── styles/
 │   └── pearl-button.css
+├── packages/react-a2z-cli/        # independently published installer + registry
+├── tests/cli-apps/                # twelve consumer fixtures + compatibility scripts
+├── release/                      # published baselines + consumer examples
+├── RELEASING.md
 ├── tailwind.config.js
 ├── tailwind.preset.js
 ├── tailwind.css

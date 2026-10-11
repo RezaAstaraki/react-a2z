@@ -13,7 +13,7 @@ runs the compatibility gate automatically.
 npm install react-a2z
 ```
 
-Peer dependencies: `react` and `react-dom` (>=18), `tailwindcss` (>=3.4 or v4),
+Peer dependencies: `react` and `react-dom` (>=18), `tailwindcss` (>=3.4.1 or v4),
 and `zustand` (>=5, required by `Modal` and `Toast`).
 
 ## Editable component source (CLI)
@@ -39,13 +39,17 @@ registry changes. The full check installs the current candidate into disposable
 apps, verifies CLI behavior, and typechecks/builds every scenario while preserving
 the interactive starter apps.
 
+The CLI and library have independent versions and publishing commands.
+`npm publish` at this repository's root publishes the library; `npm run release:cli`
+publishes the installer. The [release guide](./RELEASING.md#which-checks-run-automatically)
+explains their automatic hooks and the consumer checks to run manually.
+
 ## Tailwind v4 setup (recommended)
 
 Components use Tailwind utility classes. In your app `globals.css`:
 
 ```css
 @import "tailwindcss";
-@source "./src/**/*.{js,ts,jsx,tsx}";
 @import "react-a2z/tailwind.css";
 ```
 
@@ -96,7 +100,11 @@ export default function Page() {
 }
 ```
 
-Components that need interactivity (`Slider`, `Tooltip`, `ColorPicker`, `Counter`, `MdEditor`, `Modal`, `Toast`) already include `"use client"`, so they work in the App Router without extra wrappers. Presentational components (`Button`, `Input`, `PearlButton`, `Md`) are deliberately hook-free and stay Server Components, so importing them adds nothing to the client bundle — add `"use client"` at your own call site only when you pass them event handlers.
+Interactive components already include `"use client"`, so they work in the App
+Router without extra wrappers. Components without a client directive can be
+rendered from Server Components; importing them from a client boundary still
+includes them in that client bundle. Add `"use client"` at your call site when
+you need browser event handlers or hooks.
 
 ## Components
 
@@ -117,6 +125,13 @@ Components that need interactivity (`Slider`, `Tooltip`, `ColorPicker`, `Counter
 | `PearlButton` | gloss hover + press; ships its own CSS |
 | `ClientLogger` | client-side data logger for debugging |
 
+The library also exports these components (the CLI currently copies **Select** only):
+
+- `Checkbox`, `Switch`, and `Textarea` — native form controls with labels and slot overrides.
+- `Select`, `MultiSelect`, and `AutocompleteInput` — styled choices, multiple selections, and searchable suggestions.
+- `Tabs` and `Accordion` — controlled or uncontrolled panels with keyboard navigation.
+- `Badge`, `Card` (with `CardHeader`, `CardBody`, `CardFooter`), `Progress`, and `Skeleton` — status and layout components with token styling.
+
 Hooks and utilities are exported too — `useControllableState`, `useDebounce`,
 `useInView`, `cn`, `createRecipe`, `copyToClipboard`, `normalizeHex` and more.
 
@@ -126,16 +141,19 @@ An interactive guide with a live example per prop is in progress.
 
 ### Server vs client
 
-`Button`, `Input`, `PearlButton` and `Md` are hook-free **Server Components** —
-importing them adds nothing to the client bundle. `Slider`, `Tooltip`,
-`ColorPicker`, `GradientMaker`, `Counter`, `MdEditor`, `Modal`, `Toast` and
-`ClientLogger` carry `"use client"` and work in the App Router without extra
-wrappers.
+`Button`, `Input`, `PearlButton`, `Md`, `Badge`, `Card`, `Progress`, and `Skeleton`
+have no client directive and can render from Server Components. `CodeBox` also
+renders on the server with a small internal client component for its copy button.
+`Slider`, `Tooltip`, `ColorPicker`, `GradientMaker`, `Counter`, `MdEditor`,
+`Modal`, `Toast`, `ClientLogger`, `Checkbox`, `Switch`, `Select`, `MultiSelect`,
+`AutocompleteInput`, `Textarea`, `Tabs`, and `Accordion` carry `"use client"`.
 
 ## Theming
 
-Every colour, radius, shadow and font is a CSS custom property, so you can
-re-theme the library from your own stylesheet, with no rebuild and no JS config.
+Token-based components use CSS custom properties for colours, radii, shadows,
+and fonts, so you can re-theme them from your own stylesheet with no rebuild or
+JS config. Some older components still contain fixed palette classes; see the
+[styling reference](./LIBRARY-REFERENCE.md#styling-model) for migration status.
 
 ```css
 :root {

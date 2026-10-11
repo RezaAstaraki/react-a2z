@@ -3,10 +3,31 @@
 Living work list. Edit in place, check items off, delete what is done. This file
 is NOT published (`package.json#files` excludes it) — it is internal coordination.
 
-Companion docs: `LIBRARY-REFERENCE.md` (library API + house style), `AGENTS.md` (repo rules),
-`SMART-WORKER-LIBRARY.md` (web-chat protocol); session evidence lives in docs/history/.
+Companion docs: [LIBRARY-REFERENCE.md](./LIBRARY-REFERENCE.md) (technical reference),
+[AGENTS.override.md](./AGENTS.override.md) (approved Codex guidance),
+[RELEASING.md](./RELEASING.md) (version decisions and publish gates), and the
+[CLI starter guide](./tests/cli-apps/README.md). Historical session evidence lives
+in `docs/history/`.
 
-## Where things stand (updated 2026-10-08)
+## Where things stand (updated 2026-10-11)
+
+- The library now exports `Checkbox`, `Switch`, `Select`, `MultiSelect`,
+  `AutocompleteInput`, `Textarea`, `Tabs`, `Accordion`, `Badge`, `Card`,
+  `Progress`, and `Skeleton` in addition to the original components.
+- The separate CLI copies Select source and configures existing Tailwind v3/v4
+  projects. Repair preserves component/helper edits and backs up changed setup
+  files. Existing copied source does not update automatically.
+- `npm test` builds and runs component/export contracts. `release:check` compares
+  the packed library against its published baseline and requires a reviewed
+  version decision for changed content. CLI packing has its own integration and
+  Tailwind compilation checks. Neither gate automatically chooses a CLI bump.
+- Twelve tracked consumer apps under `tests/cli-apps` cover Next App/Pages Router,
+  Vite, plain React with webpack, and CRA. `cli:apps:check` verifies 108 CLI
+  behaviors plus fresh typechecks/production builds. Interactive browser checks
+  remain manual. This larger suite is not an automatic publish hook.
+
+The migration notes below describe the original fourteen-component group;
+their counts do not include the twelve additions listed above.
 
 - The token layer is done and proven: `tokens.css` is the single source of
   values, mapped for v3 by `tailwind.preset.js` and for v4 by the
@@ -95,11 +116,10 @@ template -- do it there first, then carry the shape forward.
 unexercised: `root`, `label`, `presets`, `customColors`, `swatch`, `angle`,
 `copyRow`, `copyInput`.
 
-**Open API question (discussed, not implemented).** GradientMaker is
-uncontrolled-only and always renders the copy row, while ColorPicker has
-`value` / `defaultValue` and `show*` flags. Proposed, matching ColorPicker:
+**Remaining API question.** GradientMaker is uncontrolled-only, while
+ColorPicker has `value` / `defaultValue` and `show*` flags. GradientMaker now
+supports `showCopy` (default true) to hide the copy row. Still proposed:
 
-- `showCopy?: boolean` — hides the whole copy row
 - `defaultValue?: string[]` — seed the stops
 - `defaultAngle?: number` — seed the angle
 
@@ -217,16 +237,28 @@ This is the headline README promise; it deserves a real test, not trust.
       the name matches the behaviour.
       (b) is a behaviour change with no API change. Decide which way.
 
-## 6. Test infrastructure — start before the next migration
+## 6. Test infrastructure — current coverage and remaining work
 
-The verifier (`scripts/verify-tokens.mjs`) and the consumer app's
-`verify-css.mjs` are **static** checks: they prove classes compile and
-reference `--a2z-*`. They cannot prove a component *behaves* or *renders*
-correctly, so every migration still ends with a manual browser check. That
-does not scale to the 8 components left, and it is the bottleneck for
-agent-driven work — an agent cannot hard-refresh and squint.
+Implemented:
 
-Three layers, in the order they pay off:
+- [x] `npm test`: a full build followed by Node's test runner in
+  `tests/components.test.mjs`. Checks exports in ESM/CommonJS, client
+  directives, selected server-rendered accessibility/form contracts, syntax
+  highlighting, and class override priority.
+- [x] `release:check`: policy tests, packed consumer type checks, publint,
+  Are the Types Wrong, and API/CSS/slot baseline comparison.
+- [x] `cli:test` and CLI `prepack`: installer integration and actual Tailwind
+  v3/v4 compilation, including safe repair/config preservation.
+- [x] `cli:apps:check`: a packed candidate, 108 CLI checks, and fresh
+  TypeScript/production builds in twelve consumer scenarios. JSON and per-app
+  build logs are saved in `tests/cli-apps/reports` (ignored by Git).
+
+These tests do not yet simulate all component interactions or verify computed
+styles in a real browser. The Node component suite renders static markup;
+Tailwind compilation proves classes are generated, not that every interaction
+or layout behaves correctly. Browser verification remains necessary.
+
+Remaining possible layers:
 
 - [ ] **Vitest + React Testing Library** (jsdom). Component contracts:
       Modal opens/closes, Escape fires `onClose`, `isDismissible={false}`
@@ -241,28 +273,11 @@ Three layers, in the order they pay off:
       Standard reporter output is built for humans and burns agent tokens
       parsing it. Expose as `npm run test:agent`.
 
-Why Vitest, not Jest: Jest is legacy for new projects, slower, and would
-mean a second transform pipeline. Vitest is Jest-compatible on API.
-
-NOTE (2026-10-07): `package.json` has a `test: jest` script but no jest
-dependency and no test files exist -- `npm test` currently fails on a
-missing binary. It is a dead script, not a working baseline. Removed in
-the same commit as this note; the Vitest work adds the real `test` script.
-
-Do NOT: test in jsdom and call rendering verified (it lies about computed
-styles); write a test per prop (test the contract, interactions, error
-states); add this to both repos at once — start here.
-
-Once in place, a migration's gate becomes `npm run test` +
-`npm run test:browser` + `npm run build`, all green before commit. An
-agent can run all three and report pass/fail without a human looking.
-
-SCOPE (2026-10-07): this layer is the LIBRARY's, and the "do not add to
-both repos at once" rule above still means exactly that. The consumer app
-(`../test-app-for-lib`) is getting its own, different layer -- Playwright
-screenshots of guide pages -- recorded in that repo's ROADMAP §7. Different
-question: this layer asserts component *behaviour*; that one asserts a
-*page renders*. Neither substitutes for the other.
+Vitest, `test:browser`, and `test:agent` are proposals, not installed tooling or
+available scripts in this repository. Keep tests focused on contracts,
+interactions, and error states; jsdom cannot establish real computed-style
+correctness. The main demo app's page/screenshot checks serve a different
+purpose from library component behavior and CLI installation checks.
 
 ## 7. CssTooltip -- a server-renderable tooltip (new component)
 

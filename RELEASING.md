@@ -4,9 +4,10 @@ Use [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`.
 Choose the version by the effect on existing consumers, not the amount of code
 changed. Compare against the latest published version of **each package**.
 
-`react-a2z` is already stable at 1.1.0. Treat its existing public API as a
-compatibility promise. `react-a2z-cli` is independently versioned at 0.2.0 and
-is still in initial development.
+The published library baseline is `react-a2z@1.1.0`. Treat its existing public API
+as a compatibility promise. The CLI manifest in this checkout is independently
+versioned at 0.2.0 and is still in initial development. A manifest version is
+not evidence that it has been published; check the npm version before releasing.
 
 ## Choosing the library version
 
@@ -125,6 +126,49 @@ v3/v4 style compilation through its own `prepack` hook. These cover version
 detection, config preservation, dry runs, and safe repair. The TypeScript/API
 baseline gate is for the library package.
 
+## Which checks run automatically
+
+Run commands below from the repository root unless another directory is shown.
+
+- **Library:** `npm publish` runs `prepublishOnly`, including `release:check`
+  and the final live npm/baseline/tag validation. `npm pack` alone does not run
+  this hook. For local validation, run `npm run release:check` explicitly.
+- **CLI:** `npm run release:cli` publishes from `packages/react-a2z-cli`.
+  Its `prepack` hook rebuilds the registry and runs CLI integration and Tailwind
+  v3/v4 compilation checks. `npm run cli:check` previews packing with those same
+  checks. A separate `registry:build` command is unnecessary for these operations.
+- **Consumer apps:** `npm run cli:apps:check` tests the packed CLI in twelve fresh
+  apps, with 108 CLI behavior checks and TypeScript/production builds. It is a
+  manual development/release check and is not part of either publishing hook.
+  Run `npm run cli:apps:prepare` on a fresh checkout first; the suite requires
+  Node 22.12+. See the [suite guide](./tests/cli-apps/README.md).
+
+The consumer suite covers CLI-generated source, while `release:check` checks the
+library artifact and API. Passing one does not substitute for the other, and
+passing either does not prove that every behavior change is compatible.
+
+After reviewing and recording the library's version decision, validate and
+publish it from the repository root:
+
+```bash
+npm run release:check
+npm publish --access public
+```
+
+For the CLI, choose its bump independently, then validate and publish:
+
+```bash
+npm --prefix packages/react-a2z-cli version patch --no-git-tag-version
+npm run cli:apps:check
+npm run cli:check
+npm run release:cli
+```
+
+Replace `patch` with the reviewed bump. The library's fingerprinted
+`release-plan.json` is not an automatic CLI semver policy; record the CLI's
+compatibility decision and migrations in release notes. Publishing either
+package does not publish the other.
+
 Additional manual release checks:
 
 1. Review the full changes since that package's previous release. Record the
@@ -137,8 +181,9 @@ Additional manual release checks:
    cases they cover; passing them cannot prove all backward compatibility.
 4. For a library release, run `npm test`, check affected demos, and test the actual
    packed artifact in a consumer app. Verify documented import paths and styles.
-   For a CLI release, run `npm run cli:check` and test its packed executable in a
-   temporary app. The CLI's prepack hook already builds and runs integration tests.
+   For a CLI release, run `npm run cli:apps:check` and `npm run cli:check`, then
+   check affected interactions in the starter apps. The CLI's prepack hook
+   already builds and runs integration/style compilation tests.
 5. For uncertain or breaking releases, publish a prerelease such as
    `2.0.0-beta.1` with `--tag beta`, and let consumers test it explicitly. Use both
    a prerelease version and the tag: `beta` alone does not change the version's

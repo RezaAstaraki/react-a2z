@@ -25,7 +25,9 @@ npx react-a2z-cli@latest add select
 ```
 
 Currently supported: **Select**. `add select` also initializes the project if needed.
-The installer adds `clsx` and `tailwind-merge` using your package manager.
+The installer adds `clsx` and `tailwind-merge`. It selects npm, pnpm, Yarn, or
+Bun from the invoking package manager's environment (`npm_config_user_agent`),
+falling back to npm. It does not select a package manager from lockfiles alone.
 
 When your app has a `src` directory, it creates:
 
@@ -42,9 +44,15 @@ Router/Pages Router and Vite conventions. Use `--css` for other locations.
 If no configured Tailwind stylesheet is found, it stops before writing files.
 You do not need to install the `react-a2z` runtime package.
 
+For example, from a file directly inside `src` (or the project root in an app
+without `src`):
+
 ```tsx
 import { Select } from "./components/ui/select";
 ```
+
+Adjust the relative import for your file's location. Generated components and
+helpers use TypeScript, including when the app's entry point uses JavaScript.
 
 ## Options
 
@@ -57,14 +65,39 @@ npx react-a2z-cli@latest init --css src/custom.css --tailwind-config config/tail
 ```
 
 - `--dry-run`: preview paths without writing files or installing dependencies.
-- `--skip-install`: write files without installing dependencies.
-- `--overwrite`: allow replacing generated files; existing files are protected by default.
+- `--skip-install`: use dependencies you have already installed without running a package manager.
+- `--overwrite`: allow replacing generated files; existing files are protected by default. `add select --overwrite` replaces component source without making backups.
 - `--path`: set the component directory during initial setup.
 - `--cwd`: use a different app directory.
 - `--css`: select an existing global Tailwind stylesheet.
 - `--tailwind-config`: select an existing Tailwind v3 config when it has a custom path.
 
-Edit `a2z.json` to change paths after initialization.
+## What `a2z.json` does
+
+This file tells future CLI commands where your generated source and Tailwind
+setup live. It is installer metadata; your React app does not read it at runtime.
+Commit it with the generated source. A typical Tailwind v3 app with `src` has:
+
+```json
+{
+  "components": "src/components/ui",
+  "utils": "src/lib/react-a2z",
+  "styles": "src/styles/react-a2z.css",
+  "css": "src/app/globals.css",
+  "tailwindVersion": 3,
+  "tailwindConfig": "tailwind.config.ts"
+}
+```
+
+Paths are relative to the app root. `styles` is the generated stylesheet;
+`css` is your existing global stylesheet that imports it. Tailwind v4 records
+`tailwindVersion: 4` and does not need `tailwindConfig`.
+
+Prefer `--path`, `--css`, and `--tailwind-config` during initial setup. Editing
+paths later changes where future commands look and write; it does not move
+existing files or rewrite all your app imports. Move files and update imports
+when changing an established layout. Use `repair` after a Tailwind major change
+so the CLI detects and records the installed version.
 
 ## Repair an existing setup
 
@@ -72,8 +105,8 @@ If an earlier CLI generated v4 styles in a v3 app, or you change Tailwind major
 versions, preview and repair the setup:
 
 ```bash
-react-a2z-cli repair --dry-run
-react-a2z-cli repair
+npx react-a2z-cli@latest repair --dry-run
+npx react-a2z-cli@latest repair
 ```
 
 Repair preserves your component files and existing helper source. It updates the
@@ -82,6 +115,14 @@ Changes outside the managed style block are retained. Existing changed files get
 `.a2z-backup` copies. Unrecognized/custom styles or presets require an explicit
 `--overwrite` after review; components are still preserved by `repair`.
 
+Restart a running dev server after repair so it reloads Tailwind configuration.
+Updating the CLI alone does not refresh source already copied into your app.
+
+For Tailwind v3, initial setup also creates a local preset at
+`lib/react-a2z/tailwind.preset.cjs` (under `src` when present) and its TypeScript
+declaration. The existing Tailwind config imports this preset and scans your
+generated source directories.
+
 The CLI parses JavaScript/TypeScript Tailwind configs without executing them.
 CommonJS exports, default exports, and a config variable are supported. Existing
 theme, plugins, presets, and content entries are retained. Dynamic exported
@@ -89,6 +130,35 @@ configs or dynamic arrays, prefixed classes, and selector-scoped `important`
 require manual integration; the CLI stops before writing files. A missing React
 project, unsupported Tailwind version, or unconfigured global CSS also stops
 before writing. A dry run creates no files and installs no dependencies.
+
+## Test the local CLI before publishing
+
+From a full repository checkout, install development dependencies and run:
+
+```bash
+npm ci
+npm run cli:test
+npm run cli:apps:prepare
+npm run cli:apps:check
+```
+
+The maintainer suite requires Node 22.12+ and tests a freshly packed local CLI,
+including TypeScript and production builds. See the [starter app guide](../../tests/cli-apps/README.md)
+for interactive demos, reports, and commands for running that candidate manually.
+`npx react-a2z-cli@latest` runs the published release rather than your local edits.
+
+For a globally available local command, run `npm run registry:build` from the
+repository root, then `npm link` inside `packages/react-a2z-cli`. From an existing
+React/Tailwind app you can then run:
+
+```bash
+react-a2z-cli --help
+react-a2z-cli add select --dry-run
+```
+
+Rebuild the registry after changing copied components or the registry builder.
+`npm link` uses this checkout directly; the packed-candidate suite additionally
+checks what the npm package actually contains. None of these commands publishes.
 
 ## Publishing (maintainers)
 
@@ -108,10 +178,17 @@ Then publish the CLI:
 npm run release:cli
 ```
 
-The CLI's `prepack` hook rebuilds its registry from the current library source and
-runs the CLI integration test before npm packs or publishes it. A failed build or
-test prevents publishing. These commands must run from a full repository checkout;
-consumers do not need the build scripts to use the published CLI.
+The CLI's `prepack` hook rebuilds its registry from the current library source,
+runs CLI integration tests, and compiles the generated styles with real Tailwind
+v3 and v4 before npm packs or publishes it. A failed build or test prevents
+publishing. You do not need to run `registry:build` separately when publishing.
+These commands must run from a full repository checkout; consumers do not need
+the build scripts to use the published CLI.
+
+The twelve-app suite is a separate maintainer command; publishing does not run
+it automatically. Run `npm run cli:apps:check` before a CLI release. The library's
+API/version gate applies to `react-a2z`; CLI checks do not automatically classify
+its version bump.
 
 For subsequent CLI releases, bump only its version before publishing:
 
