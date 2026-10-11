@@ -68,7 +68,7 @@ export type { CheckboxProps, CheckboxClassNames } from './Checkbox/Checkbox';
 export { Switch } from './Switch/Switch';
 export type { SwitchProps, SwitchClassNames } from './Switch/Switch';
 export { Select } from './Select/Select';
-export type { SelectProps, SelectOption, SelectClassNames, SelectOptionState } from './Select/Select';
+export type { SelectProps, SelectOption, SelectClassNames, SelectOptionState, SelectOpenChangeReason } from './Select/Select';
 export { MultiSelect } from './MultiSelect/MultiSelect';
 export type { MultiSelectProps, MultiSelectOption } from './MultiSelect/MultiSelect';
 export { AutocompleteInput } from './AutocompleteInput/AutocompleteInput';

@@ -14,6 +14,9 @@ import {
   type FieldClassNames,
 } from "../shared/field";
 
+const useMenuLayoutEffect =
+  typeof window === "undefined" ? React.useEffect : React.useLayoutEffect;
+
 export type SelectOption = {
   value: string;
   label: string;
@@ -21,16 +24,27 @@ export type SelectOption = {
   description?: string;
 };
 export type SelectClassNames = FieldClassNames & {
+  /** Field wrapper div: data-slot="select-wrapper". */
   wrapper?: string;
+  /** Selected text span: data-slot="select-value" (styled mode). */
   value?: string;
+  /** Arrow container span: data-slot="select-indicator". */
   indicator?: string;
+  /** Portaled menu div: data-slot="select-popover" (styled mode). */
   popover?: string;
+  /** Scrollable ul: data-slot="select-listbox" (styled mode). */
   listbox?: string;
+  /** Each choice li: data-slot="select-option" (styled mode). */
   option?: string;
+  /** Default choice content span: data-slot="select-option-content". */
   optionContent?: string;
+  /** Default choice title span: data-slot="select-option-label". */
   optionLabel?: string;
+  /** Default choice subtitle span: data-slot="select-option-description". */
   optionDescription?: string;
+  /** Selection check container span: data-slot="select-option-indicator". */
   optionIndicator?: string;
+  /** Empty menu message li: data-slot="select-empty" (styled mode). */
   empty?: string;
 };
 export type SelectOptionState = {
@@ -38,6 +52,14 @@ export type SelectOptionState = {
   highlighted: boolean;
   disabled: boolean;
 };
+export type SelectOpenChangeReason =
+  | "trigger"
+  | "keyboard"
+  | "selection"
+  | "outside"
+  | "blur"
+  | "viewport"
+  | "reset";
 export interface SelectProps
   extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "size"> {
   /** Visible field label. */
@@ -52,10 +74,16 @@ export interface SelectProps
   options?: SelectOption[];
   /** Empty choice shown before the options. */
   placeholder?: string;
-  /** Per-slot classes. className styles the root. listbox can use --a2z-select-available-height for custom viewport-safe heights. */
+  /** Per-slot classes. Inspect data-slot="select-*" attributes to locate their elements. className styles the root. listbox can use --a2z-select-available-height for custom viewport-safe heights. */
   classNames?: SelectClassNames;
   /** Use the native picker. Multiple selects and native children always use native mode. */
   native?: boolean;
+  /** Controlled visibility of the styled menu. Native pickers ignore this. */
+  open?: boolean;
+  /** Initial visibility of an uncontrolled styled menu. */
+  defaultOpen?: boolean;
+  /** Called when an interaction requests a change to styled menu visibility. */
+  onOpenChange?: (open: boolean, reason: SelectOpenChangeReason) => void;
   /** Replace the arrow. Pass null to hide it. */
   indicator?: React.ReactNode;
   /** Custom selected content; undefined means the placeholder is selected. */
@@ -104,6 +132,9 @@ const NativeSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
       onChange,
       onValueChange,
       native: _native,
+      open: _open,
+      defaultOpen: _defaultOpen,
+      onOpenChange: _onOpenChange,
       indicator = <Chevron />,
       renderValue: _renderValue,
       renderOption: _renderOption,
@@ -114,17 +145,26 @@ const NativeSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
   ) {
     const field = useField(id, describedBy, Boolean(error || description));
     return (
-      <div className={cn("w-full", classNames?.root, className)}>
+      <div
+        data-slot="select-root"
+        className={cn("w-full", classNames?.root, className)}
+      >
         <FieldLabel
+          data-slot="select-label"
+          requiredSlot="select-required-indicator"
           id={field.controlId}
           label={label}
           required={required}
           className={classNames?.label}
           requiredClassName={classNames?.requiredIndicator}
         />
-        <div className={cn("relative", classNames?.wrapper)}>
+        <div
+          data-slot="select-wrapper"
+          className={cn("relative", classNames?.wrapper)}
+        >
           <select
             {...props}
+            data-slot="select-control"
             ref={ref}
             id={field.controlId}
             required={required}
@@ -185,6 +225,7 @@ const NativeSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
           )}
         </div>
         <FieldMessage
+          data-slot="select-description"
           id={field.messageId}
           error={error}
           description={description}
@@ -241,6 +282,9 @@ const StyledSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
       autoFocus,
       tabIndex,
       native: _native,
+      open: controlledOpen,
+      defaultOpen = false,
+      onOpenChange,
       multiple: _multiple,
       children: _children,
       "aria-describedby": describedBy,
@@ -263,7 +307,9 @@ const StyledSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
         ? internal
         : String(Array.isArray(value) ? (value[0] ?? "") : value);
     const selected = options.find((option) => option.value === current);
-    const [expanded, setExpanded] = React.useState(false);
+    const [expanded, setExpanded] = React.useState(defaultOpen);
+    const [mounted, setMounted] = React.useState(false);
+    const [inView, setInView] = React.useState(true);
     const [activeValue, setActiveValue] = React.useState<string | null>(null);
     const [nativeError, setNativeError] = React.useState("");
     const message = error || nativeError;
@@ -277,7 +323,8 @@ const StyledSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
     const search = React.useRef({ text: "", time: 0 });
     const enabled = options.filter((option) => !option.disabled);
     const active = enabled.find((option) => option.value === activeValue);
-    const open = expanded && !disabled;
+    const requestedOpen = controlledOpen ?? expanded;
+    const open = requestedOpen && !disabled && inView && mounted;
     const optionId = (option: SelectOption) =>
       `${listId}-${options.indexOf(option)}`;
     const [position, setPosition] = React.useState<React.CSSProperties>({});
@@ -289,8 +336,12 @@ const StyledSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
       },
       [forwardedRef],
     );
-    const close = () => {
-      setExpanded(false);
+    const requestOpen = (next: boolean, reason: SelectOpenChangeReason) => {
+      if (controlledOpen === undefined) setExpanded(next);
+      if (requestedOpen !== next) onOpenChange?.(next, reason);
+    };
+    const close = (reason: SelectOpenChangeReason = "keyboard") => {
+      requestOpen(false, reason);
       setActiveValue(null);
       search.current.text = "";
     };
@@ -364,7 +415,10 @@ const StyledSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
       });
       return true;
     }
-    function show(edge?: "first" | "last"): void {
+    function show(
+      edge?: "first" | "last",
+      reason: SelectOpenChangeReason = "keyboard",
+    ): void {
       if (disabled || !place()) return;
       setActiveValue(
         (edge === "last"
@@ -374,7 +428,8 @@ const StyledSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
             : (enabled.find((option) => option.value === current) ?? enabled[0])
         )?.value ?? null,
       );
-      setExpanded(true);
+      setInView(true);
+      requestOpen(true, reason);
     }
     function choose(option: SelectOption): void {
       if (disabled || option.disabled) return;
@@ -384,7 +439,7 @@ const StyledSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
         select.dispatchEvent(new Event("input", { bubbles: true }));
         select.dispatchEvent(new Event("change", { bubbles: true }));
       }
-      close();
+      close("selection");
       triggerRef.current?.focus();
     }
     React.useEffect(() => {
@@ -406,28 +461,29 @@ const StyledSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
           if (event.defaultPrevented) return;
           if (value === undefined) setInternal(initialValue());
           setNativeError("");
-          setExpanded(false);
+          requestOpen(false, "reset");
           setActiveValue(null);
         });
       owner.addEventListener("reset", reset);
       return () => owner.removeEventListener("reset", reset);
     });
-    React.useEffect(() => {
-      if (!open) return;
+    useMenuLayoutEffect(() => {
+      setMounted(true);
+    }, []);
+    useMenuLayoutEffect(() => {
+      if (!requestedOpen || disabled) return;
       const outside = (event: PointerEvent) => {
         if (
           !rootRef.current?.contains(event.target as Node) &&
           !popoverRef.current?.contains(event.target as Node)
         ) {
-          setExpanded(false);
-          setActiveValue(null);
+          close("outside");
         }
       };
       const update = () => {
-        if (!place()) {
-          setExpanded(false);
-          setActiveValue(null);
-        }
+        const visible = place();
+        setInView(visible);
+        if (!visible) close("viewport");
       };
       const scroll = (event: Event) => {
         if (
@@ -443,13 +499,22 @@ const StyledSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
       update();
       const observer = new ResizeObserver(update);
       if (triggerRef.current) observer.observe(triggerRef.current);
+      if (popoverRef.current) observer.observe(popoverRef.current);
       return () => {
         document.removeEventListener("pointerdown", outside);
         window.removeEventListener("scroll", scroll, true);
         window.removeEventListener("resize", update);
         observer.disconnect();
       };
-    }, [open]);
+    }, [requestedOpen, disabled, classNames, onOpenChange, mounted]);
+    React.useEffect(() => {
+      if (open && !active) {
+        setActiveValue(
+          (enabled.find((option) => option.value === current) ?? enabled[0])
+            ?.value ?? null,
+        );
+      }
+    }, [open, current, activeValue, options]);
     React.useEffect(() => {
       if (!open || !active || !listRef.current) return;
       const element = document.getElementById(optionId(active));
@@ -575,20 +640,27 @@ const StyledSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
       <div
         ref={rootRef}
         data-a2z-select=""
+        data-slot="select-root"
         className={cn("w-full", classNames?.root, className)}
       >
         <FieldLabel
+          data-slot="select-label"
+          requiredSlot="select-required-indicator"
           id={field.controlId}
           label={label}
           required={required}
           className={classNames?.label}
           requiredClassName={classNames?.requiredIndicator}
         />
-        <div className={cn("relative", classNames?.wrapper)}>
+        <div
+          data-slot="select-wrapper"
+          className={cn("relative", classNames?.wrapper)}
+        >
           <button
             {...(visibleProps as React.ButtonHTMLAttributes<HTMLButtonElement>)}
             ref={triggerRef}
             type="button"
+            data-slot="select-control"
             role="combobox"
             id={field.controlId}
             disabled={disabled}
@@ -635,7 +707,7 @@ const StyledSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
                   event.relatedTarget as Node | null,
                 )
               )
-                close();
+                close("blur");
             }}
             onClick={(event) => {
               onClick?.(
@@ -645,8 +717,8 @@ const StyledSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
                 ) as unknown as React.MouseEvent<HTMLSelectElement>,
               );
               if (!event.defaultPrevented) {
-                if (open) close();
-                else show();
+                if (open) close("trigger");
+                else show(undefined, "trigger");
               }
             }}
             onKeyDown={keyDown}
@@ -719,6 +791,7 @@ const StyledSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
           </select>
         </div>
         <FieldMessage
+          data-slot="select-description"
           id={field.messageId}
           error={message}
           description={description}
@@ -729,6 +802,7 @@ const StyledSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
             <div
               ref={popoverRef}
               data-slot="select-popover"
+              data-select-owner={field.controlId}
               style={position}
               className={cn(
                 "z-[1000] overflow-hidden rounded-xl border border-border bg-surface p-1.5 text-fg shadow-xl shadow-black/10",
@@ -739,6 +813,7 @@ const StyledSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
                 ref={listRef}
                 id={listId}
                 role="listbox"
+                data-slot="select-listbox"
                 aria-label={
                   typeof label === "string" ? label : (ariaLabel ?? "Choices")
                 }
@@ -758,6 +833,7 @@ const StyledSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
                       key={option.value}
                       id={optionId(option)}
                       role="option"
+                      data-slot="select-option"
                       data-value={option.value}
                       aria-selected={state.selected}
                       aria-disabled={state.disabled || undefined}
@@ -778,15 +854,18 @@ const StyledSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
                         renderOption(option, state)
                       ) : (
                         <span
+                          data-slot="select-option-content"
                           className={cn("min-w-0", classNames?.optionContent)}
                         >
                           <span
+                            data-slot="select-option-label"
                             className={cn("block", classNames?.optionLabel)}
                           >
                             {option.label}
                           </span>
                           {option.description && (
                             <span
+                              data-slot="select-option-description"
                               className={cn(
                                 "mt-0.5 block text-xs text-fg-muted",
                                 classNames?.optionDescription,
@@ -829,6 +908,7 @@ const StyledSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
                 {options.length === 0 && (
                   <li
                     role="presentation"
+                    data-slot="select-empty"
                     className={cn(
                       "px-3 py-4 text-sm text-fg-muted",
                       classNames?.empty,

@@ -46,22 +46,28 @@ export function FieldLabel({
   required,
   className,
   requiredClassName,
+  "data-slot": dataSlot,
+  requiredSlot,
 }: {
   id: string;
   label?: React.ReactNode;
   required?: boolean;
   className?: string;
   requiredClassName?: string;
+  "data-slot"?: string;
+  requiredSlot?: string;
 }) {
   return label ? (
     <label
       htmlFor={id}
+      data-slot={dataSlot}
       className={cn("mb-2 block text-sm font-medium text-fg", className)}
     >
       {label}
       {required && (
         <span
           aria-hidden="true"
+          data-slot={requiredSlot}
           className={cn("ms-1 text-danger-600", requiredClassName)}
         >
           *
@@ -75,15 +81,18 @@ export function FieldMessage({
   error,
   description,
   className,
+  "data-slot": dataSlot,
 }: {
   id: string;
   error?: React.ReactNode;
   description?: React.ReactNode;
   className?: string;
+  "data-slot"?: string;
 }) {
   return error || description ? (
     <p
       id={id}
+      data-slot={dataSlot}
       className={cn(
         "mt-1.5 text-xs",
         error ? "text-danger-600" : "text-fg-muted",

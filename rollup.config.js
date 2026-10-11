@@ -54,6 +54,7 @@ function forceExit() {
   return {
     name: 'force-exit',
     closeBundle() {
+      if (this.meta.watchMode) return;
       if (++_closedBundles >= _TOTAL_BUNDLES) {
         // Delay exit so rollup can flush its final "created ..." summary
         // line. .unref() means this timer does NOT keep the loop alive: if
