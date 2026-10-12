@@ -1,20 +1,20 @@
-import { readFileSync } from 'fs';
-import resolve from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
-import typescript from '@rollup/plugin-typescript';
-import dts from 'rollup-plugin-dts';
-import terser from '@rollup/plugin-terser';
-import peerDepsExternal from 'rollup-plugin-peer-deps-external';
+import { readFileSync } from "fs";
+import resolve from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
+import typescript from "@rollup/plugin-typescript";
+import dts from "rollup-plugin-dts";
+import terser from "@rollup/plugin-terser";
+import peerDepsExternal from "rollup-plugin-peer-deps-external";
 
 /** Re-add "use client" / "use server" stripped by Rollup when preserveModules is enabled. */
 function preserveDirectives() {
   return {
-    name: 'preserve-directives',
+    name: "preserve-directives",
     renderChunk(code, chunk) {
       const id = chunk.facadeModuleId;
       if (!id) return null;
 
-      const source = readFileSync(id, 'utf8');
+      const source = readFileSync(id, "utf8");
       const match = source.match(/^(['"])use (client|server)\1;?\s*/);
       if (!match) return null;
 
@@ -31,13 +31,13 @@ function preserveDirectives() {
  *  as CommonJS so the `require` export condition actually works. */
 function cjsPackageJson() {
   return {
-    name: 'cjs-package-json',
+    name: "cjs-package-json",
     generateBundle(options) {
-      const dir = (options.dir || '').replace(/\\/g, '/');
-      if (!dir.endsWith('/cjs')) return;
+      const dir = (options.dir || "").replace(/\\/g, "/");
+      if (!dir.endsWith("/cjs")) return;
       this.emitFile({
-        type: 'asset',
-        fileName: 'package.json',
+        type: "asset",
+        fileName: "package.json",
         source: '{"type":"commonjs"}\n',
       });
     },
@@ -52,7 +52,7 @@ let _closedBundles = 0;
 const _TOTAL_BUNDLES = 2;
 function forceExit() {
   return {
-    name: 'force-exit',
+    name: "force-exit",
     closeBundle() {
       if (this.meta.watchMode) return;
       if (++_closedBundles >= _TOTAL_BUNDLES) {
@@ -69,8 +69,8 @@ function forceExit() {
 
 const preservedOutput = {
   preserveModules: true,
-  preserveModulesRoot: 'src',
-  entryFileNames: '[name].js',
+  preserveModulesRoot: "src",
+  entryFileNames: "[name].js",
   sourcemap: true,
 };
 
@@ -78,20 +78,21 @@ const preservedOutput = {
 // Rollup flattens pure re-export modules unless they're explicit entry
 // points, so list them here alongside the main entry.
 const entries = [
-  'src/index.ts',
-  'src/hooks/index.ts',
-  'src/components/Modal/index.ts',
-  'src/components/Toast/index.ts',
-  'src/components/ColorPicker/index.ts',
-  'src/components/Md/index.ts',
-  'src/components/MdEditor/index.ts',
-  'src/components/Counter/index.ts',
+  "src/index.ts",
+  "src/hooks/index.ts",
+  "src/components/Modal/index.ts",
+  "src/components/Toast/index.ts",
+  "src/components/ColorPicker/index.ts",
+  "src/components/GradientMaker/index.ts",
+  "src/components/Md/index.ts",
+  "src/components/MdEditor/index.ts",
+  "src/components/Counter/index.ts",
 ];
 
 export default [
   {
     input: entries,
-    external: ['clsx', 'tailwind-merge'],
+    external: ["clsx", "tailwind-merge"],
     output: [
       {
         dir: "./dist/cjs",
@@ -102,13 +103,13 @@ export default [
         ...preservedOutput,
       },
       {
-        dir: './dist/esm',
-        format: 'esm',
+        dir: "./dist/esm",
+        format: "esm",
         ...preservedOutput,
       },
     ],
     onwarn(warning, warn) {
-      if (warning.code === 'MODULE_LEVEL_DIRECTIVE') return;
+      if (warning.code === "MODULE_LEVEL_DIRECTIVE") return;
       warn(warning);
     },
     plugins: [
@@ -123,8 +124,8 @@ export default [
     ],
   },
   {
-    input: 'src/index.ts',
-    output: [{ file: 'dist/index.d.ts', format: 'esm' }],
+    input: "src/index.ts",
+    output: [{ file: "dist/index.d.ts", format: "esm" }],
     plugins: [dts.default(), forceExit()],
     external: [/\.css$/],
   },

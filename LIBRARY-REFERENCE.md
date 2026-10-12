@@ -285,15 +285,20 @@ Example:
 
 ### ColorPicker
 
-Controlled or uncontrolled. Props: `label`, `value`, `defaultValue`, `onChange`,
-`presetColors`, `showPresets`, `showValue`, `disabled`, `className`. Uses
-`useId` + `aria-pressed` on preset buttons; input forwards ref.
+Controlled or uncontrolled. The native picker remains the forwarded-ref target.
+`showInput` adds a validated hex field that commits on blur or Enter and
+restores the last valid value on Escape. Invalid preset colors are disabled.
+Root, control, input, text-input, preset, value, and error slots are exposed.
 
 ### GradientMaker
 
-Props: `label`, `onGradientChange`, `className`. Composes 11 gradient presets,
-custom color pickers, and the Slider for angle. Keyframes hoisted to
-`a2z-gradient-pan` to avoid consumer collisions. Copy button uses inline
+Controlled or uncontrolled through a `GradientValue` containing `type`,
+`angle`, and positioned `stops`. Supports linear and radial gradients,
+stable stop selection, adding/removing stops, position editing, presets, and a
+composed ColorPicker for the selected stop. `onChange` emits the structure;
+`onGradientChange` remains as a compatibility CSS-string callback.
+`gradientToCss` is exported from `react-a2z/GradientMaker` and the root.
+The ColorPicker subpath continues to re-export GradientMaker for compatibility.
 "Copied!" state — **no `alert()`**.
 
 ### Md / MdEditor

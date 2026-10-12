@@ -114,8 +114,8 @@ you need browser event handlers or hooks.
 | `Input` | label, helper text, validation, `startIcon`/`endIcon`, currency affix, slot overrides |
 | `Slider` | headless compound (`Slider.Track`, `.Thumb`, ...), range, vertical, render props |
 | `Tooltip` | shorthand or compound API, portal, auto-flip, controlled or uncontrolled |
-| `ColorPicker` | native picker + preset swatches; slot overrides |
-| `GradientMaker` | presets, custom stops, angle, optional copy row (`showCopy={false}`) |
+| `ColorPicker` | controlled native picker, optional validated hex input, presets, slot overrides |
+| `GradientMaker` | controlled structured value, positioned stops, linear/radial modes, presets, CSS output |
 | `Counter` | increment/decrement, in-view and place variants |
 | `Modal` | `CustomModal` + `GlobalModal` (Zustand), logical 3x3 placement grid |
 | `Toast` | `GlobalToast` + `ToastItem` (Zustand) |

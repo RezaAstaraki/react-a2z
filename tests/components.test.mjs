@@ -135,6 +135,45 @@ test("root and component subpaths expose the new components in ESM and CommonJS"
     assert.ok(library[name]);
 });
 
+test("GradientMaker has an independent subpath and structured CSS output", async () => {
+  const esm = await import("react-a2z/GradientMaker");
+  const cjs = require("react-a2z/GradientMaker");
+  assert.equal(esm.GradientMaker, library.GradientMaker);
+  assert.ok(cjs.GradientMaker);
+  const value = {
+    type: "linear",
+    angle: 45,
+    stops: [
+      { id: "end", color: "#ffffff", position: 100 },
+      { id: "start", color: "#000", position: 0 },
+    ],
+  };
+  assert.equal(
+    esm.gradientToCss(value),
+    "linear-gradient(45deg, #000000 0%, #ffffff 100%)",
+  );
+  assert.equal(
+    esm.gradientToCss({ ...value, type: "radial" }),
+    "radial-gradient(circle, #000000 0%, #ffffff 100%)",
+  );
+  assert.equal(
+    esm.gradientToCss({
+      type: "linear",
+      angle: 90,
+      stops: [{ id: "only", color: "#f00", position: 30 }],
+    }),
+    "linear-gradient(90deg, #ff0000 0%, #ff0000 100%)",
+  );
+});
+
+test("color tools expose editable text and positioned stop controls", () => {
+  const picker = render(library.ColorPicker, { showInput: true });
+  assert.match(picker, /aria-label="Hex color"/);
+  const maker = render(library.GradientMaker);
+  assert.match(maker, /role="listbox" aria-label="Gradient stops"/);
+  assert.match(maker, /Stop position/);
+  assert.match(maker, /Add stop/);
+});
 test("every declared package export exists in the package build", () => {
   const packageJson = JSON.parse(
     readFileSync(new URL("../package.json", import.meta.url), "utf8"),

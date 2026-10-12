@@ -79,6 +79,14 @@
       "import": "./dist/esm/components/ColorPicker/index.js",
       "require": "./dist/cjs/components/ColorPicker/index.js"
     },
+    "./GradientMaker": {
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
+      "import": "./dist/esm/components/GradientMaker/index.js",
+      "require": "./dist/cjs/components/GradientMaker/index.js"
+    },
     "./Md": {
       "types": {
         "import": "./dist/index.d.ts",

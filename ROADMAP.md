@@ -110,21 +110,19 @@ template -- do it there first, then carry the shape forward.
 - [ ] `CodeBox` (blocked on step 3)
 - [ ] `ClientLogger`
 
-**Slot coverage is partial.** GradientMaker ships eleven `classNames` /
-`styles` slots; the demo exercises **three**: `preset` (via both
-`classNames.preset` and `styles.preset`), `preview` and `copyButton`. Still
-unexercised: `root`, `label`, `presets`, `customColors`, `swatch`, `angle`,
-`copyRow`, `copyInput`.
+**GradientMaker API resolved.** It now has structured controlled/uncontrolled
+values, positioned stops, linear/radial modes, a composed ColorPicker, and an
+independent package subpath while preserving the legacy CSS callback.
 
-**Remaining API question.** GradientMaker is uncontrolled-only, while
-ColorPicker has `value` / `defaultValue` and `show*` flags. GradientMaker now
-supports `showCopy` (default true) to hide the copy row. Still proposed:
+The earlier proposal is retained below as historical context. Its two separate
+defaults were replaced by a single `GradientValue` so colors, positions, type,
+and angle cannot drift apart:
 
 - `defaultValue?: string[]` — seed the stops
 - `defaultAngle?: number` — seed the angle
 
-A fully controlled `value` is a larger question: the gradient is two pieces
-of state (colours + angle), so it would need a `{ colors, angle }` shape.
+Implemented as `GradientValue { type, angle, stops }`, where each stop has a
+stable id, color, and position.
 
 **Order:** most-used first (Toast, Tooltip); CodeBox is blocked on step 3.
 **Warning:** a wrong token mapping fails SILENTLY. Raw palette classes render
