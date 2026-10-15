@@ -5,12 +5,20 @@ alwaysApply: true
 
 # Component design
 
+This rule is maintained in both repositories at `.cursor/rules/component-design.mdc`. Keep both copies synchronized. For demo structure, also read `test-app-for-lib/.cursor/rules/component-demos.mdc` from the workspace root.
+
 - Every package component must provide beautiful, polished defaults using the library's design tokens.
+- Stateful components should support controlled values with change callbacks and uncontrolled initial values where applicable. Use one coherent structured value for related state, such as gradient colors and angle, and derive display/output from that value. Document initial values, normalization, invalid-input handling, and when callbacks fire; preserve existing public callbacks and props when adding capabilities.
+- Editable text may need a draft separate from the committed value. Validate drafts, explain errors, preserve the last valid preview/output, and document commit/cancel behavior. External controlled updates must keep all related controls synchronized.
 - Expose typed `classNames` slots for every styled visual part, including nested icons, labels, messages, popovers, chips, and action buttons. Single-element components expose a `root` slot.
 - Merge defaults first, then slot overrides, then the element's `className`, using `cn`. Consumers must be able to restyle the entire component while keeping its behavior and accessibility.
 - Preserve existing customization props as compatible aliases when expanding the slot API. Export the public slot types and document them with typed examples.
+- Preserve native form behavior, label associations, appropriate attributes, and useful forwarded refs. Explain browser-owned UI boundaries, such as native color dialogs, instead of promising customization of elements outside the component's DOM.
 - Give every rendered customizable element a stable `data-slot="component-slot"` attribute matching its `classNames` slot, using kebab-case for compound names. For example, `classNames.optionLabel` maps to `data-slot="select-option-label"`. Document the HTML element in slot type comments, identify portal ownership, and preserve these markers across styling changes so developers can find each slot in browser DevTools and demo inspectors.
 - Use `cursor-pointer` on enabled buttons, tabs, selectable options, links, checkbox controls, and selection triggers. Use `cursor-not-allowed` on disabled controls and `cursor-text` on editable text fields. Keep cursor classes overridable through the relevant slot.
 - Include clear hover, selected, disabled, error, and keyboard-focus treatments. Respect reduced motion.
 - Verify customization and computed cursors in the test app, including disabled states. Do not use app-wide CSS to hide missing cursor defaults in the package.
+- For requested demos, use the approved **Try it live** flow before focused examples: **Props** for behavior/content, **classNames** for styling and HTML-slot discovery, and **Code** for validated configuration and exact TypeScript exports. Adapt the controls to the component; see `component-demos.mdc` for the full demo contract.
+- When a public API changes, update its exported types, relevant technical documentation, and demo prop metadata. Validate affected contracts and actual browser behavior according to the user's current workflow; report what was verified accurately.
+- Component delivery includes its CLI source-installation path within the requested scope. Generate registry templates from library source, include all required local helpers and public types, and resolve imports for src/root/custom layouts without a `react-a2z` runtime dependency. Preserve consumer-edited shared helpers across installs/repair/overwrite. Update CLI discovery/help, installation guides, and demo install sections; validate dry runs, collision protection, both Tailwind majors, and packed consumers. Distinguish local additions from published `@latest`, and document a concrete reason if a component cannot be included in the CLI.
 

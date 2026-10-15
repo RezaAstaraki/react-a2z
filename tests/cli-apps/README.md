@@ -46,12 +46,19 @@ npm run cli:apps:check
 
 `cli:test` is the fast integration and Tailwind compilation check.
 `cli:apps:check` repacks the current source, installs that exact candidate, and
-runs all 108 CLI checks **plus TypeScript and production builds in twelve fresh,
+runs all 180 CLI checks **plus TypeScript and production builds in twelve fresh,
 disposable apps**. This compiles newly generated components, helpers, and styles
 on every run. The committed interactive apps are preserved. Any failing check
 exits with an error; inspect `reports/cli.json` and per-scenario build/typecheck
 logs. Candidate filenames contain a content hash, preventing npm from reusing
 an older tarball with the same version.
+
+Each fresh app installs Select, ColorPicker, and GradientMaker. The color tools
+are rendered in a temporary consumer component so their hooks, helper imports,
+client boundaries, and styles participate in the framework's production build.
+The 15 checks per scenario include dry runs, installation, and overwrite
+protection for both color tools. Existing interactive starter pages remain the
+Select smoke demos; the full color-tool playgrounds live in the main demo app.
 
 For a quick rerun with the installed candidate, use `npm run verify`.
 To include fresh builds without repacking, use `npm run verify -- --build`.
@@ -130,6 +137,8 @@ From an app directory, use the suite's packed candidate:
 ```sh
 node ../../node_modules/react-a2z-cli/bin/cli.js repair --dry-run
 node ../../node_modules/react-a2z-cli/bin/cli.js add select --dry-run
+node ../../node_modules/react-a2z-cli/bin/cli.js add color-picker --dry-run
+node ../../node_modules/react-a2z-cli/bin/cli.js add gradient-maker --dry-run
 ```
 
 Since Select is already installed, `add select` correctly refuses to replace it.

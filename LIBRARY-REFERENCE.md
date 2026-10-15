@@ -172,7 +172,9 @@ Form input with `label` + `placeholder`. Uses `useId` for label linkage.
 
 All these components forward refs to their native controls. The separate
 [CLI](./packages/react-a2z-cli/README.md) currently offers editable copies of
-Select and its shared field utilities; the remaining components are library exports.
+Select and its shared field utilities, plus ColorPicker and GradientMaker with
+their color, HEX-editor, state, and clipboard helpers. Other components remain
+library exports. See the CLI guide for local versus published commands.
 
 ### Tabs and Accordion
 
@@ -285,16 +287,60 @@ Example:
 
 ### ColorPicker
 
-Controlled or uncontrolled. Props: `label`, `value`, `defaultValue`, `onChange`,
-`presetColors`, `showPresets`, `showValue`, `disabled`, `className`. Uses
-`useId` + `aria-pressed` on preset buttons; input forwards ref.
+Controlled (`value` / `onChange`) or uncontrolled (`defaultValue`). The native
+color input and presets emit normalized `#rrggbb`. The editable HEX field
+accepts three or six digits, with optional `#`; Enter/blur commits and Escape
+restores the current value. Invalid drafts show an associated error without
+changing the selected color. `showHex={false}` restores the compact swatch UI.
+
+Supports `presetColors`, `showPresets`, `showValue`, `disabled`, `name`, `id`,
+`required`, `description`, `error`, and `aria-label` for a hidden label. The ref
+targets the native form input. Typed `classNames` and compatible `styles` cover
+every styled part; inspect `data-slot="color-picker-*"`. Slot comments identify
+the element and conditional visibility. The browser's native dialog is outside
+these DOM slots. Root priority is defaults, `classNames.root`, then `className`.
 
 ### GradientMaker
 
-Props: `label`, `onGradientChange`, `className`. Composes 11 gradient presets,
-custom color pickers, and the Slider for angle. Keyframes hoisted to
-`a2z-gradient-pan` to avoid consumer collisions. Copy button uses inline
-"Copied!" state — **no `alert()`**.
+Controlled through `value: GradientValue` and `onValueChange`, or uncontrolled
+through `defaultValue`. `GradientValue` is `{ colors: string[]; angle: number }`;
+stops are evenly spaced and angles are rounded/clamped to 0–360. Three-digit HEX
+values normalize before reaching native inputs. Invalid colors are omitted;
+an empty result uses the default purple pair. Nonfinite angles fall back to 90.
+
+The existing `onGradientChange` emits complete CSS on the same user edits.
+Neither callback fires on mount or when a controlled value changes externally.
+`presets` replaces the eleven built-ins. A preset's optional `angle` applies
+that angle; without it, choosing the preset preserves the current angle, and
+the preset preview follows that angle. Invalid/empty presets are omitted.
+
+`showPresets`, `showColors`, `showAngle`, `showHex`, and `showCopy` control sections.
+`disabled` locks editing while allowing CSS copying. The angle uses a native
+range input with arrow/Home/End support. HEX drafts behave like ColorPicker.
+Copy success/failure is announced in a status message. Typed `classNames` and
+compatible `styles` cover all styled parts with `data-slot="gradient-maker-*"`;
+all markers are inline. Root class priority matches ColorPicker.
+
+```tsx
+"use client";
+
+import { useState } from 'react';
+import { GradientMaker } from 'react-a2z';
+import type { GradientValue, GradientMakerClassNames } from 'react-a2z';
+
+const classes: GradientMakerClassNames = {
+  preview: 'h-40 rounded-2xl',
+  hexInput: 'rounded-xl border-violet-300',
+  angleInput: 'accent-violet-600',
+};
+
+export function CoverEditor() {
+  const [value, setValue] = useState<GradientValue>({
+    colors: ['#7c3aed', '#db2777'], angle: 120,
+  });
+  return <GradientMaker value={value} onValueChange={setValue} classNames={classes} />;
+}
+```
 
 ### Md / MdEditor
 
@@ -495,11 +541,17 @@ described in [RELEASING.md](./RELEASING.md).
 
 ## CLI registry and consumer checks
 
-`npm run registry:build` copies the current Select source and its dependencies
+`npm run registry:build` copies current Select, ColorPicker, and GradientMaker source and their dependencies
 into `packages/react-a2z-cli/registry`. `npm run cli:test` rebuilds this registry
 and checks installer behavior and Tailwind v3/v4 output. The CLI's `prepack` hook
 runs those checks automatically for packing/publishing. A globally linked CLI
 needs its registry rebuilt after source changes.
+
+`add color-picker` and `add gradient-maker` install independent components while
+sharing namespaced helpers in the configured utilities directory. Shared helper
+edits survive both install orders, repair, and explicit component overwrite.
+Generated imports point to local files and require no `react-a2z` runtime. The
+registry's component list drives CLI help and accepted component names.
 
 Run `npm run cli:apps:prepare` once, then `npm run cli:apps:check` to test the
 packed local CLI in twelve fresh React consumers, including Next, Vite, webpack,

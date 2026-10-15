@@ -25,6 +25,49 @@ const additions = [
   "Skeleton",
 ];
 
+test('ColorPicker normalizes native values, preserves form attributes, and exposes styled slots', () => {
+  const html = render(library.ColorPicker, {
+    value: '#ABC', name: 'brand', required: true, disabled: true,
+    description: 'Brand color', error: 'Review this color',
+    presetColors: ['#abc', '#aabbcc', 'invalid'],
+    classNames: { root: 'rounded-md', controls: 'gap-6', hexInput: 'bg-violet-100' },
+    className: 'rounded-2xl',
+  });
+  assert.match(html, /type="color"[^>]*value="#aabbcc"/);
+  assert.match(html, /name="brand"/);
+  assert.match(html, /required=""/);
+  assert.match(html, /aria-invalid="true"/);
+  assert.match(html, /aria-describedby="[^"]+-description [^"]+-error"/);
+  assert.equal((html.match(/data-slot="color-picker-preset"/g) || []).length, 1);
+  for (const slot of ['root', 'label', 'required-indicator', 'controls', 'input', 'hex-wrapper', 'hex-input', 'presets', 'preset', 'value', 'value-text', 'description', 'error'])
+    assert.match(html, new RegExp(`data-slot="color-picker-${slot}"`));
+  assert.match(html, /rounded-2xl/);
+  assert.doesNotMatch(html, /rounded-md/);
+  assert.doesNotMatch(render(library.ColorPicker, { showHex: false, showValue: false, showPresets: false }), /data-slot="color-picker-(hex|preset|value)/);
+});
+
+test('GradientMaker derives CSS from controlled/default values and handles malformed colors and angles', () => {
+  let changes = 0;
+  const html = render(library.GradientMaker, {
+    value: { colors: ['#ABC', '#fff'], angle: 135 },
+    defaultValue: { colors: ['#000'], angle: 45 },
+    onValueChange: () => changes++, onGradientChange: () => changes++, disabled: true,
+    presets: [{ name: 'Current', colors: ['#aabbcc', '#ffffff'] }],
+    classNames: { preview: 'h-40', angleInput: 'accent-violet-500' },
+  });
+  assert.match(html, /linear-gradient\(135deg, #aabbcc 0%, #ffffff 100%\)/);
+  assert.match(html, /aria-pressed="true"/);
+  assert.match(html, /h-40/);
+  assert.match(html, /accent-violet-500/);
+  assert.equal(changes, 0);
+  for (const slot of ['root', 'label', 'preview', 'presets', 'preset', 'custom-colors', 'colors-label', 'colors-list', 'color', 'swatch', 'swatch-input', 'swatch-color', 'hex-input', 'angle', 'angle-label', 'angle-input', 'angle-value', 'copy-row', 'copy-input', 'copy-button', 'copy-status'])
+    assert.match(html, new RegExp(`data-slot="gradient-maker-${slot}"`));
+  const fallback = render(library.GradientMaker, { defaultValue: { colors: ['bad input'], angle: NaN }, presets: [{ name: 'Empty', colors: [] }] });
+  assert.match(fallback, /linear-gradient\(90deg, #667eea 0%, #764ba2 100%\)/);
+  assert.doesNotMatch(fallback, /Apply Empty preset/);
+  assert.match(render(library.GradientMaker, { defaultValue: { colors: ['#abc'], angle: 999 } }), /linear-gradient\(360deg, #aabbcc 0%, #aabbcc 100%\)/);
+});
+
 const highlightedTokens = (code, language) =>
   highlightCode(code, language).map((node) => ({
     text: node.props.children,

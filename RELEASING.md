@@ -138,7 +138,8 @@ Run commands below from the repository root unless another directory is shown.
   v3/v4 compilation checks. `npm run cli:check` previews packing with those same
   checks. A separate `registry:build` command is unnecessary for these operations.
 - **Consumer apps:** `npm run cli:apps:check` tests the packed CLI in twelve fresh
-  apps, with 108 CLI behavior checks and TypeScript/production builds. It is a
+  apps, with 180 CLI behavior checks and TypeScript/production builds of Select
+  and both color tools. It is a
   manual development/release check and is not part of either publishing hook.
   Run `npm run cli:apps:prepare` on a fresh checkout first; the suite requires
   Node 22.12+. See the [suite guide](./tests/cli-apps/README.md).
@@ -194,6 +195,12 @@ Additional manual release checks:
    version. Release notes should explain the before/after behavior and migration.
 
 ## Recording decisions
+
+When developing through the parent `library` workspace, `npm run candidates`
+builds the library and registry but packs with lifecycle scripts disabled. Those
+tarballs are for local consumer scenarios only. Run the release checks in this
+repository and the normal publishing gates before any release. Workspace Git
+commits and submodule-reference updates do not run or replace those gates.
 
 For each release, record:
 

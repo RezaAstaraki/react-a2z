@@ -82,11 +82,13 @@ const manifest = {
       source: "cn.ts",
       target: "src/lib/react-a2z/cn.ts",
       type: "registry:lib",
+      shared: true,
     },
     {
       source: "extend-merge.ts",
       target: "src/lib/react-a2z/extend-merge.ts",
       type: "registry:lib",
+      shared: true,
     },
     {
       source: "react-a2z.css",
@@ -100,4 +102,103 @@ await writeFile(
   `${JSON.stringify(manifest, null, 2)}\n`,
   "utf8",
 );
-console.log(`Built Select registry in ${output}`);
+const colorHelpers = {
+  "color.ts": await read("src/utils/color.ts"),
+  "use-controllable-state.ts": await read("src/hooks/useControllableState.ts"),
+  "hex-color-input.tsx.template": replaceOnce(
+    await read("src/components/ColorPicker/HexColorInput.tsx"),
+    'from "../../utils"',
+    'from "__A2Z_COLOR_IMPORT__"',
+    "HexColorInput.tsx",
+  ),
+};
+const components = [
+  {
+    name: "color-picker",
+    title: "ColorPicker",
+    description:
+      "Native color picking, validated HEX editing, presets, and fully customizable styling slots.",
+    source: "ColorPicker.tsx",
+    utils:
+      'import { cn } from "__A2Z_CN_IMPORT__";\nimport { normalizeHex } from "__A2Z_COLOR_IMPORT__";',
+  },
+  {
+    name: "gradient-maker",
+    title: "GradientMaker",
+    description:
+      "Controlled gradient colors and angle, presets, validated HEX editing, and CSS copying.",
+    source: "GradientMaker.tsx",
+    utils:
+      'import { cn } from "__A2Z_CN_IMPORT__";\nimport { normalizeHex } from "__A2Z_COLOR_IMPORT__";\nimport { copyToClipboard } from "__A2Z_CLIPBOARD_IMPORT__";',
+  },
+];
+for (const component of components) {
+  const directory = resolve(output, "..", component.name);
+  await mkdir(directory, { recursive: true });
+  let source = await read(`src/components/ColorPicker/${component.source}`);
+  source = replaceOnce(
+    source,
+    component.name === "color-picker"
+      ? 'import { cn, normalizeHex } from "../../utils";'
+      : 'import { cn, copyToClipboard, normalizeHex } from "../../utils";',
+    component.utils,
+    component.source,
+  );
+  source = replaceOnce(
+    source,
+    'from "../../hooks"',
+    'from "__A2Z_STATE_IMPORT__"',
+    component.source,
+  );
+  source = replaceOnce(
+    source,
+    'from "./HexColorInput"',
+    'from "__A2Z_HEX_INPUT_IMPORT__"',
+    component.source,
+  );
+  source += `\nexport { ${component.title} };\n`;
+  const generated = {
+    [`${component.name}.tsx.template`]: source,
+    ...colorHelpers,
+    ...(component.name === "gradient-maker"
+      ? { "copy-to-clipboard.ts": await read("src/utils/copyToClipboard.ts") }
+      : {}),
+  };
+  const componentFiles = Object.keys(generated).map((filename) => ({
+    source: filename,
+    target:
+      filename === `${component.name}.tsx.template`
+        ? `src/components/ui/${component.name}.tsx`
+        : `src/lib/react-a2z/${filename.replace(/\.template$/, "")}`,
+    type:
+      filename === `${component.name}.tsx.template`
+        ? "registry:component"
+        : "registry:lib",
+    ...(filename === `${component.name}.tsx.template` ? {} : { shared: true }),
+  }));
+  for (const [filename, content] of Object.entries(generated))
+    await writeFile(resolve(directory, filename), content, "utf8");
+  await writeFile(
+    resolve(directory, "manifest.json"),
+    `${JSON.stringify(
+      {
+        ...manifest,
+        name: component.name,
+        title: `React A2Z ${component.title}`,
+        description: component.description,
+        files: componentFiles,
+      },
+      null,
+      2,
+    )}\n`,
+    "utf8",
+  );
+}
+await writeFile(
+  resolve(output, "../components.json"),
+  `${JSON.stringify(["select", ...components.map((c) => c.name)], null, 2)}\n`,
+  "utf8",
+);
+console.log(
+  "Built Select, ColorPicker, and GradientMaker registries from library source.",
+);

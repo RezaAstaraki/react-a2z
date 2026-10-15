@@ -24,15 +24,36 @@ npx react-a2z-cli@latest init
 npx react-a2z-cli@latest add select
 ```
 
-Currently supported: **Select**. `add select` also initializes the project if needed.
+This checkout supports **Select**, **ColorPicker**, and **GradientMaker** using
+`add select`, `add color-picker`, and `add gradient-maker`. Each command also
+initializes the project if needed; run a separate command for each component.
+
+The color tools are new checkout additions. The commands above use the published
+release; `npx ...@latest` does not run local changes. Before a release includes
+the color tools, run them directly from the library repository:
+
+```sh
+npm run registry:build
+node packages/react-a2z-cli/bin/cli.js add color-picker --cwd ../my-app --dry-run
+node packages/react-a2z-cli/bin/cli.js add color-picker --cwd ../my-app
+node packages/react-a2z-cli/bin/cli.js add gradient-maker --cwd ../my-app
+```
+
+Replace `../my-app` with your existing React/Tailwind app. You can also use the
+linked local command described below. These commands do not publish anything.
 The installer adds `clsx` and `tailwind-merge`. It selects npm, pnpm, Yarn, or
 Bun from the invoking package manager's environment (`npm_config_user_agent`),
 falling back to npm. It does not select a package manager from lockfiles alone.
 
 When your app has a `src` directory, it creates:
 
-- `src/components/ui/select.tsx` and `field.tsx`
+- Select: `src/components/ui/select.tsx` and `field.tsx`
+- ColorPicker: `src/components/ui/color-picker.tsx`
+- GradientMaker: `src/components/ui/gradient-maker.tsx`
 - `src/lib/react-a2z/cn.ts` and `extend-merge.ts`
+- Color tools share `color.ts`, `use-controllable-state.ts`, and
+  `hex-color-input.tsx` in the same helper folder. GradientMaker also adds
+  `copy-to-clipboard.ts`. Either color tool can be installed on its own.
 - `src/styles/react-a2z.css`
 - `a2z.json` with the configured paths
 
@@ -49,6 +70,9 @@ without `src`):
 
 ```tsx
 import { Select } from "./components/ui/select";
+import { ColorPicker } from "./components/ui/color-picker";
+import { GradientMaker } from "./components/ui/gradient-maker";
+import type { GradientValue, GradientMakerClassNames } from "./components/ui/gradient-maker";
 ```
 
 Adjust the relative import for your file's location. Generated components and
@@ -66,7 +90,7 @@ npx react-a2z-cli@latest init --css src/custom.css --tailwind-config config/tail
 
 - `--dry-run`: preview paths without writing files or installing dependencies.
 - `--skip-install`: use dependencies you have already installed without running a package manager.
-- `--overwrite`: allow replacing generated files; existing files are protected by default. `add select --overwrite` replaces component source without making backups.
+- `--overwrite`: allow replacing the requested component source; existing components are protected by default. Component replacement does not make backups. Color tools preserve existing shared helpers even with `--overwrite`, so installing one never discards edits made while using the other.
 - `--path`: set the component directory during initial setup.
 - `--cwd`: use a different app directory.
 - `--css`: select an existing global Tailwind stylesheet.
@@ -117,6 +141,9 @@ Changes outside the managed style block are retained. Existing changed files get
 
 Restart a running dev server after repair so it reloads Tailwind configuration.
 Updating the CLI alone does not refresh source already copied into your app.
+To refresh a color component, review your edits and run its `add` command with
+`--overwrite`. Shared helper changes require a separate manual review/merge;
+neither component overwrite nor `repair` replaces those edited helper files.
 
 For Tailwind v3, initial setup also creates a local preset at
 `lib/react-a2z/tailwind.preset.cjs` (under `src` when present) and its TypeScript
@@ -154,6 +181,8 @@ React/Tailwind app you can then run:
 ```bash
 react-a2z-cli --help
 react-a2z-cli add select --dry-run
+react-a2z-cli add color-picker --dry-run
+react-a2z-cli add gradient-maker --dry-run
 ```
 
 Rebuild the registry after changing copied components or the registry builder.
@@ -184,6 +213,13 @@ v3 and v4 before npm packs or publishes it. A failed build or test prevents
 publishing. You do not need to run `registry:build` separately when publishing.
 These commands must run from a full repository checkout; consumers do not need
 the build scripts to use the published CLI.
+
+The fast checks cover both color-tool install orders, standalone installs,
+root/custom directories, dry runs, collision protection, repair, preserved
+shared helpers, and consumer TypeScript checks for all three components with
+Tailwind v3/v4. Templates are generated from library source rather than edited
+independently. The twelve-app suite also renders the installed color tools in
+fresh production builds.
 
 The twelve-app suite is a separate maintainer command; publishing does not run
 it automatically. Run `npm run cli:apps:check` before a CLI release. The library's

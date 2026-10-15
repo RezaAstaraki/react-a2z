@@ -20,7 +20,7 @@ const cli = resolve(
   "bin/cli.js",
 );
 const cwd = await mkdtemp(resolve(tmpdir(), "react-a2z-cli-"));
-async function app(directory, major = 4) {
+async function app(directory, major = 4, withSrc = true) {
   await mkdir(resolve(directory, "node_modules/tailwindcss"), {
     recursive: true,
   });
@@ -34,9 +34,9 @@ async function app(directory, major = 4) {
     resolve(directory, "node_modules/tailwindcss/package.json"),
     JSON.stringify({ name: "tailwindcss", version: `${major}.4.17` }),
   );
-  await mkdir(resolve(directory, "src/app"), { recursive: true });
+  if (withSrc) await mkdir(resolve(directory, "src/app"), { recursive: true });
   await writeFile(
-    resolve(directory, "src/app/globals.css"),
+    resolve(directory, withSrc ? "src/app/globals.css" : "index.css"),
     major === 4
       ? '@import "tailwindcss";\n'
       : "@tailwind base;\n@tailwind components;\n@tailwind utilities;\n",
@@ -67,6 +67,131 @@ async function snapshot(directory) {
   return files;
 }
 try {
+  for (const major of [3, 4]) {
+    for (const first of ["color-picker", "gradient-maker"]) {
+      for (const withSrc of [true, false]) {
+        const directory = resolve(
+          cwd,
+          `colors-v${major}-${first}-${withSrc ? "src" : "root"}`,
+        );
+        await app(directory, major, withSrc);
+        if (major === 3)
+          await writeFile(
+            resolve(directory, "tailwind.config.cjs"),
+            "module.exports = { content: [], theme: { extend: {} }, plugins: [] };\n",
+          );
+        const options = [
+          "--skip-install",
+          ...(withSrc ? ["--path", "src/design/theme/ui"] : []),
+        ];
+        const original = await snapshot(directory);
+        success(invoke(directory, ["add", first, "--dry-run", ...options]));
+        assert.deepEqual(await snapshot(directory), original);
+        success(invoke(directory, ["add", first, ...options]));
+        const config = JSON.parse(
+          await readFile(resolve(directory, "a2z.json"), "utf8"),
+        );
+        assert.equal(
+          config.components,
+          withSrc ? "src/design/theme/ui" : "components/ui",
+        );
+        assert.equal(
+          config.utils,
+          withSrc ? "src/lib/react-a2z" : "lib/react-a2z",
+        );
+        const component = resolve(directory, config.components, `${first}.tsx`);
+        const source = await readFile(component, "utf8");
+        assert.match(
+          source,
+          new RegExp(
+            `export \\{ ${first === "color-picker" ? "ColorPicker" : "GradientMaker"} \\}`,
+          ),
+        );
+        assert.doesNotMatch(
+          source,
+          /__A2Z_|from ["']react-a2z|from ["']\.\.\/\.\.\/(utils|hooks)/,
+        );
+        assert.match(source, /data-slot/);
+        const installed = await snapshot(directory);
+        assert.equal(invoke(directory, ["add", first, ...options]).status, 1);
+        assert.deepEqual(await snapshot(directory), installed);
+        const shared = [
+          "color.ts",
+          "use-controllable-state.ts",
+          "hex-color-input.tsx",
+        ];
+        const customized = {};
+        for (const filename of shared) {
+          const path = resolve(directory, config.utils, filename);
+          customized[path] =
+            "// consumer helper edit\n" + (await readFile(path, "utf8"));
+          await writeFile(path, customized[path]);
+        }
+        const second =
+          first === "color-picker" ? "gradient-maker" : "color-picker";
+        const beforeSecond = await snapshot(directory);
+        success(
+          invoke(directory, ["add", second, "--dry-run", "--skip-install"]),
+        );
+        assert.deepEqual(await snapshot(directory), beforeSecond);
+        success(invoke(directory, ["add", second, "--skip-install"]));
+        await writeFile(component, "// consumer component edit\n" + source);
+        success(invoke(directory, ["repair", "--skip-install"]));
+        assert.match(
+          await readFile(component, "utf8"),
+          /consumer component edit/,
+        );
+        success(
+          invoke(directory, ["add", first, "--overwrite", "--skip-install"]),
+        );
+        assert.equal(await readFile(component, "utf8"), source);
+        for (const [path, content] of Object.entries(customized))
+          assert.equal(await readFile(path, "utf8"), content);
+        for (const name of ["color-picker", "gradient-maker"])
+          assert.doesNotMatch(
+            await readFile(
+              resolve(directory, config.components, `${name}.tsx`),
+              "utf8",
+            ),
+            /__A2Z_/,
+          );
+        assert.match(
+          await readFile(
+            resolve(directory, config.utils, "hex-color-input.tsx"),
+            "utf8",
+          ),
+          /from ["']\.\/color["']/,
+        );
+        if (!withSrc)
+          await assert.rejects(
+            readFile(resolve(directory, "src/app/globals.css"), "utf8"),
+          );
+      }
+    }
+  }
+  const protectedApp = resolve(cwd, "color-preflight");
+  await app(protectedApp);
+  await mkdir(resolve(protectedApp, "src/components/ui"), { recursive: true });
+  await writeFile(
+    resolve(protectedApp, "src/components/ui/color-picker.tsx"),
+    "// existing user component",
+  );
+  const protectedSnapshot = await snapshot(protectedApp);
+  assert.equal(
+    invoke(protectedApp, ["add", "color-picker", "--skip-install"]).status,
+    1,
+  );
+  assert.deepEqual(await snapshot(protectedApp), protectedSnapshot);
+  const unknown = invoke(protectedApp, ["add", "../../bad", "--skip-install"]);
+  assert.equal(unknown.status, 1);
+  assert.match(
+    unknown.stderr,
+    /Available: select, color-picker, gradient-maker/,
+  );
+  assert.deepEqual(await snapshot(protectedApp), protectedSnapshot);
+  console.log(
+    "Color CLI integration: standalone installs, both install orders, v3/v4, root/custom paths, dry runs, collisions, repair, and shared-helper preservation passed.",
+  );
   await app(cwd);
   await mkdir(resolve(cwd, "src/app"), { recursive: true });
   await writeFile(
@@ -323,25 +448,45 @@ try {
     await app(directory, major);
     await rm(resolve(directory, "src"), { recursive: true });
     await mkdir(dirname(resolve(directory, cssName)), { recursive: true });
-    await writeFile(resolve(directory, cssName), major === 4
-      ? '@import "tailwindcss";\n'
-      : "@tailwind base;\n@tailwind components;\n@tailwind utilities;\n");
-    if (major === 3) await writeFile(resolve(directory, "tailwind.config.cjs"),
-      "module.exports = { content: [], theme: { extend: {} }, plugins: [] };\n");
-    await writeFile(resolve(directory, cssName),
-      (await readFile(resolve(directory, cssName), "utf8")) + "\nbody { margin: 0; }\n");
+    await writeFile(
+      resolve(directory, cssName),
+      major === 4
+        ? '@import "tailwindcss";\n'
+        : "@tailwind base;\n@tailwind components;\n@tailwind utilities;\n",
+    );
+    if (major === 3)
+      await writeFile(
+        resolve(directory, "tailwind.config.cjs"),
+        "module.exports = { content: [], theme: { extend: {} }, plugins: [] };\n",
+      );
+    await writeFile(
+      resolve(directory, cssName),
+      (await readFile(resolve(directory, cssName), "utf8")) +
+        "\nbody { margin: 0; }\n",
+    );
     const before = await snapshot(directory);
-    success(invoke(directory, ["add", "select", "--dry-run", "--skip-install"]));
+    success(
+      invoke(directory, ["add", "select", "--dry-run", "--skip-install"]),
+    );
     assert.deepEqual(await snapshot(directory), before);
     success(invoke(directory, ["add", "select", "--skip-install"]));
-    const rootConfig = JSON.parse(await readFile(resolve(directory, "a2z.json"), "utf8"));
+    const rootConfig = JSON.parse(
+      await readFile(resolve(directory, "a2z.json"), "utf8"),
+    );
     assert.equal(rootConfig.components, "components/ui");
     assert.equal(rootConfig.utils, "lib/react-a2z");
     assert.equal(rootConfig.styles, "styles/react-a2z.css");
     assert.equal(rootConfig.css, cssName);
-    assert.ok(!(Object.keys(await snapshot(directory)).some(path => /^[/\\]src[/\\]/.test(path))));
+    assert.ok(
+      !Object.keys(await snapshot(directory)).some((path) =>
+        /^[/\\]src[/\\]/.test(path),
+      ),
+    );
     const installed = await snapshot(directory);
-    assert.equal(invoke(directory, ["add", "select", "--skip-install"]).status, 1);
+    assert.equal(
+      invoke(directory, ["add", "select", "--skip-install"]).status,
+      1,
+    );
     success(invoke(directory, ["repair", "--skip-install"]));
     assert.deepEqual(await snapshot(directory), installed);
   }

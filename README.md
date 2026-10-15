@@ -25,12 +25,24 @@ npx react-a2z-cli@latest init
 npx react-a2z-cli@latest add select
 ```
 
-The installer currently supports **Select** and requires Node.js 18+ and a React
+This checkout's installer supports **Select**, **ColorPicker**, and **GradientMaker**.
+It requires Node.js 18+ and a React
 project with Tailwind CSS v3.4.1+ or v4 configured. It detects the installed version
 and writes the matching setup, editable source, shared utilities,
 styles, and `a2z.json`; import the component from your local files. You do not need
 the `react-a2z` runtime package for this workflow. See the
 [CLI guide](./packages/react-a2z-cli/README.md) for options and publishing steps.
+
+The color-tool commands are new local additions. `npx ...@latest` uses the
+published release; it does not include unpublished checkout changes. To try
+these commands now, run from this repository and replace `../my-app`:
+
+```sh
+npm run registry:build
+node packages/react-a2z-cli/bin/cli.js add color-picker --cwd ../my-app --dry-run
+node packages/react-a2z-cli/bin/cli.js add color-picker --cwd ../my-app
+node packages/react-a2z-cli/bin/cli.js add gradient-maker --cwd ../my-app
+```
 
 Maintainers can test the packed local CLI in twelve consumer scenarios under
 [tests/cli-apps](./tests/cli-apps/README.md). After `npm ci` in this repository,
@@ -114,8 +126,8 @@ you need browser event handlers or hooks.
 | `Input` | label, helper text, validation, `startIcon`/`endIcon`, currency affix, slot overrides |
 | `Slider` | headless compound (`Slider.Track`, `.Thumb`, ...), range, vertical, render props |
 | `Tooltip` | shorthand or compound API, portal, auto-flip, controlled or uncontrolled |
-| `ColorPicker` | native picker + preset swatches; slot overrides |
-| `GradientMaker` | presets, custom stops, angle, optional copy row (`showCopy={false}`) |
+| `ColorPicker` | native picker, validated HEX editing, preset swatches, form support, inspectable slots |
+| `GradientMaker` | controlled colors/angle, presets, HEX editing, CSS copying, inspectable slots |
 | `Counter` | increment/decrement, in-view and place variants |
 | `Modal` | `CustomModal` + `GlobalModal` (Zustand), logical 3x3 placement grid |
 | `Toast` | `GlobalToast` + `ToastItem` (Zustand) |
@@ -125,7 +137,8 @@ you need browser event handlers or hooks.
 | `PearlButton` | gloss hover + press; ships its own CSS |
 | `ClientLogger` | client-side data logger for debugging |
 
-The library also exports these components (the CLI currently copies **Select** only):
+The library also exports these components (the CLI registry includes Select,
+ColorPicker, and GradientMaker; the other components below are library exports):
 
 - `Checkbox`, `Switch`, and `Textarea` — native form controls with labels and slot overrides.
 - `Select`, `MultiSelect`, and `AutocompleteInput` — styled choices, multiple selections, and searchable suggestions.
@@ -181,3 +194,28 @@ tailwind.css (v4).
 For per-instance overrides, most components accept classNames and styles
 keyed by slot (root, label, input, ...). Those merge last, so they
 always beat the library defaults.
+
+## Development workspace
+
+This package keeps its own Git repository, versions, and npm release workflow.
+When checked out inside the `library` workspace, it is registered as a submodule
+alongside the demo app. The parent workspace's README documents cloning,
+setup, and the independent Next.js/React consumer templates.
+
+Run these from the parent workspace to exercise local package and CLI artifacts:
+
+```sh
+npm run candidates
+npm run fixture -- next src mixed --name next-package-and-cli --build
+npm run fixture -- react root second-component --tailwind 3 --name react-add-another --build
+```
+
+The workspace uses Node 20.19+ within 20.x or Node 22.12+ for its current
+framework starters; this does not change the CLI's Node 18+ requirement.
+Workspace candidates are development artifacts, not a substitute for the release
+checks above. The existing twelve-consumer suite in this repository remains
+available independently.
+
+Commit package changes here before recording the new package reference in the
+parent workspace. Commits remain local until explicitly pushed; the workspace
+uses push checks and never automatically pushes this package.

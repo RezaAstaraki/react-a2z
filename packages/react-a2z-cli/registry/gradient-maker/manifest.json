@@ -1,0 +1,52 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "gradient-maker",
+  "type": "registry:component",
+  "title": "React A2Z GradientMaker",
+  "description": "Controlled gradient colors and angle, presets, validated HEX editing, and CSS copying.",
+  "dependencies": [
+    "clsx@^2.1.1",
+    "tailwind-merge@^3.0.1"
+  ],
+  "dependenciesByTailwind": {
+    "3": [
+      "clsx@^2.1.1",
+      "tailwind-merge@^2.6.0"
+    ],
+    "4": [
+      "clsx@^2.1.1",
+      "tailwind-merge@^3.0.1"
+    ]
+  },
+  "files": [
+    {
+      "source": "gradient-maker.tsx.template",
+      "target": "src/components/ui/gradient-maker.tsx",
+      "type": "registry:component"
+    },
+    {
+      "source": "color.ts",
+      "target": "src/lib/react-a2z/color.ts",
+      "type": "registry:lib",
+      "shared": true
+    },
+    {
+      "source": "use-controllable-state.ts",
+      "target": "src/lib/react-a2z/use-controllable-state.ts",
+      "type": "registry:lib",
+      "shared": true
+    },
+    {
+      "source": "hex-color-input.tsx.template",
+      "target": "src/lib/react-a2z/hex-color-input.tsx",
+      "type": "registry:lib",
+      "shared": true
+    },
+    {
+      "source": "copy-to-clipboard.ts",
+      "target": "src/lib/react-a2z/copy-to-clipboard.ts",
+      "type": "registry:lib",
+      "shared": true
+    }
+  ]
+}

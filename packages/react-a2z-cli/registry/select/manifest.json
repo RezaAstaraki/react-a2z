@@ -32,12 +32,14 @@
     {
       "source": "cn.ts",
       "target": "src/lib/react-a2z/cn.ts",
-      "type": "registry:lib"
+      "type": "registry:lib",
+      "shared": true
     },
     {
       "source": "extend-merge.ts",
       "target": "src/lib/react-a2z/extend-merge.ts",
-      "type": "registry:lib"
+      "type": "registry:lib",
+      "shared": true
     },
     {
       "source": "react-a2z.css",

@@ -34,6 +34,7 @@ export type {
   ColorPickerStyles,
 } from './ColorPicker/ColorPicker';
 export type {
+  GradientValue,
   GradientPreset,
   GradientMakerProps,
   GradientMakerClassNames,

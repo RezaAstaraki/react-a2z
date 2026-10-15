@@ -14,7 +14,7 @@ in `docs/history/`.
 - The library now exports `Checkbox`, `Switch`, `Select`, `MultiSelect`,
   `AutocompleteInput`, `Textarea`, `Tabs`, `Accordion`, `Badge`, `Card`,
   `Progress`, and `Skeleton` in addition to the original components.
-- The separate CLI copies Select source and configures existing Tailwind v3/v4
+- The separate CLI copies Select, ColorPicker, and GradientMaker source and configures existing Tailwind v3/v4
   projects. Repair preserves component/helper edits and backs up changed setup
   files. Existing copied source does not update automatically.
 - `npm test` builds and runs component/export contracts. `release:check` compares
@@ -22,7 +22,7 @@ in `docs/history/`.
   version decision for changed content. CLI packing has its own integration and
   Tailwind compilation checks. Neither gate automatically chooses a CLI bump.
 - Twelve tracked consumer apps under `tests/cli-apps` cover Next App/Pages Router,
-  Vite, plain React with webpack, and CRA. `cli:apps:check` verifies 108 CLI
+  Vite, plain React with webpack, and CRA. `cli:apps:check` verifies 180 CLI
   behaviors plus fresh typechecks/production builds. Interactive browser checks
   remain manual. This larger suite is not an automatic publish hook.
 
@@ -110,21 +110,17 @@ template -- do it there first, then carry the shape forward.
 - [ ] `CodeBox` (blocked on step 3)
 - [ ] `ClientLogger`
 
-**Slot coverage is partial.** GradientMaker ships eleven `classNames` /
-`styles` slots; the demo exercises **three**: `preset` (via both
-`classNames.preset` and `styles.preset`), `preview` and `copyButton`. Still
-unexercised: `root`, `label`, `presets`, `customColors`, `swatch`, `angle`,
-`copyRow`, `copyInput`.
+**Color tools updated (2026-10-15).** ColorPicker and GradientMaker expose
+typed slots and stable `data-slot` markers for every styled part, including HEX
+validation messages. Both demos have Props/classNames/Configuration playgrounds,
+complete style presets, scoped slot highlighting, resets, and exact TypeScript
+exports with a full-screen viewer. Existing per-slot `styles` remain supported.
 
-**Remaining API question.** GradientMaker is uncontrolled-only, while
-ColorPicker has `value` / `defaultValue` and `show*` flags. GradientMaker now
-supports `showCopy` (default true) to hide the copy row. Still proposed:
-
-- `defaultValue?: string[]` — seed the stops
-- `defaultAngle?: number` — seed the angle
-
-A fully controlled `value` is a larger question: the gradient is two pieces
-of state (colours + angle), so it would need a `{ colors, angle }` shape.
+GradientMaker now supports controlled `value` / `onValueChange` and uncontrolled
+`defaultValue` using `{ colors, angle }`. Its original CSS callback remains.
+Presets preserve the current angle unless they supply one. Both tools support
+validated HEX drafts. Gradient stops remain evenly spaced; adding/removing or
+positioning stops, opacity, and alternate gradient types remain future work.
 
 **Order:** most-used first (Toast, Tooltip); CodeBox is blocked on step 3.
 **Warning:** a wrong token mapping fails SILENTLY. Raw palette classes render
@@ -249,7 +245,7 @@ Implemented:
   Are the Types Wrong, and API/CSS/slot baseline comparison.
 - [x] `cli:test` and CLI `prepack`: installer integration and actual Tailwind
   v3/v4 compilation, including safe repair/config preservation.
-- [x] `cli:apps:check`: a packed candidate, 108 CLI checks, and fresh
+- [x] `cli:apps:check`: a packed candidate, 180 CLI checks, and fresh
   TypeScript/production builds in twelve consumer scenarios. JSON and per-app
   build logs are saved in `tests/cli-apps/reports` (ignored by Git).
 

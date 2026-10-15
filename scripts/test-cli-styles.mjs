@@ -72,6 +72,61 @@ try {
       0,
       `${installed.error ?? ""}\n${installed.stdout}\n${installed.stderr}`,
     );
+    for (const name of ["color-picker", "gradient-maker"]) {
+      const added = spawnSync(
+        process.execPath,
+        [cli, "add", name, "--cwd", app, "--skip-install"],
+        { encoding: "utf8", cwd: root, windowsHide: true },
+      );
+      assert.equal(added.status, 0, `${added.stdout}\n${added.stderr}`);
+    }
+    // Compile a real consumer of all generated components and their public types.
+    await writeFile(
+      resolve(app, "usage.tsx"),
+      `import { useState } from 'react';
+import { Select } from './custom/ui/select';
+import { ColorPicker } from './custom/ui/color-picker';
+import type { ColorPickerClassNames } from './custom/ui/color-picker';
+import { GradientMaker } from './custom/ui/gradient-maker';
+import type { GradientValue, GradientPreset, GradientMakerClassNames } from './custom/ui/gradient-maker';
+const colors: ColorPickerClassNames = { hexInput: 'rounded-xl', hexError: 'font-medium' };
+const gradients: GradientMakerClassNames = { swatchInput: 'cursor-pointer', angleInput: 'accent-primary-600', copyStatus: 'text-sm' };
+const presets: GradientPreset[] = [{ name: 'Brand', colors: ['#7c3aed', '#db2777'], angle: 135 }];
+export default function Consumer() {
+  const [color, setColor] = useState('#7c3aed');
+  const [gradient, setGradient] = useState<GradientValue>({ colors: ['#7c3aed', '#db2777'], angle: 90 });
+  return <><Select options={[{ value: 'one', label: 'One' }]} />
+    <ColorPicker value={color} onChange={setColor} classNames={colors} name='brand' required />
+    <ColorPicker defaultValue='#abc' showHex={false} disabled />
+    <GradientMaker value={gradient} onValueChange={setGradient} presets={presets} classNames={gradients} onGradientChange={(css: string) => console.log(css)} />
+    <GradientMaker defaultValue={gradient} disabled showCopy={false} /></>;
+}
+`,
+    );
+    const consumer = spawnSync(
+      process.execPath,
+      [
+        resolve(root, "node_modules/typescript/bin/tsc"),
+        "--noEmit",
+        "--skipLibCheck",
+        "--strict",
+        "--noUnusedLocals",
+        "--target",
+        major === 3 ? "ES5" : "ES2020",
+        "--lib",
+        "dom,dom.iterable,esnext",
+        "--jsx",
+        "react-jsx",
+        "--esModuleInterop",
+        "--module",
+        "ESNext",
+        "--moduleResolution",
+        "Bundler",
+        resolve(app, "usage.tsx"),
+      ],
+      { encoding: "utf8", windowsHide: true },
+    );
+    assert.equal(consumer.status, 0, `${consumer.stdout}\n${consumer.stderr}`);
     const cssPath = resolve(app, "src/app/globals.css");
     const generated = await readFile(
       resolve(app, "src/styles/react-a2z.css"),
@@ -98,6 +153,9 @@ try {
     assert.match(result.css, /var\(--a2z-fg\)/);
     assert.match(result.css, /primary-500/);
     assert.match(result.css, /cursor:\s*pointer/);
+    assert.match(result.css, /cursor:\s*text/);
+    assert.match(result.css, /\.accent-primary-600/);
+    assert.match(result.css, /danger-600/);
     if (major === 3) {
       const loadConfig = require("tailwindcss/loadConfig");
       const config = loadConfig(resolve(app, "tailwind.config.ts"));
@@ -125,7 +183,7 @@ try {
       assert.equal(checked.status, 0, `${checked.stdout}\n${checked.stderr}`);
     }
     console.log(
-      `Tailwind v${major}: generated Select styles compiled, including custom component paths and theme tokens.`,
+      `Tailwind v${major}: Select, ColorPicker, and GradientMaker source typechecked and styles compiled, including custom paths and shared helpers.`,
     );
   }
 } finally {

@@ -1,0 +1,264 @@
+"use client";
+
+import * as React from "react";
+import { cn } from "__A2Z_CN_IMPORT__";
+import { normalizeHex } from "__A2Z_COLOR_IMPORT__";
+import { useControllableState } from "__A2Z_STATE_IMPORT__";
+import { HexColorInput } from "__A2Z_HEX_INPUT_IMPORT__";
+
+/** Inline elements only; the native browser color dialog has no DOM slots. */
+export interface ColorPickerClassNames {
+  /** div: color-picker-root. */
+  root?: string;
+  /** label: color-picker-label. */
+  label?: string;
+  /** span: color-picker-required-indicator (required only). */
+  requiredIndicator?: string;
+  /** div: color-picker-controls. */
+  controls?: string;
+  /** input[type=color]: color-picker-input. */
+  input?: string;
+  /** div: color-picker-hex-wrapper (showHex only). */
+  hexWrapper?: string;
+  /** input[type=text]: color-picker-hex-input (showHex only). */
+  hexInput?: string;
+  /** p: color-picker-hex-error (invalid HEX draft only). */
+  hexError?: string;
+  /** div: color-picker-presets (visible nonempty presets only). */
+  presets?: string;
+  /** button: color-picker-preset; repeated, data-selected=true/false. */
+  preset?: string;
+  /** span: color-picker-value (showValue only). */
+  value?: string;
+  /** span: color-picker-value-text (showValue only). */
+  valueText?: string;
+  /** p: color-picker-description (description only). */
+  description?: string;
+  /** p: color-picker-error (error only). */
+  error?: string;
+}
+export type ColorPickerStyles = {
+  [Slot in keyof ColorPickerClassNames]?: React.CSSProperties;
+};
+
+export interface ColorPickerProps {
+  /** Visible label. Default "Color". */
+  label?: string;
+  /** Controlled HEX color. Three-digit values expand for the native input. */
+  value?: string;
+  /** Initial uncontrolled HEX color. Default "#ff0000". */
+  defaultValue?: string;
+  /** Emits normalized #rrggbb after a native/preset change or valid HEX commit. */
+  onChange?: (color: string) => void;
+  /** Replaces the palette; [] hides it. Invalid entries are omitted. */
+  presetColors?: string[];
+  /** Show the preset palette. Default true. */
+  showPresets?: boolean;
+  /** Show the selected HEX value line. Default true. */
+  showValue?: boolean;
+  /** Commit with Enter/blur; Escape restores the value. Default true. */
+  showHex?: boolean;
+  /** Disable native picking, HEX editing, and preset buttons. */
+  disabled?: boolean;
+  /** Native input id and form name. Ref points to this input. */
+  id?: string;
+  name?: string;
+  required?: boolean;
+  description?: string;
+  error?: string;
+  /** Accessible name when the visible label is hidden. */
+  "aria-label"?: string;
+  /** Root classes, merged last after defaults and classNames.root. */
+  className?: string;
+  classNames?: ColorPickerClassNames;
+  /** Compatible per-slot inline styles. */
+  styles?: ColorPickerStyles;
+}
+
+const DEFAULT_PRESETS = [
+  "#18181b",
+  "#ffffff",
+  "#ef4444",
+  "#f59e0b",
+  "#10b981",
+  "#0ea5e9",
+  "#6366f1",
+  "#d946ef",
+];
+const focus =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
+
+const ColorPicker = React.forwardRef<HTMLInputElement, ColorPickerProps>(
+  (
+    {
+      label = "Color",
+      value,
+      defaultValue = "#ff0000",
+      onChange,
+      presetColors = DEFAULT_PRESETS,
+      showPresets = true,
+      showValue = true,
+      showHex = true,
+      disabled = false,
+      id,
+      name,
+      required,
+      description,
+      error,
+      "aria-label": ariaLabel,
+      className,
+      classNames,
+      styles,
+    },
+    ref,
+  ) => {
+    const [color, setColor] = useControllableState({
+      value,
+      defaultValue,
+      onChange,
+    });
+    const generatedId = React.useId();
+    const inputId = id ?? generatedId;
+    const hex = normalizeHex(color) ?? "#000000";
+    const colors = Array.from(
+      new Set(
+        presetColors.map(normalizeHex).filter((c): c is string => c !== null),
+      ),
+    );
+    const messageIds =
+      [description && `${inputId}-description`, error && `${inputId}-error`]
+        .filter(Boolean)
+        .join(" ") || undefined;
+    const slot = (key: keyof ColorPickerClassNames, defaults: string) => ({
+      "data-slot": `color-picker-${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`,
+      className: cn(defaults, classNames?.[key]),
+      style: styles?.[key],
+    });
+    return (
+      <div
+        {...slot("root", "flex min-w-0 flex-col gap-3")}
+        className={cn(
+          "flex min-w-0 flex-col gap-3",
+          classNames?.root,
+          className,
+        )}
+      >
+        {label && (
+          <label
+            htmlFor={inputId}
+            {...slot("label", "text-sm font-medium text-fg")}
+          >
+            {label}
+            {required && (
+              <span
+                aria-hidden="true"
+                {...slot("requiredIndicator", "ml-1 text-danger-600")}
+              >
+                *
+              </span>
+            )}
+          </label>
+        )}
+        <div {...slot("controls", "flex items-start gap-3")}>
+          <input
+            {...slot(
+              "input",
+              cn(
+                "h-11 w-11 shrink-0 cursor-pointer rounded-lg border border-border-strong bg-surface p-1 disabled:cursor-not-allowed disabled:opacity-50",
+                focus,
+              ),
+            )}
+            id={inputId}
+            name={name}
+            ref={ref}
+            type="color"
+            value={hex}
+            disabled={disabled}
+            required={required}
+            aria-label={ariaLabel ?? (label ? undefined : "Color")}
+            aria-invalid={!!error || undefined}
+            aria-describedby={messageIds}
+            onChange={(event) => setColor(event.target.value)}
+          />
+          {showHex && (
+            <div {...slot("hexWrapper", "flex min-w-0 flex-1 flex-col gap-1")}>
+              <HexColorInput
+                value={hex}
+                onCommit={setColor}
+                disabled={disabled}
+                label={`${label || ariaLabel || "Color"} HEX`}
+                inputSlot="color-picker-hex-input"
+                errorSlot="color-picker-hex-error"
+                inputClassName={cn(
+                  "h-11 w-full min-w-0 cursor-text rounded-lg border border-border-strong bg-surface px-3 font-mono text-sm text-fg disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-danger-600",
+                  focus,
+                  classNames?.hexInput,
+                )}
+                errorClassName={cn(
+                  "text-xs text-danger-600",
+                  classNames?.hexError,
+                )}
+                inputStyle={styles?.hexInput}
+                errorStyle={styles?.hexError}
+              />
+            </div>
+          )}
+        </div>
+        {showPresets && colors.length > 0 && (
+          <div
+            role="group"
+            aria-label="Preset colors"
+            {...slot("presets", "flex flex-wrap gap-2")}
+          >
+            {colors.map((c) => (
+              <button
+                key={c}
+                type="button"
+                disabled={disabled}
+                aria-label={`Select color ${c}`}
+                aria-pressed={hex === c}
+                data-selected={hex === c}
+                {...slot(
+                  "preset",
+                  cn(
+                    "h-7 w-7 cursor-pointer rounded-full border border-border-strong transition-shadow hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none",
+                    focus,
+                    hex === c && "ring-2 ring-ring ring-offset-2",
+                  ),
+                )}
+                style={{ backgroundColor: c, ...styles?.preset }}
+                onClick={() => setColor(c)}
+              />
+            ))}
+          </div>
+        )}
+        {showValue && (
+          <span {...slot("value", "text-sm text-fg-muted")}>
+            Selected: <span {...slot("valueText", "font-mono")}>{hex}</span>
+          </span>
+        )}
+        {description && (
+          <p
+            id={`${inputId}-description`}
+            {...slot("description", "text-sm text-fg-muted")}
+          >
+            {description}
+          </p>
+        )}
+        {error && (
+          <p
+            id={`${inputId}-error`}
+            role="alert"
+            {...slot("error", "text-sm text-danger-600")}
+          >
+            {error}
+          </p>
+        )}
+      </div>
+    );
+  },
+);
+ColorPicker.displayName = "ColorPicker";
+export default ColorPicker;
+
+export { ColorPicker };

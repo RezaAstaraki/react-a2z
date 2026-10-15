@@ -6,6 +6,12 @@ Before creating or editing components, read `.cursor/rules/component-design.mdc`
 
 When changing demo behavior, also read `../test-app-for-lib/.cursor/rules/component-demos.mdc`. The Select demo and playground are the approved reference.
 
+Build components and their requested demos as one usable developer experience: typed behavior/state APIs, complete overridable slots, accessible interactions, and visible results. The demo must start with **Try it live**, using **Props**, **classNames**, and **Code** to teach configuration and customization before the focused examples. The referenced rules contain the full acceptance criteria.
+
+Include CLI delivery for components in the requested scope: generate registry entries from current library source, include every local helper dependency, preserve edited shared helpers, validate both Tailwind majors and packed consumers, and update CLI/help/demo installation docs. Current registry commands are `add select`, `add color-picker`, and `add gradient-maker`. Use checkout commands for unpublished additions; do not imply that `npx ...@latest` contains local edits.
+
+Keep this repository's component-design rule synchronized with `../test-app-for-lib/.cursor/rules/component-design.mdc`. Record newly approved conventions in these rules so future component work follows them.
+
 These files are referenced explicitly; do not assume Codex automatically loads `.cursor/rules`.
 
 Respect the user's current validation and delivery instructions. Dev-only work pending confirmation must stay dev-only until approval; earlier push authorization does not override that restriction.

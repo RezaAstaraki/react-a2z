@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { constants } from "node:fs";
-import { dirname, relative, resolve, sep } from "node:path";
+import { basename, dirname, relative, resolve, sep } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {
@@ -14,6 +14,9 @@ import {
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const registryRoot = resolve(packageRoot, "registry", "select");
+const componentNames = JSON.parse(
+  await readFile(resolve(packageRoot, "registry/components.json"), "utf8"),
+);
 const exists = async (path) => {
   try {
     await access(path, constants.F_OK);
@@ -32,9 +35,10 @@ const importPath = (from, to) => {
 const usage = () =>
   console.log(`Usage:
   react-a2z-cli init [--cwd path] [--path path] [--overwrite] [--skip-install] [--dry-run]
-  react-a2z-cli add select [--cwd path] [--overwrite] [--skip-install] [--dry-run]
+  react-a2z-cli add <component> [--cwd path] [--overwrite] [--skip-install] [--dry-run]
   react-a2z-cli repair [--cwd path] [--overwrite] [--skip-install] [--dry-run]
-  Setup options: --css path --tailwind-config path`);
+  Setup options: --css path --tailwind-config path
+  Components: ${componentNames.join(", ")}`);
 
 function parse(argv) {
   const options = { cwd: process.cwd() };
@@ -87,7 +91,13 @@ async function detectCss(cwd) {
   return null;
 }
 
-async function copy(source, target, replacements, options) {
+async function copy(
+  source,
+  target,
+  replacements,
+  options,
+  sourceRoot = registryRoot,
+) {
   if ((await exists(target)) && !options.overwrite)
     throw new Error(
       `Refusing to overwrite ${relative(options.cwd, target)}. Use --overwrite.`,
@@ -95,7 +105,7 @@ async function copy(source, target, replacements, options) {
   console.log(`  ${relative(options.cwd, target)}`);
   if (options.dryRun) return;
   await mkdir(dirname(target), { recursive: true });
-  let content = await readFile(resolve(registryRoot, source), "utf8");
+  let content = await readFile(resolve(sourceRoot, source), "utf8");
   for (const [from, to] of Object.entries(replacements))
     content = content.replaceAll(from, to);
   await writeFile(target, content, "utf8");
@@ -371,42 +381,74 @@ async function repair(options) {
 }
 
 async function add(name, options) {
-  if (name !== "select")
-    throw new Error(`Unknown component: ${name}. Available: select`);
+  if (!componentNames.includes(name))
+    throw new Error(
+      `Unknown component: ${name}. Available: ${componentNames.join(", ")}`,
+    );
+  const sourceRoot = resolve(packageRoot, "registry", name);
+  const data = JSON.parse(
+    await readFile(resolve(sourceRoot, "manifest.json"), "utf8"),
+  );
   const configPath = resolve(options.cwd, "a2z.json");
   const before = (await exists(configPath))
     ? JSON.parse(await readFile(configPath, "utf8"))
-    : { components: options.componentPath ?? (await defaultPaths(options.cwd)).components };
+    : {
+        ...(await defaultPaths(options.cwd)),
+        ...(options.componentPath ? { components: options.componentPath } : {}),
+      };
   const componentDir = projectPath(options.cwd, before.components);
-  for (const filename of ["field.tsx", "select.tsx"])
-    if ((await exists(resolve(componentDir, filename))) && !options.overwrite)
+  const utilsDir = projectPath(options.cwd, before.utils);
+  const targets = data.files
+    .filter((file) =>
+      ["registry:component", "registry:lib"].includes(file.type),
+    )
+    .map((file) => ({
+      ...file,
+      path: resolve(
+        file.type === "registry:component" ? componentDir : utilsDir,
+        basename(file.target),
+      ),
+    }));
+  // Refuse component collisions before auto-init writes any styles/configuration.
+  for (const file of targets)
+    if (!file.shared && (await exists(file.path)) && !options.overwrite)
       throw new Error(
-        `Refusing to overwrite ${relative(options.cwd, resolve(componentDir, filename))}. Use --overwrite.`,
+        `Refusing to overwrite ${relative(options.cwd, file.path)}. Use --overwrite.`,
       );
+  for (const file of targets)
+    await readFile(resolve(sourceRoot, file.source), "utf8");
   const config = await init(options, true);
   const cn = resolve(projectPath(options.cwd, config.utils), "cn.ts");
   const field = resolve(componentDir, "field.tsx");
-  const select = resolve(componentDir, "select.tsx");
-  console.log(`${options.dryRun ? "Would add" : "Adding"} React A2Z Select:`);
-  await copy(
-    "field.tsx.template",
-    field,
-    { __A2Z_CN_IMPORT__: importPath(field, cn) },
-    options,
-  );
-  await copy(
-    "select.tsx.template",
-    select,
-    {
-      __A2Z_CN_IMPORT__: importPath(select, cn),
-      __A2Z_FIELD_IMPORT__: importPath(select, field),
-    },
-    options,
-  );
+  console.log(`${options.dryRun ? "Would add" : "Adding"} ${data.title}:`);
+  for (const file of targets) {
+    // Shared helpers are consumer-owned after copying, including with --overwrite.
+    if (file.shared && (await exists(file.path))) continue;
+    const helpers = {
+      __A2Z_CN_IMPORT__: cn,
+      __A2Z_FIELD_IMPORT__: field,
+      __A2Z_STATE_IMPORT__: resolve(utilsDir, "use-controllable-state.ts"),
+      __A2Z_COLOR_IMPORT__: resolve(utilsDir, "color.ts"),
+      __A2Z_HEX_INPUT_IMPORT__: resolve(utilsDir, "hex-color-input.tsx"),
+      __A2Z_CLIPBOARD_IMPORT__: resolve(utilsDir, "copy-to-clipboard.ts"),
+    };
+    await copy(
+      file.source,
+      file.path,
+      Object.fromEntries(
+        Object.entries(helpers).map(([token, target]) => [
+          token,
+          importPath(file.path, target),
+        ]),
+      ),
+      options,
+      sourceRoot,
+    );
+  }
   console.log(
     options.dryRun
-      ? "Select preview complete; no files were changed."
-      : "Select source installed successfully.",
+      ? `${data.title} preview complete; no files were changed.`
+      : `${data.title} source installed successfully.`,
   );
 }
 
