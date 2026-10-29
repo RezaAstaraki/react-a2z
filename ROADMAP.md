@@ -9,7 +9,39 @@ Companion docs: [LIBRARY-REFERENCE.md](./LIBRARY-REFERENCE.md) (technical refere
 [CLI starter guide](./tests/cli-apps/README.md). Historical session evidence lives
 in `docs/history/`.
 
-## Where things stand (updated 2026-10-11)
+## Color tools checkpoint — 2026-10-29
+
+Current approved guidance is `AGENTS.override.md` and the component design/demo
+rules it references. Older migration notes below are historical; their references
+to legacy agent instructions do not override the approved guidance or the user's
+current validation workflow.
+
+- [x] Preset thumbnails stay fixed at their explicit angle or 90 degrees.
+  Changing the angle updates the active gradient; applying a preset without an
+  angle preserves the current editor angle.
+- [x] Reduced built-ins to one row: Sunset Orange (two colors), Ocean Blue
+  (three), then Rainbow (seven). Larger custom lists remain supported.
+- [x] Regenerated the CLI source registry and refreshed local package output.
+  These are local changes; no npm publication is implied.
+- [x] Updated technical docs, CLI docs, and synchronized design rules.
+
+Next priorities discussed, not implemented:
+
+- [ ] Add/remove/reorder gradient color stops, preserving current controlled and
+  uncontrolled APIs and delivering the corresponding demo and CLI changes.
+- [ ] Coordinate default/override/resolved class information with the demo.
+- [ ] Add direct numeric angle input alongside the slider.
+- [ ] Consider stop positions, undo/redo, named/saved custom gradients, then
+  radial/conic gradients. Decide their APIs before implementation.
+
+Validation for this checkpoint: registry generation and Rollup output passed;
+focused render checks verified fixed thumbnails, three built-ins, explicit
+hiding, larger custom lists, and synchronized rules. Related browser checks are
+recorded in the demo roadmap. Full package tests, CLI integrations, Tailwind v3/v4
+consumers, packed consumers, release/version review, pushes and publishing are
+not completed for this checkpoint. Run the deferred suites at final validation.
+
+## Earlier project status (updated 2026-10-11)
 
 - The library now exports `Checkbox`, `Switch`, `Select`, `MultiSelect`,
   `AutocompleteInput`, `Textarea`, `Tabs`, `Accordion`, `Badge`, `Card`,
@@ -112,7 +144,7 @@ template -- do it there first, then carry the shape forward.
 
 **Color tools updated (2026-10-15).** ColorPicker and GradientMaker expose
 typed slots and stable `data-slot` markers for every styled part, including HEX
-validation messages. Both demos have Props/classNames/Configuration playgrounds,
+validation messages. Both demos have Props/classNames/Code playgrounds,
 complete style presets, scoped slot highlighting, resets, and exact TypeScript
 exports with a full-screen viewer. Existing per-slot `styles` remain supported.
 

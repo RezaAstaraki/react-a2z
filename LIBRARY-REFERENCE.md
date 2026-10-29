@@ -310,9 +310,12 @@ an empty result uses the default purple pair. Nonfinite angles fall back to 90.
 
 The existing `onGradientChange` emits complete CSS on the same user edits.
 Neither callback fires on mount or when a controlled value changes externally.
-`presets` replaces the eleven built-ins. A preset's optional `angle` applies
-that angle; without it, choosing the preset preserves the current angle, and
-the preset preview follows that angle. Invalid/empty presets are omitted.
+The three built-ins are Sunset Orange (two colors), Ocean Blue (three), and
+Rainbow (seven), in that order. Omit `presets` to use them; supply your own
+array to replace them, or `[]` to hide the choices. A preset's optional `angle`
+applies on selection; without it, selection preserves the current editor angle.
+Thumbnails stay fixed at their explicit angle or 90 degrees. Angle edits affect
+the active gradient only. Invalid/empty preset entries are omitted.
 
 `showPresets`, `showColors`, `showAngle`, `showHex`, and `showCopy` control sections.
 `disabled` locks editing while allowing CSS copying. The angle uses a native

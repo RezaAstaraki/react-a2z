@@ -13,7 +13,7 @@ export interface GradientValue {
 export interface GradientPreset {
   name: string;
   colors: string[];
-  /** Omit to preserve the current angle when applying this preset. */
+  /** Omit to preserve the current angle when applying; thumbnails default to 90 degrees. */
   angle?: number;
 }
 /** Inline DOM elements only; no component-owned portals. */
@@ -101,30 +101,11 @@ const DEFAULT_VALUE: GradientValue = {
   angle: 90,
 };
 const GRADIENT_PRESETS: GradientPreset[] = [
-  { name: "Purple Sunset", colors: ["#a8edea", "#fed6e3"] },
-  { name: "Ocean Blue", colors: ["#2980b9", "#6dd5fa", "#ffffff"] },
   { name: "Sunset Orange", colors: ["#fa709a", "#fee140"] },
-  { name: "Matrix Green", colors: ["#11998e", "#38ef7d"] },
-  { name: "Dark Purple", colors: ["#30cfd0", "#330867"] },
-  { name: "Pink Dream", colors: ["#a18cd1", "#fbc2eb"] },
-  { name: "Teal Blue", colors: ["#84fab0", "#8fd3f4"] },
-  { name: "Golden Hour", colors: ["#f093fb", "#f5576c"] },
-  { name: "Midnight", colors: ["#232526", "#414345"] },
+  { name: "Ocean Blue", colors: ["#2980b9", "#6dd5fa", "#ffffff"] },
   {
     name: "Rainbow",
-    colors: [
-      "#ff0000",
-      "#ff7f00",
-      "#ffff00",
-      "#00ff00",
-      "#0000ff",
-      "#4b0082",
-      "#9400d3",
-    ],
-  },
-  {
-    name: "Pastel",
-    colors: ["#f4e1e2", "#f5e6e3", "#eef3e5", "#d3e0e0", "#e4d3f4"],
+    colors: ["#ff0000", "#ff7f00", "#ffff00", "#00ff00", "#0000ff", "#4b0082", "#9400d3"],
   },
 ];
 const normalizeAngle = (angle: number) =>
@@ -267,6 +248,10 @@ const GradientMaker = React.forwardRef<HTMLDivElement, GradientMakerProps>(
                   colors: preset.colors,
                   angle: preset.angle ?? current.angle,
                 });
+                const thumbnail = {
+                  ...next,
+                  angle: normalizeAngle(preset.angle ?? DEFAULT_VALUE.angle),
+                };
                 const selected =
                   current.angle === next.angle &&
                   current.colors.length === next.colors.length &&
@@ -290,7 +275,7 @@ const GradientMaker = React.forwardRef<HTMLDivElement, GradientMakerProps>(
                       ),
                     )}
                     style={{
-                      background: buildGradient(next),
+                      background: buildGradient(thumbnail),
                       ...styles?.preset,
                     }}
                     onClick={() => change(next)}

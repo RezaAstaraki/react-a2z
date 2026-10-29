@@ -9,6 +9,8 @@ This rule is maintained in both repositories at `.cursor/rules/component-design.
 
 - Every package component must provide beautiful, polished defaults using the library's design tokens.
 - Stateful components should support controlled values with change callbacks and uncontrolled initial values where applicable. Use one coherent structured value for related state, such as gradient colors and angle, and derive display/output from that value. Document initial values, normalization, invalid-input handling, and when callbacks fire; preserve existing public callbacks and props when adding capabilities.
+- GradientMaker angle edits affect the active gradient only. Preset thumbnails stay fixed at their explicit angle or 90 degrees; applying a preset without an angle preserves the current editor angle.
+- Keep GradientMaker's built-in presets compact: three choices in one row, ordered Sunset Orange (two colors), Ocean Blue (three), then Rainbow (seven). Consumers can provide a larger custom list through `presets`.
 - Editable text may need a draft separate from the committed value. Validate drafts, explain errors, preserve the last valid preview/output, and document commit/cancel behavior. External controlled updates must keep all related controls synchronized.
 - Expose typed `classNames` slots for every styled visual part, including nested icons, labels, messages, popovers, chips, and action buttons. Single-element components expose a `root` slot.
 - Merge defaults first, then slot overrides, then the element's `className`, using `cn`. Consumers must be able to restyle the entire component while keeping its behavior and accessibility.
