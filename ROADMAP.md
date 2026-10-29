@@ -9,6 +9,30 @@ Companion docs: [LIBRARY-REFERENCE.md](./LIBRARY-REFERENCE.md) (technical refere
 [CLI starter guide](./tests/cli-apps/README.md). Historical session evidence lives
 in `docs/history/`.
 
+## Current color tools phase — 2026-10-30
+
+The user explicitly selected the two priorities below; other usability proposals
+are outside this phase. The user authorized a local checkpoint commit on
+2026-10-30; this is not a release, push or publication authorization.
+
+- [x] Add/remove/reorder committed colors through the existing `GradientValue`
+  API, preserving both change callbacks and evenly spaced stops. Keep one stop;
+  append white; cap adding with `maxColors` (default 32, clamped 1–32) without
+  truncating supplied values/presets. `showColorActions` hides action controls.
+- [x] Add typed slots/styles for stop headers, actions, hints and announcements;
+  accessible disabled/boundary behavior and focus after operations.
+- [x] Update generated CLI source/description, help, install docs, demo props,
+  examples and technical docs. No new helper dependencies were introduced.
+- [x] Coordinate real default/applied class inspection with the demo without
+  duplicating package class strings.
+
+Focused evidence: package typecheck and Rollup refresh passed; two GradientMaker
+render contracts and nine demo compiler/configuration contracts passed. The
+CLI source/type/style probe passed for Tailwind 3 and 4 (its temporary Windows
+junctions required filesystem elevation). Manual browser checks verified
+controlled/uncontrolled actions, callbacks, focus, boundaries and class inspection.
+Full consumer/packed/release suites and demo production checks remain deferred.
+
 ## Color tools checkpoint — 2026-10-29
 
 Current approved guidance is `AGENTS.override.md` and the component design/demo
@@ -27,9 +51,9 @@ current validation workflow.
 
 Next priorities discussed, not implemented:
 
-- [ ] Add/remove/reorder gradient color stops, preserving current controlled and
+- [x] Add/remove/reorder gradient color stops (2026-10-30), preserving current controlled and
   uncontrolled APIs and delivering the corresponding demo and CLI changes.
-- [ ] Coordinate default/override/resolved class information with the demo.
+- [x] Coordinate default/override/resolved class information with the demo (2026-10-30).
 - [ ] Add direct numeric angle input alongside the slider.
 - [ ] Consider stop positions, undo/redo, named/saved custom gradients, then
   radial/conic gradients. Decide their APIs before implementation.
@@ -151,8 +175,9 @@ exports with a full-screen viewer. Existing per-slot `styles` remain supported.
 GradientMaker now supports controlled `value` / `onValueChange` and uncontrolled
 `defaultValue` using `{ colors, angle }`. Its original CSS callback remains.
 Presets preserve the current angle unless they supply one. Both tools support
-validated HEX drafts. Gradient stops remain evenly spaced; adding/removing or
-positioning stops, opacity, and alternate gradient types remain future work.
+validated HEX drafts. Gradient stops remain evenly spaced. Add/remove/reorder
+controls landed in the 2026-10-30 phase above; positioning stops, opacity, and
+alternate gradient types remain future work.
 
 **Order:** most-used first (Toast, Tooltip); CodeBox is blocked on step 3.
 **Warning:** a wrong token mapping fails SILENTLY. Raw palette classes render

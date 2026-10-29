@@ -32,10 +32,28 @@ export interface GradientMakerClassNames {
   customColors?: string;
   /** span: gradient-maker-colors-label. */
   colorsLabel?: string;
+  /** div: gradient-maker-colors-header (showColors only). */
+  colorsHeader?: string;
+  /** button: gradient-maker-add-color (showColors and showColorActions only). */
+  addColor?: string;
+  /** p: gradient-maker-colors-hint (showColors and showColorActions only). */
+  colorsHint?: string;
+  /** p[role=status]: gradient-maker-colors-status, visually hidden announcements. */
+  colorsStatus?: string;
   /** div: gradient-maker-colors-list. */
   colorsList?: string;
   /** div: gradient-maker-color (repeated). */
   color?: string;
+  /** div: gradient-maker-color-header (showColorActions only, repeated). */
+  colorHeader?: string;
+  /** span: gradient-maker-color-label (showColorActions only, repeated). */
+  colorLabel?: string;
+  /** div: gradient-maker-color-actions (showColorActions only, repeated). */
+  colorActions?: string;
+  /** button: gradient-maker-move-color-button, repeated earlier/later controls. */
+  moveColorButton?: string;
+  /** button: gradient-maker-remove-color-button (showColorActions only, repeated). */
+  removeColorButton?: string;
   /** label: gradient-maker-swatch (repeated). */
   swatch?: string;
   /** input[type=color]: gradient-maker-swatch-input (repeated). */
@@ -82,6 +100,10 @@ export interface GradientMakerProps {
   showPresets?: boolean;
   /** Show the color editors. Default true. */
   showColors?: boolean;
+  /** Show add/remove/reorder controls with the color editors. Default true. */
+  showColorActions?: boolean;
+  /** Adding stops is capped here (integer clamped to 1–32, default 32). Existing values/presets are never truncated. */
+  maxColors?: number;
   /** Show the angle range and output. Default true. */
   showAngle?: boolean;
   /** Show HEX editors within the color section. Default true. */
@@ -138,6 +160,8 @@ const GradientMaker = React.forwardRef<HTMLDivElement, GradientMakerProps>(
       presets = GRADIENT_PRESETS,
       showPresets = true,
       showColors = true,
+      showColorActions = true,
+      maxColors = 32,
       showAngle = true,
       showHex = true,
       showCopy = true,
@@ -157,12 +181,16 @@ const GradientMaker = React.forwardRef<HTMLDivElement, GradientMakerProps>(
       },
     });
     const current = normalizeValue(state);
+    const colorLimit = Number.isFinite(maxColors)
+      ? Math.min(32, Math.max(1, Math.floor(maxColors)))
+      : 32;
     const gradient = buildGradient(current);
     const id = React.useId();
     const [copyState, setCopyState] = React.useState<
       "idle" | "copied" | "error"
     >("idle");
     const copyAttempt = React.useRef(0);
+    const [colorAnnouncement, setColorAnnouncement] = React.useState("");
     React.useEffect(() => {
       copyAttempt.current += 1;
       setCopyState("idle");
@@ -192,6 +220,36 @@ const GradientMaker = React.forwardRef<HTMLDivElement, GradientMakerProps>(
         ...current,
         colors: current.colors.map((c, i) => (i === index ? color : c)),
       });
+    const focusColor = (trigger: HTMLButtonElement, index: number) => {
+      const root = trigger.closest('[data-slot="gradient-maker-root"]');
+      requestAnimationFrame(() => {
+        root?.querySelector<HTMLInputElement>(
+          `[data-color-index="${index}"] [data-slot="gradient-maker-swatch-input"]`,
+        )?.focus();
+      });
+    };
+    const addColor = (trigger: HTMLButtonElement) => {
+      if (disabled || current.colors.length >= colorLimit) return;
+      change({ ...current, colors: [...current.colors, "#ffffff"] });
+      setColorAnnouncement(`Added color ${current.colors.length + 1}.`);
+      focusColor(trigger, current.colors.length);
+    };
+    const removeColor = (trigger: HTMLButtonElement, index: number) => {
+      if (disabled || current.colors.length <= 1) return;
+      change({ ...current, colors: current.colors.filter((_, i) => i !== index) });
+      const remaining = current.colors.length - 1;
+      setColorAnnouncement(`Removed color ${index + 1}. ${remaining} ${remaining === 1 ? "color remains" : "colors remain"}.`);
+      focusColor(trigger, Math.min(index, current.colors.length - 2));
+    };
+    const moveColor = (trigger: HTMLButtonElement, index: number, direction: -1 | 1) => {
+      const destination = index + direction;
+      if (disabled || destination < 0 || destination >= current.colors.length) return;
+      const colors = [...current.colors];
+      [colors[index], colors[destination]] = [colors[destination]!, colors[index]!];
+      change({ ...current, colors });
+      setColorAnnouncement(`Moved color ${index + 1} to position ${destination + 1} of ${colors.length}.`);
+      focusColor(trigger, destination);
+    };
     const copy = async () => {
       const attempt = ++copyAttempt.current;
       try {
@@ -286,17 +344,78 @@ const GradientMaker = React.forwardRef<HTMLDivElement, GradientMakerProps>(
         )}
         {showColors && (
           <div {...slot("customColors", "flex flex-col gap-2")}>
-            <span {...slot("colorsLabel", "text-sm font-medium text-fg")}>
-              Custom colors
-            </span>
+            <div {...slot("colorsHeader", "flex flex-wrap items-center justify-between gap-2")}>
+              <span {...slot("colorsLabel", "text-sm font-medium text-fg")}>
+                Color stops
+              </span>
+              {showColorActions && (
+                <button
+                  type="button"
+                  aria-label="Add color stop"
+                  title={current.colors.length >= colorLimit ? `Add limit reached (${colorLimit} colors)` : "Add a white color stop"}
+                  disabled={disabled || current.colors.length >= colorLimit}
+                  {...slot("addColor", cn(
+                    "cursor-pointer rounded-md border border-border-strong bg-surface px-2 py-1 text-xs font-medium text-fg hover:bg-surface-sunken",
+                    focus, disabledClasses,
+                  ))}
+                  onClick={(event) => addColor(event.currentTarget)}
+                >
+                  + Add color
+                </button>
+              )}
+            </div>
+            {showColorActions && (
+              <p {...slot("colorsHint", "text-xs text-fg-muted")}>
+                Evenly spaced · add limit {colorLimit}
+              </p>
+            )}
             <div
               {...slot("colorsList", "grid grid-cols-2 gap-3 sm:grid-cols-3")}
             >
               {current.colors.map((color, index) => (
                 <div
                   key={index}
+                  data-color-index={index}
                   {...slot("color", "flex min-w-0 flex-col gap-2")}
                 >
+                  {showColorActions && (
+                    <div {...slot("colorHeader", "flex flex-wrap items-center justify-between gap-1")}>
+                      <span {...slot("colorLabel", "text-xs font-medium text-fg-muted")}>
+                        {index + 1}
+                      </span>
+                      <div {...slot("colorActions", "flex items-center gap-1")}>
+                        {([-1, 1] as const).map((direction) => (
+                          <button
+                            key={direction}
+                            type="button"
+                            aria-label={`Move color ${index + 1} ${direction === -1 ? "earlier" : "later"}`}
+                            title={`Move color ${index + 1} ${direction === -1 ? "earlier" : "later"}`}
+                            disabled={disabled || (direction === -1 ? index === 0 : index === current.colors.length - 1)}
+                            {...slot("moveColorButton", cn(
+                              "h-6 w-6 cursor-pointer rounded border border-border bg-surface text-xs text-fg hover:bg-surface-sunken",
+                              focus, disabledClasses,
+                            ))}
+                            onClick={(event) => moveColor(event.currentTarget, index, direction)}
+                          >
+                            {direction === -1 ? "←" : "→"}
+                          </button>
+                        ))}
+                        <button
+                          type="button"
+                          aria-label={`Remove color ${index + 1}`}
+                          title={current.colors.length === 1 ? "Keep at least one color" : `Remove color ${index + 1}`}
+                          disabled={disabled || current.colors.length === 1}
+                          {...slot("removeColorButton", cn(
+                            "h-6 w-6 cursor-pointer rounded border border-border bg-surface text-sm text-fg hover:border-danger-600 hover:text-danger-600",
+                            focus, disabledClasses,
+                          ))}
+                          onClick={(event) => removeColor(event.currentTarget, index)}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   <label
                     {...slot(
                       "swatch",
@@ -356,6 +475,11 @@ const GradientMaker = React.forwardRef<HTMLDivElement, GradientMakerProps>(
                 </div>
               ))}
             </div>
+            {showColorActions && (
+              <p role="status" {...slot("colorsStatus", "sr-only")}>
+                {colorAnnouncement}
+              </p>
+            )}
           </div>
         )}
         {showAngle && (

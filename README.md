@@ -127,7 +127,7 @@ you need browser event handlers or hooks.
 | `Slider` | headless compound (`Slider.Track`, `.Thumb`, ...), range, vertical, render props |
 | `Tooltip` | shorthand or compound API, portal, auto-flip, controlled or uncontrolled |
 | `ColorPicker` | native picker, validated HEX editing, preset swatches, form support, inspectable slots |
-| `GradientMaker` | controlled colors/angle, presets, HEX editing, CSS copying, inspectable slots |
+| `GradientMaker` | add/remove/reorder color stops, controlled colors/angle, presets, HEX editing, CSS copying, inspectable slots |
 | `Counter` | increment/decrement, in-view and place variants |
 | `Modal` | `CustomModal` + `GlobalModal` (Zustand), logical 3x3 placement grid |
 | `Toast` | `GlobalToast` + `ToastItem` (Zustand) |

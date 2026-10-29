@@ -38,7 +38,8 @@ const usage = () =>
   react-a2z-cli add <component> [--cwd path] [--overwrite] [--skip-install] [--dry-run]
   react-a2z-cli repair [--cwd path] [--overwrite] [--skip-install] [--dry-run]
   Setup options: --css path --tailwind-config path
-  Components: ${componentNames.join(", ")}`);
+  Components: ${componentNames.join(", ")}
+  GradientMaker includes editable color stops: add, remove, and reorder.`);
 
 function parse(argv) {
   const options = { cwd: process.cwd() };

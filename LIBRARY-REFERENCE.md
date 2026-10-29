@@ -318,6 +318,23 @@ Thumbnails stay fixed at their explicit angle or 90 degrees. Angle edits affect
 the active gradient only. Invalid/empty preset entries are omitted.
 
 `showPresets`, `showColors`, `showAngle`, `showHex`, and `showCopy` control sections.
+Color editors now include add, remove and earlier/later buttons by default.
+Adding appends white (`#ffffff`); removing keeps at least one stop. Reordering
+moves committed colors in `value.colors`; every action updates `onValueChange`
+and the existing CSS callback in controlled and uncontrolled modes. Stops stay
+evenly spaced. Action focus moves to the added/moved/remaining color input and
+a visually hidden status announces the change.
+
+`showColorActions={false}` hides these action controls while keeping color/HEX
+editing. `maxColors` limits adding (default 32; finite numbers floor/clamp to
+1–32, nonfinite values use 32). Existing controlled/default values and presets
+are never truncated when they exceed this limit. First/last moves, removing the
+last color, and adding at the limit are disabled. `disabled` locks all actions.
+New typed slots are `colorsHeader`, `addColor`, `colorsHint`, `colorsStatus`,
+`colorHeader`, `colorLabel`, `colorActions`, `moveColorButton`, and
+`removeColorButton`; their stable `data-slot` markers follow the existing naming
+contract. The corresponding `styles` slots are available as well.
+
 `disabled` locks editing while allowing CSS copying. The angle uses a native
 range input with arrow/Home/End support. HEX drafts behave like ColorPicker.
 Copy success/failure is announced in a status message. Typed `classNames` and

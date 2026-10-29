@@ -90,7 +90,7 @@ import type { ColorPickerClassNames } from './custom/ui/color-picker';
 import { GradientMaker } from './custom/ui/gradient-maker';
 import type { GradientValue, GradientPreset, GradientMakerClassNames } from './custom/ui/gradient-maker';
 const colors: ColorPickerClassNames = { hexInput: 'rounded-xl', hexError: 'font-medium' };
-const gradients: GradientMakerClassNames = { swatchInput: 'cursor-pointer', angleInput: 'accent-primary-600', copyStatus: 'text-sm' };
+const gradients: GradientMakerClassNames = { swatchInput: 'cursor-pointer', angleInput: 'accent-primary-600', copyStatus: 'text-sm', addColor: 'rounded-lg', moveColorButton: 'h-8 w-8 cursor-pointer', removeColorButton: 'text-danger-600', colorsStatus: 'sr-only' };
 const presets: GradientPreset[] = [{ name: 'Brand', colors: ['#7c3aed', '#db2777'], angle: 135 }];
 export default function Consumer() {
   const [color, setColor] = useState('#7c3aed');
@@ -98,7 +98,7 @@ export default function Consumer() {
   return <><Select options={[{ value: 'one', label: 'One' }]} />
     <ColorPicker value={color} onChange={setColor} classNames={colors} name='brand' required />
     <ColorPicker defaultValue='#abc' showHex={false} disabled />
-    <GradientMaker value={gradient} onValueChange={setGradient} presets={presets} classNames={gradients} onGradientChange={(css: string) => console.log(css)} />
+    <GradientMaker value={gradient} onValueChange={setGradient} presets={presets} classNames={gradients} maxColors={6} showColorActions onGradientChange={(css: string) => console.log(css)} />
     <GradientMaker defaultValue={gradient} disabled showCopy={false} /></>;
 }
 `,

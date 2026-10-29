@@ -3,7 +3,7 @@
   "name": "gradient-maker",
   "type": "registry:component",
   "title": "React A2Z GradientMaker",
-  "description": "Controlled gradient colors and angle, presets, validated HEX editing, and CSS copying.",
+  "description": "Editable gradient stops with add/remove/reorder controls, presets, validated HEX editing, and CSS copying.",
   "dependencies": [
     "clsx@^2.1.1",
     "tailwind-merge@^3.0.1"

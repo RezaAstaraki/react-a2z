@@ -68,6 +68,25 @@ test('GradientMaker derives CSS from controlled/default values and handles malfo
   assert.match(render(library.GradientMaker, { defaultValue: { colors: ['#abc'], angle: 999 } }), /linear-gradient\(360deg, #aabbcc 0%, #aabbcc 100%\)/);
 });
 
+test('GradientMaker exposes color-stop action slots, boundaries and opt-outs', () => {
+  const html = render(library.GradientMaker, {
+    value: { colors: ['#000', '#fff'], angle: 90 }, maxColors: 2,
+    classNames: { addColor: 'rounded-full', moveColorButton: 'h-8', removeColorButton: 'text-red-500' },
+  });
+  for (const slot of ['colors-header', 'add-color', 'colors-hint', 'colors-status', 'color-header', 'color-label', 'color-actions', 'move-color-button', 'remove-color-button'])
+    assert.match(html, new RegExp(`data-slot="gradient-maker-${slot}"`));
+  assert.match(html, /aria-label="Add color stop"[^>]*disabled/);
+  assert.match(html, /aria-label="Move color 1 earlier"[^>]*disabled/);
+  assert.match(html, /aria-label="Move color 2 later"[^>]*disabled/);
+  assert.match(html, /rounded-full/);
+  const single = render(library.GradientMaker, { defaultValue: { colors: ['#abc'], angle: 90 } });
+  assert.match(single, /aria-label="Remove color 1"[^>]*disabled/);
+  const overLimit = render(library.GradientMaker, { defaultValue: { colors: ['#000', '#fff', '#abc'], angle: 90 }, maxColors: 1 });
+  assert.equal((overLimit.match(/data-slot="gradient-maker-color"/g) || []).length, 3);
+  assert.doesNotMatch(render(library.GradientMaker, { showColorActions: false }), /data-slot="gradient-maker-(add-color|color-actions|colors-status)"/);
+  assert.doesNotMatch(render(library.GradientMaker, { showColors: false }), /data-slot="gradient-maker-add-color"/);
+});
+
 const highlightedTokens = (code, language) =>
   highlightCode(code, language).map((node) => ({
     text: node.props.children,

@@ -24,10 +24,23 @@ component contract and `ROADMAP.md` for pending work and validation evidence.
 
 The demo's scoped live Tailwind compiler belongs to `test-app-for-lib` only.
 Do not add that server endpoint/compiler to the package or CLI-installed source.
-Next priorities discussed with the user are color-stop editing and clearer
-default/override/resolved class information; they are not implemented here.
+The 2026-10-30 phase below implements the next two usability priorities.
 Full tests, CLI consumer checks, and the demo production build remain deferred
 to the final validation pass. The user explicitly authorized committing this
 checkpoint; this does not authorize pushing or publishing.
+
+## Current phase — 2026-10-30
+
+The user chose only color-stop editing and clearer class information for this
+phase. GradientMaker now adds/removes/reorders evenly spaced colors through the
+existing value/callback contract; `showColorActions` and `maxColors` control the
+actions. New slots and CLI registry source/types/help are included. The demo
+compares real reference/preview DOM classes rather than copied default strings.
+See the roadmaps and technical reference for details and focused check evidence.
+Numeric angle input, undo/redo, visible preset names, saving gradients, stop
+positions and alternate gradient types are outside this phase. The user authorized
+a local commit of this phase on 2026-10-30. Future changes still require their own
+commit request. Broad/production/release validation remains deferred; no push or
+publication is authorized.
 
 Respect the user's current validation and delivery instructions. Dev-only work pending confirmation must stay dev-only until approval; earlier push authorization does not override that restriction.

@@ -126,7 +126,7 @@ const components = [
     name: "gradient-maker",
     title: "GradientMaker",
     description:
-      "Controlled gradient colors and angle, presets, validated HEX editing, and CSS copying.",
+      "Editable gradient stops with add/remove/reorder controls, presets, validated HEX editing, and CSS copying.",
     source: "GradientMaker.tsx",
     utils:
       'import { cn } from "__A2Z_CN_IMPORT__";\nimport { normalizeHex } from "__A2Z_COLOR_IMPORT__";\nimport { copyToClipboard } from "__A2Z_CLIPBOARD_IMPORT__";',
