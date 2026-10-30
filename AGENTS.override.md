@@ -36,10 +36,13 @@ validation section: package tests/CLI, demo lint/unit/example checks, production
 build and browser suites passed. The live compiler needed traced filesystem
 paths because webpack rewrote require.resolve; keep the production check.
 A2Z_DIST_DIR=.next-validation isolates production from the active dev server.
-Six Next consumer builds remain unsuccessful due to the framework security
-advisory guard (their compilation and typechecks pass); six other framework
-builds pass. All 180 CLI checks pass. Release comparison still requires a reviewed
-version plan; do not change release gates or framework pins to mask failures.
+The separate Next fixture upgrade to 16.4.3 is committed as dd8ad95. All twelve
+consumer production builds/typechecks and 180 CLI checks now pass; no framework
+security guard was bypassed. ROADMAP.md links the proposed library 2.0.0 review
+and draft plan. Package versions remain unchanged and the release gate still
+requires a finalized version/plan/fingerprint. The CLI npm query returned E404,
+so its manifest 0.2.0 is not a confirmed published baseline. Demo/parent starter
+Next upgrades remain separate dependency work.
 StoreBinding remains outside the package; integration belongs to the demo app.
 The user has now authorized a local checkpoint commit, a separate Next.js
 fixture update and release-version review. No push/publication is authorized.

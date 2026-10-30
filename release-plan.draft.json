@@ -1,0 +1,17 @@
+{
+  "package": "react-a2z",
+  "fromVersion": "1.1.0",
+  "toVersion": "2.0.0",
+  "bump": "major",
+  "candidateFingerprint": "0ab6947685e8537aefb96eba42a633b093104571f71c40f83252270ff429b1f1",
+  "reason": "The color tools change preset-name nullability, interface augmentation support, root override precedence and default controls/palettes. A major release communicates the required consumer review and migration.",
+  "compatibilityReviewed": false,
+  "breakingChanges": [
+    "GradientPreset.name is optional; consumers reading it must handle undefined.",
+    "ColorPickerStyles and GradientMakerStyles are mapped aliases and cannot be declaration-merged as interfaces.",
+    "Root className now overrides conflicting classNames.root utilities on both color tools.",
+    "Default palettes, visible controls and GradientMaker's internal angle DOM change.",
+    "Applying a preset without an angle preserves the editor angle instead of resetting to 90."
+  ],
+  "migration": "See docs/release-review-2.0.0.md. Guard optional preset names, replace style-interface augmentation with local intersection types, resolve conflicting root overrides, supply explicit palettes and visibility props when preserving layouts, set angle: 90 on presets that must reset it, and migrate Slider-specific selectors to GradientMaker slots. This draft requires a version update, fresh fingerprint and final compatibility review before becoming release-plan.json."
+}

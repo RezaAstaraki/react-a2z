@@ -46,15 +46,21 @@ Passed evidence:
   cold smoke request took 234ms and warm requests 10/8ms (not a load benchmark).
 - Packed library consumer types, publint and Are the Types Wrong completed.
   publint suggested declaring a reviewed Node engine range; no range was changed.
-- All 180 CLI checks and all twelve consumer typechecks passed. Vite (3), webpack
-  (2) and CRA (1) fresh production builds passed. Interactive apps stayed intact.
+- All 180 CLI checks, all twelve consumer typechecks and all twelve fresh
+  production builds passed after the separate Next.js fixture patch update.
+  Coverage: Next (6, App/Pages, src/root, Tailwind 3/4), Vite (3), webpack (2)
+  and CRA (1). Report: 2026-10-30T17:46:08.477Z, CLI candidate
+  react-a2z-cli-28e9544721d69a60.tgz. Interactive app source stayed intact.
 
-Remaining gates (do not report the complete suite/release as passing):
-- Six pinned Next.js 16.4.0 consumer builds compiled/rendered but exited with
-  SecurityFatalError from the framework's security advisory guard. One retry
-  reproduced it; the collector recorded all six failures. Upgrading/reviewing
-  those compatibility fixtures is separate dependency work; no framework
-  versions were changed. See react-a2z/tests/cli-apps/reports/cli.json and logs.
+Release/deployment follow-ups (the twelve-consumer suite is now green):
+- The former Next consumer build blocker is resolved: all six fixtures and the
+  scaffold factory now pin 16.4.3 (commit dd8ad95). The reviewed lockfile change
+  is limited to those workspaces and Next-owned packages; sharp is 0.35.5.
+  The framework security guard was not bypassed. See the CLI suite README for
+  the upstream advisory and reports/cli.json for the complete successful run.
+- The demo and parent workspace starters retain their independent Next 16.3.3
+  pins. Review their dependency upgrades separately before deployment; this
+  fixture update does not certify those dependency trees.
 - release:compare exits unsuccessfully because there is no reviewed
   release-plan.json/version decision for the changed 1.1.0 artifact. Packed
   consumer/type checks passed; the release gate was not relaxed. Its candidate
@@ -66,6 +72,19 @@ The user authorized committing this checkpoint, then updating the Next.js
 fixtures separately and preparing the release-version review. No push or
 publication is authorized. Earlier deferred-validation notes below
 are historical phase checkpoints; this section supersedes their current status.
+
+
+Release proposal prepared separately from the fixture patch:
+- Recommend react-a2z 2.0.0 for optional preset-name reads, style interface-to-type
+  augmentation changes, root class precedence and changed defaults/angle behavior.
+- See [release review](./docs/release-review-2.0.0.md) and the library's
+  release-plan.draft.json. The draft keeps compatibilityReviewed=false; manifests
+  remain 1.1.0 (library) / 0.2.0 (CLI), and the active release gate is unchanged.
+- npm confirmed library latest 1.1.0 and returned E404 for react-a2z-cli. The CLI
+  has no confirmed public baseline; retain 0.2.0 as the proposed initial release
+  and recheck registry identity/access before publication.
+- Final version/plan/fingerprint and release:check remain release-preparation
+  work. Nothing has been pushed or published.
 
 ## Local checkpoint and app-owned persistence — 2026-10-30
 
