@@ -9,13 +9,102 @@ Companion docs: [LIBRARY-REFERENCE.md](./LIBRARY-REFERENCE.md) (technical refere
 [CLI starter guide](./tests/cli-apps/README.md). Historical session evidence lives
 in `docs/history/`.
 
-## Local checkpoint and persistence hold — 2026-10-30
+## Validation pass — 2026-10-30
 
-The user authorized committing the completed work below, including the staged
-demo page-width adjustment. Do not push or publish. Persistence / the persistor
-must be discussed with the user before implementing saved gradients or choosing
-any storage/API approach. Full validation remains deferred; focused evidence is
-recorded below. Future changes require their own commit request.
+The user authorized the previously deferred cleanup and validation pass. No
+StoreBinding component is being added; store integration stays in the app demo.
+
+Completed fixes:
+- Removed five ColorToolsPlayground lint errors: useSyncExternalStore supplies
+  the SSR/client readiness snapshot without a setState effect; HTML-map quotes
+  retain their rendered text through JSX entities.
+- Browser assertions wait for asynchronous class compilation and reveal named
+  preset slots explicitly. Reduced-motion checks target the animated preset,
+  and the broader theme assertion compares against its actual CSS variable
+  instead of assuming an OKLCH serialization.
+- Fixed a production-only compiler failure. webpack replaced require.resolve
+  with undefined/numeric module IDs, producing API 500s despite a green build.
+  Read the two direct app dependency theme files through traced filesystem paths;
+  unexpected server failures are logged without exposing details to clients.
+- Added A2Z_DIST_DIR for isolated production checks in .next-validation while
+  localhost:3000 dev stays intact; ignore generated output in Git/ESLint and
+  include its generated types. Production build completed without the old
+  createRequire warnings.
+- Consumer verification supports --continue-on-error to collect all scenarios,
+  preserves unsuccessful exit status, and records the failed phase/CLI counts.
+  CLI candidate references/lock metadata reflect the newly packed source.
+
+Passed evidence:
+- Package npm test: build plus all 26 component/export contracts.
+- Nine release-policy unit tests; full CLI integration and Tailwind 3/4 probes.
+- Demo: full lint, all 17 unit contracts, all 304 displayed TypeScript examples,
+  and the isolated production build (48 static/generated routes).
+- General browser suite: 34 checks in development and 34 against production.
+- Production color-tool suite: 12 scenarios and eight generated TS exports;
+  history/customization: nine groups; app-owned persistence: six groups. No
+  uncaught browser errors. Production compiler endpoint returned 200; a local
+  cold smoke request took 234ms and warm requests 10/8ms (not a load benchmark).
+- Packed library consumer types, publint and Are the Types Wrong completed.
+  publint suggested declaring a reviewed Node engine range; no range was changed.
+- All 180 CLI checks and all twelve consumer typechecks passed. Vite (3), webpack
+  (2) and CRA (1) fresh production builds passed. Interactive apps stayed intact.
+
+Remaining gates (do not report the complete suite/release as passing):
+- Six pinned Next.js 16.4.0 consumer builds compiled/rendered but exited with
+  SecurityFatalError from the framework's security advisory guard. One retry
+  reproduced it; the collector recorded all six failures. Upgrading/reviewing
+  those compatibility fixtures is separate dependency work; no framework
+  versions were changed. See react-a2z/tests/cli-apps/reports/cli.json and logs.
+- release:compare exits unsuccessfully because there is no reviewed
+  release-plan.json/version decision for the changed 1.1.0 artifact. Packed
+  consumer/type checks passed; the release gate was not relaxed. Its candidate
+  fingerprint is 0ab6947685e8537aefb96eba42a633b093104571f71c40f83252270ff429b1f1.
+- Compiler retry/timeouts, multi-instance/concurrency/deployment measurements
+  remain follow-up work. Local smoke timings do not establish production SLOs.
+
+The user authorized committing this checkpoint, then updating the Next.js
+fixtures separately and preparing the release-version review. No push or
+publication is authorized. Earlier deferred-validation notes below
+are historical phase checkpoints; this section supersedes their current status.
+
+## Local checkpoint and app-owned persistence — 2026-10-30
+
+The completed work below, including the demo page-width adjustment, is committed
+in the local checkpoint. No push or publication is authorized. The user decided
+that persistence is app-level: use existing value/defaultValue, change callbacks
+and supplied presets. Storage, saved collections and Save/Delete UI belong to
+the consuming app. A built-in persistor/storage helper or persistence-specific
+component API is outside the package scope. The user subsequently approved the optional app-owned Zustand integration
+recorded in the current phase below. Full validation stays
+deferred, and future changes require their own commit request.
+
+## Optional Zustand persistence example — 2026-10-30
+
+- [x] Explain controlled value/onValueChange, initial defaultValue and supplied
+  presets before the focused examples. Keep Try it live first and link to the
+  app integration example; package API and CLI registry source stay unchanged.
+- [x] App-only Zustand 5.0.15 dependency and per-instance/request store factory.
+  Restore after mount with skipHydration; gate writes until successful loading.
+  Persist only current value and up to 12 favorites through partialize.
+- [x] Validate envelopes, version, colors/angle, IDs, names and collection limits.
+  Preserve invalid/future data until explicit Reset; storage failure keeps edits
+  in memory with accessible feedback. Keep undo, styling and UI settings temporary.
+- [x] App-owned Save/Load/Delete/Reset UI, optional names and preset mapping.
+  Demonstrate refresh restoring edits/favorites while undo history starts empty.
+- [x] Exact standalone source generated from running store/UI, with drift check,
+  focused TypeScript check and compact/full-screen copy workflow. Preserve local
+  CLI import guidance and show Zustand as an optional app integration.
+
+Focused evidence: six persistence unit/source contracts passed, including
+instance isolation, no writes before hydration, validation, corruption/future
+versions, denied/full storage, collection limits and exact standalone typing.
+Six isolated browser groups passed for refresh, named/unnamed favorites,
+preset/undo/external-load behavior, deletion/reset, unavailable storage, exact
+clipboard copying, modal Escape/focus restoration and 390px layouts. No browser
+runtime errors. Demo TypeScript and targeted lint passed; production/full suites
+remain deferred. Working changes are uncommitted. The npm lock refresh adds the
+pinned direct Zustand dependency and refreshes linked package metadata, without
+upgrading other resolved dependency versions.
 
 ## Custom history button content — 2026-10-30
 
@@ -135,7 +224,7 @@ Next priorities discussed, not implemented:
   uncontrolled APIs and delivering the corresponding demo and CLI changes.
 - [x] Coordinate default/override/resolved class information with the demo (2026-10-30).
 - [x] Direct numeric angle input and undo/redo (2026-10-30; details above).
-- [ ] Consider stop positions, saved custom gradients, then
+- [ ] Consider stop positions, then
   radial/conic gradients. Decide their APIs before implementation.
 
 Validation for this checkpoint: registry generation and Rollup output passed;

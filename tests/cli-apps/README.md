@@ -62,6 +62,9 @@ Select smoke demos; the full color-tool playgrounds live in the main demo app.
 
 For a quick rerun with the installed candidate, use `npm run verify`.
 To include fresh builds without repacking, use `npm run verify -- --build`.
+To collect results for every scenario after a failure, add `--continue-on-error`.
+The command still exits unsuccessfully if any scenario fails and records the
+phase and completed CLI checks in `reports/cli.json`; default runs fail fast.
 Browser interactions are checked separately: run a starter and follow the steps
 below. The full command automates CLI behavior and compilation checks.
 

@@ -310,6 +310,17 @@ an empty result uses the default purple pair. Nonfinite angles fall back to 90.
 
 The existing `onGradientChange` emits complete CSS on the same user edits.
 Neither callback fires on mount or when a controlled value changes externally.
+For app-owned state, pass `value` and update it through `onValueChange`.
+`defaultValue` initializes an uncontrolled editor and does not load later data;
+use controlled `value` when restoring data asynchronously. Supply app-owned
+collections through `presets` (map saved colors, angle and optional name).
+The app owns storage, schema validation, loading and Save/Delete controls.
+React state, Zustand or another store can connect through these same props;
+GradientMaker imports no persistence mechanism. Undo history stays session-local.
+The demo's optional Zustand example lives entirely in `test-app-for-lib`, including
+its storage key, validation and named/unnamed favorites. For CLI source, replace
+the example's package component/type imports with your local gradient-maker module.
+
 The three built-ins are Sunset Orange (two colors), Ocean Blue (three), and
 Rainbow (seven), in that order. Omit `presets` to use them; supply your own
 array to replace them, or `[]` to hide the choices. A preset's optional `angle`

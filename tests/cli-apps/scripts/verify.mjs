@@ -18,6 +18,7 @@ import { createApp, cliArgs } from "./scaffold.mjs";
 import { root, cli, npm } from "./process.mjs";
 
 const buildFreshApps = process.argv.includes("--build");
+const continueOnError = process.argv.includes("--continue-on-error");
 
 async function snapshot(directory) {
   const files = {};
@@ -56,6 +57,8 @@ let current;
 try {
   for (const s of scenarios) {
     current = s.id;
+    let phase = "cli";
+    try {
     const app = resolve(root, "apps", s.id);
     const require = createRequire(resolve(app, "package.json"));
     const installed = JSON.parse(
@@ -195,6 +198,7 @@ export default function ColorToolsProbe() {
     );
     if (buildFreshApps) {
       for (const task of ["typecheck", "build"]) {
+        phase = task;
         console.log(`${task}: fresh ${s.id}`);
         await mkdir(resolve(root, "reports"), { recursive: true });
         try {
@@ -238,6 +242,13 @@ export default function ColorToolsProbe() {
     console.log(
       `PASS ${s.id}: 15 CLI checks, installed Tailwind ${installed.version}`,
     );
+    } catch (error) {
+      if (!continueOnError) throw error;
+      results.push({ id: s.id, passed: false, phase,
+        cliChecks: phase === "cli" ? 0 : 15,
+        typecheck: phase === "build", build: false, error: error.message });
+      console.error(`FAIL ${s.id} during ${phase}; see reports/${s.id}.${phase}.log and reports/cli.json.`);
+    }
   }
 } catch (error) {
   results.push({ id: current, passed: false, error: error.message });
@@ -265,6 +276,10 @@ export default function ColorToolsProbe() {
     ),
   );
 }
-console.log(
-  `All ${results.length} scenarios passed (${results.length * 15} checks). Starter apps were not modified.`,
-);
+const failed = results.filter((result) => !result.passed);
+const checksPassed = results.reduce((count, result) => count + (result.checks?.length ?? result.cliChecks ?? 0), 0);
+console.log(`${results.length - failed.length}/${results.length} scenarios passed (${checksPassed} CLI checks). Starter apps were not modified.`);
+if (failed.length) {
+  console.error(`Failed scenarios: ${failed.map((result) => result.id).join(", ")}`);
+  process.exitCode = 1;
+}

@@ -26,7 +26,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "react": "19.3.0",
-    "react-a2z-cli": "file:.artifacts/react-a2z-cli-97a162c4f1d692b4.tgz",
+    "react-a2z-cli": "file:.artifacts/react-a2z-cli-28e9544721d69a60.tgz",
     "react-dom": "19.3.0",
     "typescript": "^5.9.3"
   },

@@ -25,18 +25,56 @@ component contract and `ROADMAP.md` for pending work and validation evidence.
 The demo's scoped live Tailwind compiler belongs to `test-app-for-lib` only.
 Do not add that server endpoint/compiler to the package or CLI-installed source.
 The 2026-10-30 phase below implements the next two usability priorities.
-Full tests, CLI consumer checks, and the demo production build remain deferred
-to the final validation pass. The user explicitly authorized committing this
+The user has now authorized the final validation pass. Current results and
+remaining gates are recorded at the top of ROADMAP.md. The user explicitly authorized committing this
 checkpoint; this does not authorize pushing or publishing.
 
-## Persistence discussion hold — 2026-10-30
+## Current validation status — 2026-10-30
 
-The user requested a local commit of the completed numeric angle/history,
-optional preset names and customizable history-content work. Include the staged
-demo page-width adjustment. Stop after this checkpoint: discuss persistence /
-the persistor with the user before implementing saving or choosing a storage
-strategy. No persistence API, storage dependency or implementation is approved.
-No push or publication is authorized; full validation remains deferred.
+The user approved cleanup and the deferred full checks. See ROADMAP.md's top
+validation section: package tests/CLI, demo lint/unit/example checks, production
+build and browser suites passed. The live compiler needed traced filesystem
+paths because webpack rewrote require.resolve; keep the production check.
+A2Z_DIST_DIR=.next-validation isolates production from the active dev server.
+Six Next consumer builds remain unsuccessful due to the framework security
+advisory guard (their compilation and typechecks pass); six other framework
+builds pass. All 180 CLI checks pass. Release comparison still requires a reviewed
+version plan; do not change release gates or framework pins to mask failures.
+StoreBinding remains outside the package; integration belongs to the demo app.
+The user has now authorized a local checkpoint commit, a separate Next.js
+fixture update and release-version review. No push/publication is authorized.
+
+## App-owned persistence decision — 2026-10-30
+
+After the checkpoint, the user established that persistence belongs to the
+consuming app. Package components expose value/defaultValue, change callbacks
+and supplied data such as presets; the app owns storage, saved collections and
+Save/Delete UI. Do not add a built-in persistor, storage helper/dependency or
+persistence-specific component API for GradientMaker. Its existing value,
+onValueChange and presets provide the integration points. Component-local undo
+history remains session state. The user approved a controlled-API guide and an optional Zustand persistence
+example in the demo app; the implementation details are recorded below.
+The completed checkpoint includes the demo page-width adjustment. Future edits
+require a new commit request. No push/publication is authorized; broad checks
+remain deferred.
+
+## Optional Zustand demo integration — 2026-10-30
+
+The user approved documenting controlled integration first and adding one
+app-owned Zustand example. `GradientPersistenceExample.tsx` and
+`gradient-persistence-store.ts` live only in test-app-for-lib. A per-instance
+factory uses persist/partialize/skipHydration, explicit version/shape validation,
+and a write gate; invalid/future data stays untouched until explicit Reset.
+The demo stores last value and up to 12 named/unnamed favorites, with app-owned
+Save/Load/Delete/Reset controls. Undo/styles/UI state stay temporary. Read/write
+failures preserve session editing. Zustand 5.0.15 is declared directly in the
+demo, without changing package component APIs, dependencies or CLI source.
+`scripts/gradient-persistence-code.mjs` generates exact standalone TypeScript
+from the two running source files into GradientMaker.tsx. Regenerate with
+`npm run examples:persistence`; pretest:examples checks for drift. Long code uses
+CompactExampleCode's full-screen reader/copy flow. Focused unit/browser checks
+are documented in the demo roadmap. The user authorized a local checkpoint commit of this work. Validation results
+and remaining gates are at the top of ROADMAP.md; no push/publication is authorized.
 
 ## Completed numeric angle/history phase — 2026-10-30
 
@@ -49,7 +87,7 @@ values, groups continuous slider/native color interactions, clears redo on new
 edits, and resets on external controlled values. Hiding history preserves it;
 text/number fields retain native undo. The compact header keeps the default
 component visible during sticky class inspection. See the roadmaps for checks.
-Visible preset labels are implemented in the section below; saving gradients is still pending. The user authorized a local checkpoint
+Visible preset labels are implemented in the section below; saving gradients belongs to the consuming app. The user authorized a local checkpoint
 commit of this phase, including the staged demo page-width adjustment. Future
 changes require a new commit request; pushing/publishing is not authorized.
 
