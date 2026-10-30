@@ -7,6 +7,13 @@ Each app imports the component source installed by the CLI; none depends on the
 
 Requires Node 22.12+ (the suite uses Node 22.18) and npm workspaces.
 
+The six Next.js scenarios pin **16.4.3** in their manifests and scaffold factory.
+This replaces 16.4.0 after the [October security update](https://nextjs.org/blog/nextjs-security-update-october-14-2026);
+16.4.3 also includes the subsequent patch fixes. The shared lockfile records the
+matching Next packages and sharp 0.35.5. This is an intentional compatibility
+fixture upgrade; the parent workspace's official starter templates and the
+separate documentation app retain their own dependency/provenance workflows.
+
 ## First setup
 
 From the **react-a2z repository root**:

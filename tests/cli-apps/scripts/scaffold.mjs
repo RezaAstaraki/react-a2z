@@ -29,7 +29,7 @@ export async function createApp(s, directory) {
   };
   let scripts = { typecheck: "tsc --noEmit" };
   if (next) {
-    dependencies.next = "16.4.0";
+    dependencies.next = "16.4.3";
     scripts = { ...scripts, dev: `next dev --webpack -p ${s.port}`, build: "next build --webpack", start: `next start -p ${s.port}` };
     files["next.config.mjs"] = "export default { experimental: { cpus: 1 } };\n";
     files["next-env.d.ts"] = '/// <reference types="next" />\n/// <reference types="next/image-types/global" />\n';
