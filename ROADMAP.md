@@ -9,7 +9,87 @@ Companion docs: [LIBRARY-REFERENCE.md](./LIBRARY-REFERENCE.md) (technical refere
 [CLI starter guide](./tests/cli-apps/README.md). Historical session evidence lives
 in `docs/history/`.
 
-## Current color tools phase — 2026-10-30
+## Local checkpoint and persistence hold — 2026-10-30
+
+The user authorized committing the completed work below, including the staged
+demo page-width adjustment. Do not push or publish. Persistence / the persistor
+must be discussed with the user before implementing saved gradients or choosing
+any storage/API approach. Full validation remains deferred; focused evidence is
+recorded below. Future changes require their own commit request.
+
+## Custom history button content — 2026-10-30
+
+- [x] Expose `undoLabel`/`redoLabel`, React-node `undoIcon`/`redoIcon`, and
+  `undoAriaLabel`/`redoAriaLabel`. Empty text/null icons hide each part; accessible
+  names retain fallback text. Keep history, keyboard actions and button targets.
+- [x] Add separate icon/label classNames/styles slots and data-slot wrappers;
+  decorative icons are hidden from accessibility and SVGs receive useful sizing.
+- [x] Teach these props in Props with independent fields and icon-only/text-only
+  actions. Preserve JSON/export fidelity and old configs; map all new slots and
+  style presets. Minimal editor demonstrates actual custom SVGs with hidden text.
+- [x] Update generated CLI source/types, prop metadata, docs and install guide.
+
+Focused evidence: four GradientMaker render contracts, six configuration tests,
+package/demo TypeScript and the CLI source/type/style probe in Tailwind 3 and 4.
+Nine focused browser groups passed in `test-app-for-lib/scripts/test-gradient-history.mjs`,
+including hidden labels, replacement symbols, text-only buttons, custom accessible
+names, actual SVG icon sizing and icon-only Undo behavior. Six standalone
+examples/exports typechecked. The default inspected editor remains visible at
+720px (620px high); narrow layouts have no horizontal overflow.
+The user authorized a local checkpoint commit; full tests/production/consumer suites stay deferred.
+
+## Optional preset names — 2026-10-30
+
+- [x] Make `GradientPreset.name` optional and add `showPresetNames` (default
+  false). Render supplied nonblank names only; retain tooltips and accessible
+  names, with numbered fallbacks for unnamed choices. Preserve current value.
+- [x] Expose `presetName` classNames/styles and span data-slot independently
+  of the preset button; readable defaults and truncation keep thumbnails compact.
+- [x] Add Props toggle, optional-name JSON validation, faithful Code exports,
+  old-config defaults, slot map and both complete style presets. Update CLI
+  source/types/help, technical/install docs and generated prop metadata.
+
+Focused evidence: three package render contracts, five configuration contracts,
+package/demo TypeScript and CLI source/style/type probes for Tailwind 3 and 4.
+Eight browser check groups passed in `test-app-for-lib/scripts/test-gradient-history.mjs`,
+including named/unnamed visibility, application of unnamed presets, custom label
+classes and faithful exports. Long names fit the 390px layout without overflow;
+the default inspected editor remains 618px high. No browser runtime errors.
+The user authorized a local checkpoint commit; full suites/production/packed consumers stay deferred.
+
+## Completed numeric angle/history phase — 2026-10-30
+
+The user approved these next two suggestions and a local checkpoint commit,
+including the staged demo page-width adjustment. No push/publication is authorized.
+
+- [x] Numeric angle input beside the slider: valid whole degrees 0–360 update
+  the slider/preview/export live; Enter/blur finishes a grouped edit, Escape
+  clears invalid drafts, invalid drafts preserve output, external updates
+  discard drafts, and reserved validation space avoids layout shifts.
+- [x] Undo/redo complete gradient values in controlled and uncontrolled modes
+  through both callbacks. Keep 50 edits, group slider drags/held arrow keys and
+  native color interactions, ignore unchanged edits, clear redo on new edits,
+  and reset on external controlled values. Native text/number undo stays local.
+- [x] Visibility props `showAngleNumber` and `showHistory`, all typed slots,
+  complete style presets/maps, compatible older configs, exact exports, prop
+  metadata, CLI registry/help and installation docs.
+- [x] Compact label/history header and spacing: default inspected editor is
+  618px high and fits the 720px desktop viewport; 390px layout has no overflow.
+
+Focused evidence: package/demo TypeScript; four configuration tests; seven
+browser check groups in `test-app-for-lib/scripts/test-gradient-history.mjs`
+(live number-to-slider/preview/export updates before Enter/blur, invalid drafts,
+numeric/keyboard/pointer grouping, HEX/native color,
+stop/preset history, branching/shortcuts, external resets, disabled/hiding,
+uncontrolled CSS callback, 50-edit bound and narrow layout). No browser runtime
+errors. CLI source/type/style probes passed Tailwind 3 and 4. Registry refreshed.
+Two package render contracts and six standalone GradientMaker examples/exports
+also passed. Targeted lint found five pre-existing ColorToolsPlayground errors
+(the readiness effect and four unescaped quotes), confirmed against HEAD; the
+other targeted files had no lint findings. Track these in final validation.
+Full suites, packed/real consumer apps and demo production build stay deferred.
+
+## Completed color-stop/class-information phase — 2026-10-30
 
 The user explicitly selected the two priorities below; other usability proposals
 are outside this phase. The user authorized a local checkpoint commit on
@@ -54,8 +134,8 @@ Next priorities discussed, not implemented:
 - [x] Add/remove/reorder gradient color stops (2026-10-30), preserving current controlled and
   uncontrolled APIs and delivering the corresponding demo and CLI changes.
 - [x] Coordinate default/override/resolved class information with the demo (2026-10-30).
-- [ ] Add direct numeric angle input alongside the slider.
-- [ ] Consider stop positions, undo/redo, named/saved custom gradients, then
+- [x] Direct numeric angle input and undo/redo (2026-10-30; details above).
+- [ ] Consider stop positions, saved custom gradients, then
   radial/conic gradients. Decide their APIs before implementation.
 
 Validation for this checkpoint: registry generation and Rollup output passed;

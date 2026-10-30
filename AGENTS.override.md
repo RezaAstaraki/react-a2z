@@ -29,7 +29,53 @@ Full tests, CLI consumer checks, and the demo production build remain deferred
 to the final validation pass. The user explicitly authorized committing this
 checkpoint; this does not authorize pushing or publishing.
 
-## Current phase — 2026-10-30
+## Persistence discussion hold — 2026-10-30
+
+The user requested a local commit of the completed numeric angle/history,
+optional preset names and customizable history-content work. Include the staged
+demo page-width adjustment. Stop after this checkpoint: discuss persistence /
+the persistor with the user before implementing saving or choosing a storage
+strategy. No persistence API, storage dependency or implementation is approved.
+No push or publication is authorized; full validation remains deferred.
+
+## Completed numeric angle/history phase — 2026-10-30
+
+The user approved numeric angle input and undo/redo next. Both now live in
+GradientMaker, with `showAngleNumber` and `showHistory` (default true), typed
+slots, and generated CLI delivery. Valid numeric angles update the slider/preview live. Enter/blur finishes a
+grouped edit; invalid drafts preserve output and Escape restores the last valid
+angle. History stores 50 complete
+values, groups continuous slider/native color interactions, clears redo on new
+edits, and resets on external controlled values. Hiding history preserves it;
+text/number fields retain native undo. The compact header keeps the default
+component visible during sticky class inspection. See the roadmaps for checks.
+Visible preset labels are implemented in the section below; saving gradients is still pending. The user authorized a local checkpoint
+commit of this phase, including the staged demo page-width adjustment. Future
+changes require a new commit request; pushing/publishing is not authorized.
+
+## Custom history button content — 2026-10-30
+
+The user requested removable text and replaceable icons. `undoLabel`/`redoLabel`
+accept strings (empty hides text); `undoIcon`/`redoIcon` accept decorative React
+nodes/SVG (null hides). Expose independent label/icon slots and wrappers.
+`undoAriaLabel`/`redoAriaLabel` provide accessible names with nonblank fallbacks.
+Props supports text/symbol/accessibility fields, icon-only/text-only actions and
+content reset without changing history. JSON accepts string/null icons and
+older configs receive defaults; never execute arbitrary JSX from editors. The
+minimal focused example demonstrates actual custom SVG nodes and hidden labels.
+The user authorized a local checkpoint commit; broad validation remains deferred.
+
+## Optional preset names — 2026-10-30
+
+The user requested optional names and prop-controlled visibility. `GradientPreset.name`
+is optional; `showPresetNames` defaults to false and displays only nonblank names.
+`presetName` exposes classNames/styles and the stable span data-slot. Unnamed
+choices receive numbered accessible labels. Props/Code accept omitted or blank
+names, reject non-string names, and preserve omissions in exports. The visible
+label, button styling, slot map, complete studio presets, CLI source and prop
+metadata are coordinated. The user authorized a local checkpoint commit; full validation stays deferred.
+
+## Completed color-stop/class-information phase — 2026-10-30
 
 The user chose only color-stop editing and clearer class information for this
 phase. GradientMaker now adds/removes/reorders evenly spaced colors through the

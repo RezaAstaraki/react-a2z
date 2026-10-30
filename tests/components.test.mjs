@@ -59,6 +59,8 @@ test('GradientMaker derives CSS from controlled/default values and handles malfo
   assert.match(html, /aria-pressed="true"/);
   assert.match(html, /h-40/);
   assert.match(html, /accent-violet-500/);
+  assert.match(html, /aria-label="Gradient angle in degrees"[^>]*disabled/);
+  assert.match(html, /aria-label="Undo gradient edit"[^>]*disabled/);
   assert.equal(changes, 0);
   for (const slot of ['root', 'label', 'preview', 'presets', 'preset', 'custom-colors', 'colors-label', 'colors-list', 'color', 'swatch', 'swatch-input', 'swatch-color', 'hex-input', 'angle', 'angle-label', 'angle-input', 'angle-value', 'copy-row', 'copy-input', 'copy-button', 'copy-status'])
     assert.match(html, new RegExp(`data-slot="gradient-maker-${slot}"`));
@@ -66,6 +68,11 @@ test('GradientMaker derives CSS from controlled/default values and handles malfo
   assert.match(fallback, /linear-gradient\(90deg, #667eea 0%, #764ba2 100%\)/);
   assert.doesNotMatch(fallback, /Apply Empty preset/);
   assert.match(render(library.GradientMaker, { defaultValue: { colors: ['#abc'], angle: 999 } }), /linear-gradient\(360deg, #aabbcc 0%, #aabbcc 100%\)/);
+  for (const slot of ['header', 'angle-controls', 'angle-number', 'angle-error', 'history', 'undo-button', 'redo-button', 'history-status'])
+    assert.match(html, new RegExp(`data-slot="gradient-maker-${slot}"`));
+  const minimal = render(library.GradientMaker, { showAngleNumber: false, showHistory: false });
+  assert.doesNotMatch(minimal, /data-slot="gradient-maker-(angle-number|angle-error|history|undo-button|redo-button)"/);
+  assert.match(minimal, /90°/);
 });
 
 test('GradientMaker exposes color-stop action slots, boundaries and opt-outs', () => {
@@ -85,6 +92,53 @@ test('GradientMaker exposes color-stop action slots, boundaries and opt-outs', (
   assert.equal((overLimit.match(/data-slot="gradient-maker-color"/g) || []).length, 3);
   assert.doesNotMatch(render(library.GradientMaker, { showColorActions: false }), /data-slot="gradient-maker-(add-color|color-actions|colors-status)"/);
   assert.doesNotMatch(render(library.GradientMaker, { showColors: false }), /data-slot="gradient-maker-add-color"/);
+});
+
+test('GradientMaker supports optional preset names, visibility and styling', () => {
+  const presets = [
+    { colors: ['#000', '#fff'] },
+    { name: '', colors: ['#abc', '#def'] },
+    { name: '  ', colors: ['#123', '#456'] },
+    { name: ' Brand ', colors: ['#f00', '#00f'] },
+  ];
+  const hidden = render(library.GradientMaker, { presets });
+  assert.doesNotMatch(hidden, /data-slot="gradient-maker-preset-name"/);
+  assert.match(hidden, /aria-label="Apply gradient preset 1"/);
+  assert.match(hidden, /aria-label="Apply gradient preset 2"/);
+  assert.match(hidden, /aria-label="Apply gradient preset 3"/);
+  assert.match(hidden, /aria-label="Apply Brand preset"/);
+  const visible = render(library.GradientMaker, {
+    presets, showPresetNames: true,
+    classNames: { presetName: 'rounded-full text-red-200' },
+    styles: { presetName: { fontWeight: 800 } },
+  });
+  assert.equal((visible.match(/data-slot="gradient-maker-preset-name"/g) || []).length, 1);
+  assert.match(visible, /rounded-full text-red-200/);
+  assert.match(visible, /font-weight:800/);
+  assert.match(visible, />Brand<\/span>/);
+  assert.doesNotMatch(render(library.GradientMaker, { presets, showPresetNames: true, showPresets: false }), /data-slot="gradient-maker-preset-name"/);
+});
+
+test('GradientMaker history text and React icons customize independently with accessible fallbacks', () => {
+  const icon = React.createElement('svg', { viewBox: '0 0 24 24' }, React.createElement('path', { d: 'M8 4L3 9l5 5' }));
+  const html = render(library.GradientMaker, {
+    undoLabel: '', redoLabel: 'Again', undoIcon: icon, redoIcon: null,
+    undoAriaLabel: 'Previous gradient', redoAriaLabel: 'Next gradient',
+    classNames: { undoIcon: 'text-red-200', redoLabel: 'font-bold' },
+    styles: { undoIcon: { color: 'red' } },
+  });
+  assert.match(html, /aria-label="Previous gradient"/);
+  assert.match(html, /aria-label="Next gradient"/);
+  assert.match(html, /aria-hidden="true"[^>]*data-slot="gradient-maker-undo-icon"[^>]*text-red-200[^>]*color:red[^>]*><svg/);
+  assert.match(html, /data-slot="gradient-maker-redo-label"[^>]*font-bold[^>]*>Again<\/span>/);
+  assert.doesNotMatch(html, /data-slot="gradient-maker-(undo-label|redo-icon)"/);
+  const empty = render(library.GradientMaker, {
+    undoLabel: '', redoLabel: ' ', undoIcon: null, redoIcon: false,
+    undoAriaLabel: ' ', redoAriaLabel: '',
+  });
+  assert.match(empty, /aria-label="Undo gradient edit"/);
+  assert.match(empty, /aria-label="Redo gradient edit"/);
+  assert.doesNotMatch(empty, /data-slot="gradient-maker-(undo|redo)-(icon|label)"/);
 });
 
 const highlightedTokens = (code, language) =>

@@ -39,7 +39,7 @@ const usage = () =>
   react-a2z-cli repair [--cwd path] [--overwrite] [--skip-install] [--dry-run]
   Setup options: --css path --tailwind-config path
   Components: ${componentNames.join(", ")}
-  GradientMaker includes editable color stops: add, remove, and reorder.`);
+  GradientMaker includes editable color stops, optional preset names, numeric angles, and undo/redo.`);
 
 function parse(argv) {
   const options = { cwd: process.cwd() };

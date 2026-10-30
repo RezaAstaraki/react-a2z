@@ -317,6 +317,17 @@ applies on selection; without it, selection preserves the current editor angle.
 Thumbnails stay fixed at their explicit angle or 90 degrees. Angle edits affect
 the active gradient only. Invalid/empty preset entries are omitted.
 
+`GradientPreset.name` is optional. `showPresetNames` defaults to false; enable it
+to show supplied nonblank names inside thumbnails. Unnamed, empty and whitespace
+names render no visible label and receive numbered accessible labels, such as
+"Apply gradient preset 1". Named presets retain their name in the tooltip and
+accessible button label even when visible names are hidden. Style the entire
+button with `classNames.preset`/`styles.preset`, and its label independently with
+`classNames.presetName`/`styles.presetName`. Labels expose
+`data-slot="gradient-maker-preset-name"`; names truncate by default, with the full
+name available in the button tooltip. `showPresets={false}` hides both choices
+and names. Changing name visibility leaves the active gradient unchanged.
+
 `showPresets`, `showColors`, `showAngle`, `showHex`, and `showCopy` control sections.
 Color editors now include add, remove and earlier/later buttons by default.
 Adding appends white (`#ffffff`); removing keeps at least one stop. Reordering
@@ -337,6 +348,46 @@ contract. The corresponding `styles` slots are available as well.
 
 `disabled` locks editing while allowing CSS copying. The angle uses a native
 range input with arrow/Home/End support. HEX drafts behave like ColorPicker.
+The numeric angle field updates the slider, gradient and callbacks immediately
+for whole numbers from 0 to 360. Enter or blur finishes one grouped editing
+session. Empty, fractional, and out-of-range drafts keep the last valid gradient;
+Enter/blur validates them in reserved space, and Escape clears the draft back
+to the last valid angle. External value
+updates discard the numeric draft. `showAngleNumber={false}` keeps just the
+slider/output; `showAngle={false}` hides the whole angle section.
+
+Undo/redo restores complete colors/angle values through both existing callbacks.
+History stores the last 50 edits, groups each slider drag/held arrow key,
+numeric editing session, and focused native color interaction into one step, ignores unchanged values, and
+clears redo on a new edit. External controlled updates start fresh history;
+parent echoes of component edits preserve it. `showHistory={false}` hides the
+controls while preserving history. Disabled locks undo/redo as well as editing.
+Ctrl/Cmd+Z, Shift+Ctrl/Cmd+Z and Ctrl/Cmd+Y work inside the editor when history
+controls are shown, except in text/number inputs where native editing takes
+priority. History is instance-local and is not exported as application state.
+New classNames/styles slots: `header`, `angleControls`, `angleNumber`, `angleError`,
+`history`, `undoButton`, `redoButton`, and `historyStatus`.
+
+Undo/redo content is independently configurable: `undoLabel`/`redoLabel` default
+to "Undo"/"Redo"; an empty or whitespace label removes its visible span.
+`undoIcon`/`redoIcon` accept decorative React nodes (including SVG), default to
+the existing arrows, and accept `null` to remove the icon. Their wrappers and
+labels expose matching `classNames`/`styles` slots and stable data-slot markers.
+Default icon wrappers size SVGs; override icon slots to change their dimensions.
+`undoAriaLabel`/`redoAriaLabel` customize accessible button names; blank values
+fall back to "Undo gradient edit"/"Redo gradient edit". Names remain available
+when visible text or icons are absent. Content changes preserve history.
+
+```tsx
+<GradientMaker
+  undoLabel=""
+  redoLabel=""
+  undoIcon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 4 3 9l5 5M3 9h10a7 7 0 0 1 0 14" /></svg>}
+  redoIcon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m16 4 5 5-5 5m5-5H11a7 7 0 0 0 0 14" /></svg>}
+  classNames={{ undoIcon: "h-5 w-5", redoIcon: "h-5 w-5" }}
+/>
+```
+
 Copy success/failure is announced in a status message. Typed `classNames` and
 compatible `styles` cover all styled parts with `data-slot="gradient-maker-*"`;
 all markers are inline. Root class priority matches ColorPicker.

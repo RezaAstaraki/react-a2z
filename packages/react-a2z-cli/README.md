@@ -94,6 +94,23 @@ stops. It appends white, retains at least one stop, and preserves the existing
 are included in `GradientMakerClassNames`; no new shared helper is required.
 Regenerate and use the checkout CLI to install this unpublished update.
 
+The local source also includes a numeric angle editor (whole degrees 0–360
+update live; Enter/blur finishes the edit, Escape clears invalid drafts) and
+undo/redo for up to 50 gradient edits. Slider gestures and numeric editing
+sessions each form one undo step; external controlled values reset history.
+`showAngleNumber` and `showHistory` default to true. All new controls expose
+typed classNames/styles slots; no extra shared helper is required.
+
+Preset `name` is optional. Set `showPresetNames` (default false) to display
+supplied nonblank names inside thumbnails. Style each label through
+`classNames.presetName` or `styles.presetName`; `preset` styles the button.
+Unnamed presets keep numbered accessible labels and have no visible name.
+
+History buttons accept `undoLabel`/`redoLabel` (empty strings hide visible text),
+`undoIcon`/`redoIcon` (React nodes, or null to hide), and `undoAriaLabel`/
+`redoAriaLabel` for accessible names. Separate icon/label classNames and styles
+slots keep these parts customizable without replacing the button behavior.
+
 ## Options
 
 ```bash

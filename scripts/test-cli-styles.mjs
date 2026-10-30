@@ -90,15 +90,15 @@ import type { ColorPickerClassNames } from './custom/ui/color-picker';
 import { GradientMaker } from './custom/ui/gradient-maker';
 import type { GradientValue, GradientPreset, GradientMakerClassNames } from './custom/ui/gradient-maker';
 const colors: ColorPickerClassNames = { hexInput: 'rounded-xl', hexError: 'font-medium' };
-const gradients: GradientMakerClassNames = { swatchInput: 'cursor-pointer', angleInput: 'accent-primary-600', copyStatus: 'text-sm', addColor: 'rounded-lg', moveColorButton: 'h-8 w-8 cursor-pointer', removeColorButton: 'text-danger-600', colorsStatus: 'sr-only' };
-const presets: GradientPreset[] = [{ name: 'Brand', colors: ['#7c3aed', '#db2777'], angle: 135 }];
+const gradients: GradientMakerClassNames = { undoIcon: 'text-base', redoIcon: 'text-base', undoLabel: 'sr-only', redoLabel: 'font-bold', presetName: 'rounded-full text-red-200', swatchInput: 'cursor-pointer', angleInput: 'accent-primary-600', angleNumber: 'w-24 cursor-text', angleControls: 'gap-3', angleError: 'text-danger-600', history: 'gap-3', undoButton: 'rounded-lg', redoButton: 'rounded-lg', historyStatus: 'sr-only', copyStatus: 'text-sm', addColor: 'rounded-lg', moveColorButton: 'h-8 w-8 cursor-pointer', removeColorButton: 'text-danger-600', colorsStatus: 'sr-only' };
+const presets: GradientPreset[] = [{ name: 'Brand', colors: ['#7c3aed', '#db2777'], angle: 135 }, { colors: ['#000000', '#ffffff'] }];
 export default function Consumer() {
   const [color, setColor] = useState('#7c3aed');
   const [gradient, setGradient] = useState<GradientValue>({ colors: ['#7c3aed', '#db2777'], angle: 90 });
   return <><Select options={[{ value: 'one', label: 'One' }]} />
     <ColorPicker value={color} onChange={setColor} classNames={colors} name='brand' required />
     <ColorPicker defaultValue='#abc' showHex={false} disabled />
-    <GradientMaker value={gradient} onValueChange={setGradient} presets={presets} classNames={gradients} maxColors={6} showColorActions onGradientChange={(css: string) => console.log(css)} />
+    <GradientMaker value={gradient} onValueChange={setGradient} presets={presets} classNames={gradients} undoLabel="" redoLabel="Again" undoIcon={<svg viewBox="0 0 24 24"><path d="M8 4L3 9l5 5" /></svg>} redoIcon={null} undoAriaLabel="Previous gradient" redoAriaLabel="Next gradient" maxColors={6} showPresetNames showColorActions showAngleNumber showHistory onGradientChange={(css: string) => console.log(css)} />
     <GradientMaker defaultValue={gradient} disabled showCopy={false} /></>;
 }
 `,
